@@ -1,4 +1,4 @@
-#include <RF24/RF24.h>
+#include <RF24/RF24.h>   //standard arduino library, you can install it on library manager
 #include "Nrf24DcClient.h"
 //#include <printf.h>
 #include "initNrf24DcClient.h"
