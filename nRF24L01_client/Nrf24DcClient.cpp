@@ -77,12 +77,12 @@ uint64_t Nrf24DcClient::clientAddress()
     return clientAddress_;
 }
 
-void Nrf24DcClient::setSessionTimeout(uint16_t timeout)
+void Nrf24DcClient::setSessionTimeout(int16_t timeout)
 {
     sessionTimeout_ = timeout;
 }
 
-uint16_t Nrf24DcClient::sessionTimeout()
+int16_t Nrf24DcClient::sessionTimeout()
 {
     return sessionTimeout_;
 }
@@ -96,6 +96,56 @@ bool Nrf24DcClient::addCommand(AbstractClientCommand * cmd)
     ++cmdCount_;
 
     return true;
+}
+
+bool Nrf24DcClient::sendDataToServer()
+{
+    if (!dataToSendLength_)
+        return false;
+    else
+        return driver.write(dataToSend_, dataToSendLength_);
+}
+
+bool Nrf24DcClient::receiveDataFromServer(int16_t timeout)
+{
+    auto startTime = millis();
+    while ((millis() - startTime) <= timeout)
+    {
+        if (driver.available())
+        {
+            receivedDataLength_ = driver.getDynamicPayloadSize();
+            driver.read(receivedData_, receivedDataLength_);
+            Serial.print("qqqq-");
+            Serial.println(receivedDataLength_);
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool Nrf24DcClient::receiveStartSessionTag(int16_t timeout)
+{
+    if (timeout == -1)
+        timeout = this->sessionTimeout_;
+
+    auto recvStartTime = millis();
+
+    while ((millis() - recvStartTime) <= timeout)
+    {
+        if (driver.available())
+        {
+            uint8_t rLen = driver.getDynamicPayloadSize();
+            driver.read(buffer_, rLen);
+
+            if (rLen == 2 && strncmp((char*)buffer_, "S", 1) == 0)
+            {
+                return true;
+            }
+        }
+    }
+
+    return false;
 }
 
 int8_t Nrf24DcClient::bytePos(uint8_t searchedByte, uint8_t * data, uint8_t len)
@@ -112,7 +162,25 @@ int8_t Nrf24DcClient::bytePos(uint8_t searchedByte, uint8_t * data, uint8_t len)
     return pos;
 }
 
-int Nrf24DcClient::listenBroadcast()
+void Nrf24DcClient::prepareSesionBuffers_()
+{
+    memset(receivedData_, 0, 32);
+    receivedDataLength_ = 0;
+}
+
+int8_t Nrf24DcClient::getReceivedData(void * buffer, int8_t maxLen)
+{
+    if (maxLen > receivedDataLength_)
+        maxLen = receivedDataLength_;
+    Serial.print("len = ");
+    Serial.println(maxLen);
+    if (buffer)
+        memcpy(buffer, receivedData_, maxLen);
+
+    return maxLen;
+}
+
+uint8_t Nrf24DcClient::listenBroadcast()
 {
     if (!isBroadcastMode_)
     {
@@ -138,7 +206,7 @@ int Nrf24DcClient::listenBroadcast()
     {
         receivedPacketSize = driver.getDynamicPayloadSize();
         driver.read(buffer_, 32);
-        
+
         Serial.print(F(" received packet "));
         Serial.println(receivedPacketSize);
     }
@@ -171,13 +239,9 @@ int Nrf24DcClient::listenBroadcast()
                     driver.stopListening();
                     isBroadcastMode_ = false;
 
-                    for (int j = 1; j < 301; ++j)
-                    {
-                        setDeviceId(j);
-                        cmdArray_[i]->run(String(parametr));
-                    }
+                    cmdArray_[i]->run(String(parametr));
 
-                    break;
+                    return cmdArray_[i]->returnCode();
                 }
         }
     }
@@ -189,14 +253,23 @@ bool Nrf24DcClient::startSession()
 {
     isBroadcastMode_ = false;
     driver.setAutoAck(true);
-
     driver.setChannel(workChannel_);
-
+    prepareSesionBuffers_();
     return true;
 }
 
+// Putting buffer with data for sending to server
+// during communication session
+// @parametrs buffer - pointer to the source buffer
+//               len - size of source buffer
 
+void Nrf24DcClient::putDataForSend(void * buffer, int8_t len)
+{
+    dataToSendLength_ = len;
 
+    if (dataToSendLength_ > 32)
+        dataToSendLength_ = 32;
 
-
+    memcpy(dataToSend_, buffer, dataToSendLength_);
+}
 

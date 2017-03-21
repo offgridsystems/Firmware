@@ -10,7 +10,7 @@ extern StartSessionCmd ssCmd;
 
 bool initDcClient(Nrf24DcClient &client) 
 {
-    Serial.print(F("Init nrf driver - "));
+    Serial.print(F("Init nrf24 driver - "));
     //Serial.flush();
     Serial.println(client.init());
     client.driver.setAddressWidth(5);
@@ -25,9 +25,8 @@ bool initDcClient(Nrf24DcClient &client)
     client.setDeviceId(0xc7);
     client.setSessionTimeout(3000);
 
-    //client.addCommand(&ssCmd);
-    Serial.print(F("size of command "));
-    Serial.println(client.addCommand(&ssCmd));
+    client.addCommand(&ssCmd);
+    client.putDataForSend("hello world", 11);
 }
 
 #endif // ! INITNRF24DCCLIENT_H

@@ -4,12 +4,14 @@
 #include "AbstractClientCommand.h"
 #include "Nrf24DcClient.h"
 
+//#define DC_SSCMD_RECEIVING_TIMEOUT
+
 class StartSessionCmd :
     public AbstractClientCommand
 {
 public:
     StartSessionCmd(Nrf24DcClient* client)
-        : AbstractClientCommand(client, "ssch")
+        : AbstractClientCommand(client, "ssch", DC_START_SESSION)
     {
     }
 
@@ -24,9 +26,6 @@ public:
             client_->setWorkChannel(ch);
         }
 
-        uint8_t buf[33] = { 0 };
-        uint8_t rLen;
-
         if (!client_->startSession())
         {
             Serial.println(F("Start session error"));
@@ -35,33 +34,9 @@ public:
 
         client_->driver.openReadingPipe(1, client_->clientAddress());
         client_->driver.startListening();
-        //driver.printRegisters();
 
-        auto recvStartTime = millis();
-        bool isRecvData = false;
-        rLen = 32;
 
-        //driver.printDetails();
-        while ((millis() - recvStartTime) <= client_->sessionTimeout())
-        {
-            //driver.printRegisters();
-            if (client_->driver.available())
-            {
-                rLen = client_->driver.getDynamicPayloadSize();
-                client_->driver.read(buf, rLen);
-                //Serial.print("Received msg ");
-                //Serial.println(rLen);
-                //Serial.println((char*) buf);
-
-                if (rLen == 2 && strncmp((char*)buf, "S", 1) == 0)
-                {
-                    isRecvData = true;
-                    break;
-                }
-            }
-        }
-
-        if (!isRecvData)
+        if (!client_->receiveStartSessionTag())
         {
             Serial.println(F("Start not received"));
             return false;
@@ -71,28 +46,18 @@ public:
         client_->driver.flush_tx();
         client_->driver.openWritingPipe(client_->clientAddress());
         //driver.printDetails();
-        if (!client_->driver.write("12345678909876543212345678909871", 32))
+
+        if (!client_->sendDataToServer())
         {
             Serial.println(F("error send packet"));
             return false;
         }
 
         client_->driver.txStandBy();
-        isRecvData = false;
 
-        rLen = 32;
         client_->driver.openReadingPipe(1, client_->clientAddress());
         client_->driver.startListening();
-        while ((millis() - recvStartTime) <= client_->sessionTimeout())
-        {
-            if (client_->driver.available())
-            {
-                isRecvData = true;
-                client_->driver.read(buf, 32);
-                rLen = client_->driver.getDynamicPayloadSize();
-                break;
-            }
-        }
+        bool isRecvData = client_->receiveDataFromServer();
         client_->driver.stopListening();
 
         return isRecvData;

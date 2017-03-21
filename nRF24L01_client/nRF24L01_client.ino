@@ -33,86 +33,28 @@ void setup() {
     Serial.println(freeRam());
 
 }
-/*
-bool startSession()
-{
-    if (!client.startSession())
+
+void loop() {
+    uint8_t res = client.listenBroadcast();
+    if (res != 0x00)
     {
-        Serial.println("Start session error");
-        return false;
-    }
-
-    driver.openReadingPipe(1, client.clientAddress_);
-    driver.startListening();
-    //driver.printRegisters();
-
-    auto recvStartTime = millis();
-    bool isRecvData = false;
-    rLen = 32;
-
-    //driver.printDetails();
-    while ((millis() - recvStartTime) <= sessionTimeout)
-    {
-        //driver.printRegisters();
-        if (driver.available())
+        Serial.print("Command code : ");
+        Serial.println(res);
+        if (client.getReceivedData(nullptr, 32)) 
         {
-            rLen = driver.getDynamicPayloadSize();
-            driver.read(buf, rLen);
-            //Serial.print("Received msg ");
-            //Serial.println(rLen);
-            //Serial.println((char*) buf);
-
-            if (rLen == 2 && strncmp((char*)buf, "S", 1) == 0)
+            uint8_t buf[32];
+            int8_t len = client.getReceivedData(buf, 32);
+            Serial.println("Received data:");
+            Serial.print("Size - ");
+            Serial.print(len);
+            Serial.println(" bytes");
+            for (int i = 0; i < len; ++i)
             {
-                isRecvData = true;
-                break;
+                Serial.print(buf[i], HEX);
+                Serial.print("(");
+                Serial.print((char)buf[i]);
+                Serial.print("), ");
             }
         }
     }
-
-    if (!isRecvData)
-    {
-        Serial.println("Start not received");
-        return false;
-    }
-    driver.stopListening();
-
-    driver.flush_tx();
-    driver.openWritingPipe(client.clientAddress_);
-    //driver.printDetails();
-    if (!driver.write("12345678909876543212345678909871", 32))
-    {
-        Serial.println("error send packet");
-        return false;
-    }
-
-    driver.txStandBy();
-    isRecvData = false;
-
-    rLen = 32;
-    driver.openReadingPipe(1, client.clientAddress_);
-    driver.startListening();
-    while ((millis() - recvStartTime) <= sessionTimeout)
-    {
-        if (driver.available())
-        {
-            isRecvData = true;
-            driver.read(buf, 32);
-            rLen = driver.getDynamicPayloadSize();
-            break;
-        }
-    }
-    driver.stopListening();
-
-    return isRecvData;
-
-}
-*/
-void loop() {
-    // put your main code here, to run repeatedly:
-    //driver.setModeRx();
-
-    client.listenBroadcast();
-    //delay(10);
-    //Serial.println(freeRam());
 }

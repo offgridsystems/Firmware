@@ -7,16 +7,17 @@ class Nrf24DcClient;
 class AbstractClientCommand
 {
 public:
-    AbstractClientCommand(Nrf24DcClient *client, String commandName)
+    AbstractClientCommand(Nrf24DcClient *client, String commandName, uint8_t returnCode)
         : name_(commandName)
         , client_(client)
+        , returnCode_(returnCode)
     {
     }
 
     virtual ~AbstractClientCommand() = default;
     
     virtual bool run(String commandParametr) = 0;
-    virtual bool isCommand(String commandName)
+    bool isCommand(String commandName)
     {
         //Serial.print(F("isCommand "));
         //Serial.println(commandName);
@@ -25,9 +26,20 @@ public:
         return commandName == name_;
     }
 
+    String name() 
+    {
+        return name_;
+    }
+
+    uint8_t returnCode()
+    {
+        return returnCode_;
+    }
+
 protected:
     String name_;
     Nrf24DcClient *client_;
+    uint8_t returnCode_;
 };
 
 #endif

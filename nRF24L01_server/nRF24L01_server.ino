@@ -24,9 +24,13 @@ void setup() {
 
     server.setWorkChannel(10);
     server.setBroadcastChannel(120);
-    server.setNetworkAddr(NETWORK_ADDR);
-    //server.addDevice(0xc7);
-    server.addDeviceByRange(1, 300);
+    server.setNetworkAddr(NETWORK_ADDR); 
+
+    // client ID that will be handled by server
+    server.addDevice(0xc7);   
+
+    server.putSendedData(0, "123", 4); // this data will be sended during communication session
+    //server.addDeviceByRange(1, 300);
 }
 
 void loop() {
@@ -37,10 +41,26 @@ void loop() {
     int numberOfHandledDevices = server.startSession();
     yield();
     uint32_t finishTime = millis() - startSingleSessionTime;
-    Serial.print("Session finished ");
-    Serial.println(finishTime);
+    Serial.print("Session duration ");
+    Serial.print(finishTime);
+    Serial.println("mSec");
     Serial.print("Number of handled devices = ");
     Serial.println(numberOfHandledDevices);
+
+    if (numberOfHandledDevices)
+    {
+        for (int i = 0; i < server.handledDeviceCount(); ++i)
+        {
+            Serial.print("Device id - 0x");
+            Serial.println(server.deviceIdAt(0), HEX);
+            Serial.println("Received data:");
+
+            for (int j = 0; j < server.lenfgthOfReceivedBufferByIndex(i); ++j)
+                Serial.print((char)*(server.receivedDataByIndex(i)+j));
+
+            Serial.println("\n--------------------------------------");
+        }
+    }
 
     delay(5000);
     yield();
