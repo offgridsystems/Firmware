@@ -1,3 +1,4 @@
+
 #ifndef NRF24_DC_SERVER_H
 #define NRF24_DC_SERVER_H
 #include <RF24/RF24.h>
@@ -43,47 +44,48 @@ class Nrf24DcServer
     // This means that boradcast channel and NoACK mode will be setted
     bool setBroadcastMode();
 
-    // Turn on single device mode on.
+    // Turn on single client mode on.
     // This means that work channel and AuroACK mode will be setted
-    // @parameter device_id - id of device which will communicate with server
-    bool setSingleDeviceMode(int16_t device_id);
+    // @parameter clientId - id of client which will communicate with server
+    bool setSingleClientMode(int16_t clientId);
     
-    // Returns number of devices which server will handle
-    int handledDeviceCount();
+    // Returns number of handled clients added by addClient() or addClientByRange()
+    int handledClientsCount();
 
-    // Adds device which server will handle
-    // @parametr deviceId - id of device 
-    bool addDevice(int16_t deviceId);
+    // Adds client which server will handle
+    // @parametr clientId - id of client
+    bool addClient(int16_t clientId);
 
-    // Adds devices which server will handle by range
-    // @parametr from - id of first device 
-    //          count - number of devices
-    // @Example : addDeviceByRange(5,4);
-    // Adds 4 device with id 5, 6, 7, 8;
-    bool addDeviceByRange(int16_t from, int16_t count);
+    // Adds clients which server will handle by range
+    // @parametr from - id of first client
+    //          count - number of clients
+    // @Example : addClientByRange(5,4);
+    // Adds 4 client with id 5, 6, 7, 8;
+    bool addClientByRange(int16_t from, int16_t count);
 
-    // Remove device from handled list,
-    // and this device won't be handled by server
-    // @parameter deviceId - id of device
-    bool removeDevice(int16_t deviceId);
+    // Remove client from handled list,
+    // and this client won't be handled by server
+    // @parameter clientId - id of device
+    // if clientId == -1 all clients will be deleted from handled list
+    bool removeClient(int16_t clientId);
 
-    // Remove devices from handled list,
-    // and these device won't be handled by server
-    // @parameter from - first id of device
-    //           count - number of diveces
-    // @Example : removeDeviceByRange(5,4);
-    // Removes 4 device with id 5, 6, 7, 8;
-    bool removeDeviceByRange(int16_t from, int16_t count);
+    // Remove clients from handled list,
+    // and these clients won't be handled by server
+    // @parameter from - first id of client
+    //           count - number of clients
+    // @Example : removeClientsByRange(5,4);
+    // Removes 4 client with id 5, 6, 7, 8;
+    bool removeClientsByRange(int16_t from, int16_t count);
 
-    // Returns ID of device by index from internal list of handled devices
-    int16_t deviceIdAt(int16_t index);
+    // Returns ID of client by index from internal list of handled clients
+    int16_t clientIdAt(int16_t index);
 
-    // Returns index of device by id from internal list of handled devices
-    int16_t deviceIndexById(int16_t id);
+    // Returns index of client by id from internal list of handled clients
+    int16_t clientIndexById(int16_t id);
 
     /**
-     * returns true if device in array for handling
-     * @parameters <id> id of device
+     * returns true if client in array for handling
+     * @parameters <id> id of client
      */
     bool isDeviceHandled(int16_t id);
 
@@ -103,7 +105,15 @@ class Nrf24DcServer
     uint8_t  lenfgthOfReceivedBufferByIndex(uint16_t idx);
     uint8_t  lenfgthOfReceivedBufferById(uint16_t id);
 
-    void putSendedData(uint16_t idx, const void *data, uint8_t len);
+    // copy data from <data> to internal buffer 
+    // this data will be sended during communication session
+    // @parametrs:
+    //    idx - index of internal buffer
+    //   data - pointer to the buffer
+    //    len - size of buffer
+    // @note: you can get index for client by calling 
+    //         deviceIndexById(id) - where id is id of client
+    void putSendedData(int16_t idx, const void *data, uint8_t len);
 
 
   private:

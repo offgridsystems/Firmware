@@ -53,7 +53,7 @@ uint64_t  Nrf24DcServer::networkAddr()
   return networkAddress_;
 }
 
-int Nrf24DcServer::handledDeviceCount()
+int Nrf24DcServer::handledClientsCount()
 {
   return currnetDeviceCount_;
 }
@@ -90,7 +90,7 @@ uint16_t Nrf24DcServer::readingTimeout()
     return readingTimeout_;
 }
 
-bool Nrf24DcServer::addDevice(int16_t deviceId)
+bool Nrf24DcServer::addClient(int16_t deviceId)
 {
 	if (currnetDeviceCount_ < DC_MAX_CLIENT_NUMBER && !isDeviceHandled(deviceId) )
   {
@@ -103,7 +103,7 @@ bool Nrf24DcServer::addDevice(int16_t deviceId)
     return false;
 }
 
-bool Nrf24DcServer::addDeviceByRange(int16_t from, int16_t count)
+bool Nrf24DcServer::addClientByRange(int16_t from, int16_t count)
 {
 	//Serial.println(count);
 	if ( (currnetDeviceCount_ + count) <= DC_MAX_CLIENT_NUMBER)
@@ -111,7 +111,7 @@ bool Nrf24DcServer::addDeviceByRange(int16_t from, int16_t count)
 		for (int i = 0; i < count; ++i)
 		{
 			//Serial.println(from+i);
-			addDevice(from+i);
+			addClient(from+i);
 		}
     return true;
 	}
@@ -120,13 +120,13 @@ bool Nrf24DcServer::addDeviceByRange(int16_t from, int16_t count)
   
 }
 
-bool Nrf24DcServer::removeDevice(int16_t deviceId)
+bool Nrf24DcServer::removeClient(int16_t clientId)
 {
   int16_t idPos = -1;
   
   for(int i = 0; i < currnetDeviceCount_; ++i)
   {
-    if ( handledDevicesId_[i] == deviceId )
+    if ( handledDevicesId_[i] == clientId)
     {
       idPos = i;
       break;
@@ -147,12 +147,12 @@ bool Nrf24DcServer::removeDevice(int16_t deviceId)
   return true;
 }
 
-bool Nrf24DcServer::removeDeviceByRange(int16_t from, int16_t count)
+bool Nrf24DcServer::removeClientsByRange(int16_t from, int16_t count)
 {
   int16_t last = from+count;
   for (int i = from; i < last; ++i)
   {
-    removeDevice(i);
+    removeClient(i);
   }
 
   return true;
@@ -168,7 +168,7 @@ bool Nrf24DcServer::setBroadcastMode()
   return true;
 }
 
-bool Nrf24DcServer::setSingleDeviceMode(int16_t device_id)
+bool Nrf24DcServer::setSingleClientMode(int16_t device_id)
 {
   
   long long clientAddress = networkAddress_ + device_id;
@@ -178,7 +178,7 @@ bool Nrf24DcServer::setSingleDeviceMode(int16_t device_id)
   return true;  
 }
 
-int16_t Nrf24DcServer::deviceIdAt(int16_t index)
+int16_t Nrf24DcServer::clientIdAt(int16_t index)
 {
   if (index >=0 && index < currnetDeviceCount_)
     return handledDevicesId_[index];
@@ -186,7 +186,7 @@ int16_t Nrf24DcServer::deviceIdAt(int16_t index)
     return -1;
 }
 
-int16_t Nrf24DcServer::deviceIndexById(int16_t id)
+int16_t Nrf24DcServer::clientIndexById(int16_t id)
 {
     uint16_t index = -1;
     for (int i = 0; i < currnetDeviceCount_; ++i)
@@ -231,7 +231,7 @@ int16_t Nrf24DcServer::startSession()
     driver_.txStandBy();
 
     uint64_t startSessionTime = millis();
-    int16_t deviceCount = handledDeviceCount();
+    int16_t deviceCount = handledClientsCount();
     uint8_t rLen;
     Serial.println(deviceCount);
 
@@ -262,9 +262,9 @@ int16_t Nrf24DcServer::startSession()
         driver_.stopListening();
 
         driver_.flush_tx();
-        uint64_t clientAddr = deviceIdAt(i) + networkAddr();
+        uint64_t clientAddr = clientIdAt(i) + networkAddr();
 
-        setSingleDeviceMode(clientAddr);
+        setSingleClientMode(clientAddr);
         driver_.openWritingPipe(clientAddr);
 
         for (int k = 0; k < 1; ++k)
@@ -333,7 +333,7 @@ int16_t Nrf24DcServer::startSession()
 
 uint8_t * Nrf24DcServer::receivedDataById(uint16_t id)
 {
-    int16_t idx = deviceIndexById(id);
+    int16_t idx = clientIndexById(id);
 
     if (idx == -1)
         return nullptr;
@@ -359,7 +359,7 @@ uint8_t Nrf24DcServer::lenfgthOfReceivedBufferByIndex(uint16_t idx)
 
 uint8_t Nrf24DcServer::lenfgthOfReceivedBufferById(uint16_t id)
 {
-    int16_t idx = deviceIndexById(id);
+    int16_t idx = clientIndexById(id);
 
     if (idx == -1)
         return -1;
@@ -367,7 +367,7 @@ uint8_t Nrf24DcServer::lenfgthOfReceivedBufferById(uint16_t id)
         return lenfgthOfReceivedBufferByIndex(idx);
 }
 
-void Nrf24DcServer::putSendedData(uint16_t idx, const void * data, uint8_t len)
+void Nrf24DcServer::putSendedData(int16_t idx, const void * data, uint8_t len)
 {
     if (idx >= currnetDeviceCount_ )
         return;
@@ -376,7 +376,19 @@ void Nrf24DcServer::putSendedData(uint16_t idx, const void * data, uint8_t len)
         if (len > DC_MAX_SIZE_OF_DATA_FOR_SENDING)
             len = DC_MAX_SIZE_OF_DATA_FOR_SENDING;
 
-        memcpy(dataBufferToClients_[idx], data, len);
+        if (idx == -1)
+        {
+            for (int i = 0; i < handledDevicesCount_; ++i)
+            {
+                memset(dataBufferToClients_[i], 0, DC_MAX_SIZE_OF_DATA_FOR_SENDING);
+                memcpy(dataBufferToClients_[i], data, len);
+            }
+        }
+        else
+        {
+            memset(dataBufferToClients_[idx], 0, DC_MAX_SIZE_OF_DATA_FOR_SENDING);
+            memcpy(dataBufferToClients_[idx], data, len);
+        }
     }
 }
 

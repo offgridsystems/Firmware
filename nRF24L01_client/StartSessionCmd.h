@@ -36,7 +36,7 @@ public:
         client_->driver.startListening();
 
 
-        if (!client_->receiveStartSessionTag())
+        if (!client_->receiveStartSessionTag(3000))
         {
             Serial.println(F("Start not received"));
             return false;

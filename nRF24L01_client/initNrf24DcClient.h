@@ -6,27 +6,30 @@
 #include "Nrf24DcClient.h"
 #include "StartSessionCmd.h"
 
-extern StartSessionCmd ssCmd;
-
 bool initDcClient(Nrf24DcClient &client) 
 {
     Serial.print(F("Init nrf24 driver - "));
     //Serial.flush();
-    Serial.println(client.init());
-    client.driver.setAddressWidth(5);
-    client.driver.setRetries(1, 15);
-    client.driver.setCRCLength(RF24_CRC_8);
-    client.driver.enableDynamicPayloads();
-    client.driver.setDataRate(RF24_1MBPS);
+    Serial.println(client.init());           // initialize client and driver
+    client.driver.setAddressWidth(5);        // must be always 5
+    client.driver.setRetries(1, 15);         // set 15 retries and 500uSec between retransmition in autoACK mode.
+    client.driver.setCRCLength(RF24_CRC_8);  // number of bits of CRC, can be RF24_CRC_8 or RF24_CRC_16
+    client.driver.enableDynamicPayloads();   // alway use this options
+    client.driver.setDataRate(RF24_1MBPS);   // the communication speed (RF24_250KBPS, RF24_1MBPS, RF24_2MBPS)
 
-    client.setWorkChannel(10);
-    client.setBroadcastChannel(120);
-    client.setNetworkAddr(NETWORK_ADDR);
-    client.setDeviceId(0xc7);
-    client.setSessionTimeout(3000);
+    client.setWorkChannel(10);               // number of frequency channel for dirrect communicatin between server and client
+    client.setBroadcastChannel(120);         // number of frequency channel for receiving commands from server
+    client.setNetworkAddr(NETWORK_ADDR);     // Set network address, 3 bytes
+    client.setDeviceId(0xc8);                // unique in same network ID
+    client.setSessionTimeout(3000);          // time while client can comms with server in one session, after this time client aborts session
 
-    client.addCommand(&ssCmd);
-    client.putDataForSend("hello world", 11);
+    // Adds handler for communication command
+    // You also can create and add own commands, for help - read commets in AbstarctClientCommand.h
+    client.addCommand( new StartSessionCmd (&client) );
+
+    // copy data for sending to the server during communication session
+    // you can call this function anywhere
+    client.putDataForSend((void*)"gkjfdghdfjhgjdfhgkjdsfhaljdfgaljgg", 32);
 }
 
 #endif // ! INITNRF24DCCLIENT_H

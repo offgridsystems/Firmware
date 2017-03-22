@@ -30,6 +30,7 @@ public:
     // @parametrs buffer - pointer to the destination buffer
     //            maxLen - size of destination buffer
     // Return size of received data
+    // if buffer = nullptr then function returns only size of received data
     int8_t getReceivedData(void* buffer, int8_t maxLen);
 
     // Listen broadast chanel to commands from server
