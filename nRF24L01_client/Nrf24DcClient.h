@@ -6,6 +6,7 @@
 #include "AbstractClientCommand.h"
 
 #define DC_START_SESSION 0x01
+#define DC_LOOKUP 0x02
 #define DC_NUMBER_OF_COMMANDS 2
 
 //class AbstractClientCommand;

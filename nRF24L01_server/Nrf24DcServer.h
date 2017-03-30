@@ -18,6 +18,14 @@ class Nrf24DcServer
   public:
     Nrf24DcServer(rfDriver& drv);
 
+    // Thsi function id used for seeking clients
+    // returns number of found clients
+    // @parameter timeout - timeout for sekking
+    // @note:
+    // this function clears list of handled device
+    // and store ids of found clients
+    uint16_t lookForClient(int timeout);
+
     // Initializes object and driver
     bool init();
 
@@ -97,7 +105,9 @@ class Nrf24DcServer
     uint16_t readingTimeout();
 
     bool sendRequestForSession();
+    bool sendRequestForLookup();
 
+    bool sendStartSesionTag(uint8_t times = 1);
     int16_t startSession();
 
     uint8_t* receivedDataById(uint16_t id);
@@ -122,7 +132,7 @@ class Nrf24DcServer
 	uint64_t serverAddress_;
     uint8_t broadcastChannel_;
     uint8_t workChannel_;
-    int16_t handledDevicesCount_;
+    //int16_t handledDevicesCount_;
     
     int16_t handledDevicesId_[DC_MAX_CLIENT_NUMBER];
     int8_t commsStatus_[DC_MAX_CLIENT_NUMBER];
@@ -138,7 +148,7 @@ class Nrf24DcServer
     uint16_t readingTimeout_;
 
     void prepareArrays();
-    void sendBroadcastRequestCommand();
+    bool sendBroadcastRequestCommand(String command);
   
 };
 

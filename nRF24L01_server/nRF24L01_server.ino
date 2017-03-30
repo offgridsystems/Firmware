@@ -19,7 +19,7 @@ until session timeout
 #include <RF24/RF24.h>  //standard arduino library, you can install it on library manager
 #include "Nrf24DcServer.h"
 
-RF24 driver(D2, D8);           // init driver D2 - CE pin, D8 CS pin
+RF24 driver(9, 10);           // init driver D2 - CE pin, D8 CS pin
 Nrf24DcServer server(driver);
 
 #define NETWORK_ADDR 0xC7C7C7LL
@@ -46,8 +46,8 @@ void setup() {
     server.setNetworkAddr(NETWORK_ADDR); // Set network address, 3 bytes
 
     // manual adding clients ID that will be handled by server
-    server.addClient(0xc7);
-    server.addClient(0xc8);
+    //server.addClient(0xc7);
+    //server.addClient(0xc8);
 
     //server.addDeviceByRange(1, 300);
 
@@ -62,10 +62,25 @@ void setup() {
     // @note: you can get index for client by calling 
     //         deviceIndexById(id) - where id is id of client
     server.putSendedData(-1, "123", 4); 
+
+
 }
 
 void loop() {
-    Serial.println("Sending to broadcast request for data");
+
+    Serial.println("Start loking for clients");
+    int n = server.lookForClient(4000);
+    Serial.print("Found ");
+    Serial.print(n);
+    Serial.println(" Devices");
+    for (int i = 0; i < server.handledClientsCount(); ++i)
+    {
+        Serial.println(server.clientIdAt(i), HEX);
+    }
+
+    return;
+
+    Serial.println("Sending to broadcast request for data ");
     uint64_t  startSingleSessionTime = millis();
 
     // for starting communication sessions between server and client call server.startSession()
