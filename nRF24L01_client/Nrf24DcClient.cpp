@@ -1,7 +1,10 @@
 #include "Nrf24DcClient.h"
+#include "RamMonitor.h"
 //#include <RH_NRF24.h>
 
-int freeRam();
+//int freeRam();
+
+extern RamMonitor mon;
 
 Nrf24DcClient::Nrf24DcClient(rfDriver& drv)
     : driver(drv)
@@ -9,6 +12,10 @@ Nrf24DcClient::Nrf24DcClient(rfDriver& drv)
 {
     isBroadcastMode_ = false;
     cmdCount_ = 0;
+    lastKeepaliveTime_ = 0;
+
+    setKeepaliveTimeout(DC_DEFAULT_KEEPALIVE_TIMEOUT);
+    setTimeoutBeforeStartSearchingNetwork(500);
 }
 
 bool Nrf24DcClient::init()
@@ -18,12 +25,16 @@ bool Nrf24DcClient::init()
 
 void Nrf24DcClient::setWorkChannel(uint8_t ch)
 {
+    //Serial.print("Setted new channel ");
+    //Serial.println(ch);
+
     workChannel_ = ch;
 }
 
 void Nrf24DcClient::setBroadcastChannel(uint8_t ch)
 {
-    broadcastChannel_ = ch;
+    //broadcastChannel_ = ch;
+    workChannel_ = ch;
 }
 
 uint8_t Nrf24DcClient::workChannel()
@@ -33,7 +44,8 @@ uint8_t Nrf24DcClient::workChannel()
 
 uint8_t Nrf24DcClient::broadcastChannel()
 {
-    return broadcastChannel_;
+    //return broadcastChannel_;
+    return workChannel_;
 }
 
 void Nrf24DcClient::setNetworkAddr(uint64_t nAddr)
@@ -79,6 +91,26 @@ void Nrf24DcClient::setSessionTimeout(int16_t timeout)
 int16_t Nrf24DcClient::sessionTimeout()
 {
     return sessionTimeout_;
+}
+
+void Nrf24DcClient::setKeepaliveTimeout(int16_t timeout)
+{
+    keepAliveTimeout_ = timeout;
+}
+
+int16_t Nrf24DcClient::keepalveTimeout()
+{
+    return keepAliveTimeout_;
+}
+
+void Nrf24DcClient::setTimeoutBeforeStartSearchingNetwork(int16_t timeout_mSec)
+{
+    timeoutBeforeStartSearchingNetwork_ = timeout_mSec;
+}
+
+int16_t Nrf24DcClient::timeoutBeforeStartSearchingNetwork()
+{
+    return timeoutBeforeStartSearchingNetwork_;
 }
 
 bool Nrf24DcClient::addCommand(AbstractClientCommand * cmd)
@@ -144,6 +176,51 @@ bool Nrf24DcClient::receiveStartSessionTag(int16_t timeout)
     return false;
 }
 
+void Nrf24DcClient::clientLoop()
+{
+    keepServer();
+}
+
+void Nrf24DcClient::keepServer()
+{
+    if (lastKeepaliveTime_ == 0)
+        lastKeepaliveTime_ = millis();
+
+    uint32_t currentTime = millis();
+
+    if ((currentTime - lastKeepaliveTime_) > (timeoutBeforeStartSearchingNetwork()*1.2))
+    {
+        Serial.println("Keepalive timer overflow. Starting to look for server.");
+
+        //scanChannels();
+        //for (int ch = 0; ch < DC_CHANNEL_COUNT; ++ch)
+        //    Serial.print(channelsActivity_[ch]);
+
+        for (int ch = 0; ch < DC_CHANNEL_COUNT; ++ch)
+        {
+            setWorkChannel(ch);
+            isBroadcastMode_ = false;
+            if (waitForKeepaliveMsg(keepAliveTimeout_*1.2))
+            {
+                //setWorkChannel(ch);
+                Serial.print("Found new server at ");
+                Serial.println(ch);
+                break;
+            }
+
+            yield();
+        }
+
+    }
+    
+}
+
+void Nrf24DcClient::resetKeepAliveTimer()
+{
+    lastKeepaliveTime_ = millis();
+}
+
+
 int8_t Nrf24DcClient::bytePos(uint8_t searchedByte, uint8_t * data, uint8_t len)
 {
     int8_t pos = -1;
@@ -164,6 +241,53 @@ void Nrf24DcClient::prepareSesionBuffers_()
     receivedDataLength_ = 0;
 }
 
+bool Nrf24DcClient::isChannelBussy(uint8_t channel)
+{
+    driver.setChannel(channel);
+    driver.startListening();
+    delayMicroseconds(300);
+    bool res = driver.testRPD();
+    driver.stopListening();
+    return res;
+}
+
+void Nrf24DcClient::scanChannels()
+{
+    memset(channelsActivity_, 0, DC_CHANNEL_COUNT);
+
+    for (int rep = 0; rep < DC_REPS_COUNT; ++rep)
+    {
+        for (int ch = 0; ch < DC_CHANNEL_COUNT; ++ch)
+        {
+            if (isChannelBussy(ch))
+                ++channelsActivity_[ch];
+
+            yield();
+        }
+    }
+}
+
+bool Nrf24DcClient::waitForKeepaliveMsg(int16_t timeout)
+{
+    uint32_t startTime = millis();
+
+    
+    while ((millis() - startTime) <= timeout)
+    {
+        uint8_t res = listenBroadcast();
+
+        if (res == DC_KEEPALIVE)
+        {
+            return true;
+        }
+    }
+
+    //driver.printDetails();
+
+
+    return false;
+}
+
 int8_t Nrf24DcClient::getReceivedData(void * buffer, int8_t maxLen)
 {
     if (maxLen > receivedDataLength_)
@@ -180,11 +304,13 @@ uint8_t Nrf24DcClient::listenBroadcast()
 {
     if (!isBroadcastMode_)
     {
-        Serial.println(F("Set broadcast mode"));
+        //Serial.print(F("Set broadcast mode "));
+        //Serial.println(mon.free());
+        //Serial.println(broadcastChannel());
 
         driver.stopListening();
 
-        driver.setChannel(broadcastChannel_);
+        driver.setChannel(broadcastChannel());
         driver.setAutoAck(false);
         driver.openReadingPipe(1, serverAddress_);
         driver.startListening();
@@ -196,10 +322,11 @@ uint8_t Nrf24DcClient::listenBroadcast()
     if (driver.available())
     {
         receivedPacketSize = driver.getDynamicPayloadSize();
+        memset(buffer_, 0, 32);
         driver.read(buffer_, 32);
 
         //Serial.print(F(" received packet "));
-        //Serial.println(receivedPacketSize);
+        //Serial.println((char*)buffer_);
     }
 
     if (receivedPacketSize >= 1)
@@ -231,6 +358,7 @@ uint8_t Nrf24DcClient::listenBroadcast()
                     isBroadcastMode_ = false;
 
                     cmdArray_[i]->run(String(parametr));
+                    resetKeepAliveTimer();
 
                     return cmdArray_[i]->returnCode();
                 }
@@ -244,7 +372,7 @@ bool Nrf24DcClient::startSession()
 {
     isBroadcastMode_ = false;
     driver.setAutoAck(true);
-    driver.setChannel(workChannel_);
+    driver.setChannel(workChannel());
     prepareSesionBuffers_();
     return true;
 }

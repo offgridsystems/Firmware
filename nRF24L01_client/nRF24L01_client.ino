@@ -2,6 +2,7 @@
 #include "Nrf24DcClient.h"
 //#include <printf.h>
 #include "initNrf24DcClient.h"
+#include "RamMonitor.h"
 
 #define NETWORK_ADDR 0xC7C7C7LL
 
@@ -12,19 +13,29 @@ Nrf24DcClient client(driver);
 uint8_t buf[33] = { 0 };
 uint8_t rLen;
 
-
+RamMonitor mon;
 void setup() {
+    delay(4000);
 
     Serial.begin(9600);
     initDcClient(client);   // initalize Nrf24DcClient
 }
 
 void loop() {
-
+    
+    ////Serial.println("Send");
+    //driver.stopListening();
+    //driver.openWritingPipe(0xC7C7C7FFFFLL);
+    //driver.setChannel(36);
+    //driver.setAutoAck(false);
+    //driver.write("1234", 4);
+    ////delay(2000);
+    //return;
+    //client.clientLoop();
     uint8_t res = client.listenBroadcast();  // returns not 0 if any command was received from server
 
     // 
-    if (res != 0x00)
+    if (res != 0x00 && res != DC_KEEPALIVE)
     {
         Serial.print("Command code : ");
         Serial.println(res);

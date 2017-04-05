@@ -85,11 +85,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AbstractClientCommand.h" />
+    <ClInclude Include="KeepaliveCmd.h" />
     <ClInclude Include="initNrf24DcClient.h" />
     <ClInclude Include="LookupCmd.h" />
     <ClInclude Include="Nrf24DcClient.h">
       <FileType>CppCode</FileType>
     </ClInclude>
+    <ClInclude Include="RamMonitor.h" />
     <ClInclude Include="StartSessionCmd.h" />
     <ClInclude Include="__vm\.nRF24L01_client.vsarduino.h" />
   </ItemGroup>

@@ -33,6 +33,15 @@
     <ClInclude Include="initNrf24DcClient.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="KeepaliveCmd.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LookupCmd.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RamMonitor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Nrf24DcClient.cpp">

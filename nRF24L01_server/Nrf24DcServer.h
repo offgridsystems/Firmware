@@ -10,6 +10,9 @@
 
 #define DC_DEFAULT_SESSION_TIMEOUT 3000
 #define DC_DEFAULT_READING_TIMEOUT 3
+#define DC_DEFAULT_KEEPALIVE_TIMEOUT 100
+#define DC_CHANNEL_COUNT 126
+#define DC_REPS_COUNT 20
 
 typedef RF24 rfDriver;
 
@@ -18,16 +21,29 @@ class Nrf24DcServer
   public:
     Nrf24DcServer(rfDriver& drv);
 
+    // Initializes object and driver
+    bool init();
+
     // Thsi function id used for seeking clients
     // returns number of found clients
-    // @parameter timeout - timeout for sekking
+    // @parameter timeout - timeout for sekking in miliSec.
+    //     approximate time for looking for 
+    //     300 clients is 4000mSec
     // @note:
     // this function clears list of handled device
     // and store ids of found clients
     uint16_t lookForClient(int timeout);
 
-    // Initializes object and driver
-    bool init();
+
+    // This function starts communiction session
+    // for receiving data from handled clients
+    // and sending them  prepared data
+    // by function <putSendedData>
+    // returns number of handled client.
+    // for reading received data 
+    // use function <receivedDataByIndex> 
+    //           or <receivedDataById>  
+    int16_t startSession();
 
     // Set number of channel for session communication
     void setWorkChannel(uint8_t ch);
@@ -104,11 +120,13 @@ class Nrf24DcServer
     void setReadingTimeout(uint16_t timeout);
     uint16_t readingTimeout();
 
+    void setKeepAliveTimeout(int16_t timeout);
+    int16_t keepAliveTimeout() const;
+
     bool sendRequestForSession();
     bool sendRequestForLookup();
 
     bool sendStartSesionTag(uint8_t times = 1);
-    int16_t startSession();
 
     uint8_t* receivedDataById(uint16_t id);
     uint8_t* receivedDataByIndex(uint16_t idx);
@@ -125,12 +143,17 @@ class Nrf24DcServer
     //         deviceIndexById(id) - where id is id of client
     void putSendedData(int16_t idx, const void *data, uint8_t len);
 
+    void testChannel();
+
+    void sendKeepAliveMsg();
+
+    void serverLoop();
 
   private:
     rfDriver &driver_;
     uint64_t networkAddress_;
 	uint64_t serverAddress_;
-    uint8_t broadcastChannel_;
+    //uint8_t broadcastChannel_;
     uint8_t workChannel_;
     //int16_t handledDevicesCount_;
     
@@ -139,17 +162,22 @@ class Nrf24DcServer
     uint8_t dataBufferFromClients_[DC_MAX_CLIENT_NUMBER][DC_MAX_SIZE_OF_RECEIVED_DATA];
     uint8_t dataBufferFromClientsSize_[DC_MAX_CLIENT_NUMBER];
     uint8_t dataBufferToClients_[DC_MAX_CLIENT_NUMBER][DC_MAX_SIZE_OF_DATA_FOR_SENDING];
-
+    uint8_t channelsActivity_[DC_CHANNEL_COUNT];
     int16_t currnetDeviceCount_;
     
     uint8_t sendBuffer_[32];
     //uint8_t recvBuffer_[32];
     uint16_t sessionTimeout_;
     uint16_t readingTimeout_;
+    int16_t keepAliveTimeout_;
 
     void prepareArrays();
     bool sendBroadcastRequestCommand(String command);
-  
+    bool isChannelBussy(uint8_t channel);
+    void scanChannels();
+    int16_t lookForFreeChannel();
+    bool isChannelFreeRadius(int8_t channel, int8_t radius);
+
 };
 
 

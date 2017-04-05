@@ -15,7 +15,7 @@ uint16_t Nrf24DcServer::lookForClient(int timeout)
     currnetDeviceCount_ = 0;
     sendRequestForLookup();
     driver_.txStandBy();
-    delay(500);
+    delay(50);
     uint64_t startSessionTime = millis();
 
     for (int id = 1; id < 1024; ++id)
@@ -36,10 +36,9 @@ uint16_t Nrf24DcServer::lookForClient(int timeout)
 
         if (sendStartSesionTag())
         {
-            //Serial.println("--");
+            Serial.println("--");
             addClient(id);
-            //driver_.printDetails();
-            //Serial.println(id);
+            Serial.println(id);
 
 
             if (handledClientsCount() >= DC_MAX_CLIENT_NUMBER)
@@ -227,14 +226,8 @@ bool Nrf24DcServer::setSingleClientMode(int16_t device_id)
 {
 
     //long long clientAddress = networkAddress_ + device_id;
-    //driver_.powerDown();
-    //driver_.powerUp();
-    
-    driver_.stopListening();
-
     driver_.setAutoAck(true);
     driver_.setChannel(workChannel());
-    driver_.openReadingPipe(0, device_id);
 
     return true;
 }
@@ -283,11 +276,12 @@ bool Nrf24DcServer::sendStartSesionTag(uint8_t times)
 {
     for (int k = 0; k < times; ++k)
     {
+        yield();
         if (driver_.write("S", 2))
         {
             return true;
         }
-        yield();
+
     }
 
     return false;
@@ -493,7 +487,7 @@ void Nrf24DcServer::sendKeepAliveMsg()
 
 void Nrf24DcServer::serverLoop()
 {
-    testChannel();
+    //testChannel();
     sendKeepAliveMsg();
 }
 
@@ -585,23 +579,21 @@ void Nrf24DcServer::prepareArrays()
 bool Nrf24DcServer::sendBroadcastRequestCommand(String command)
 {
     driver_.stopListening();
-    //driver_.powerDown();
-    //driver_.powerUp();
 
     if (!setBroadcastMode())
         return false;
 
-    //Serial.println(driver_.getChannel());
+    Serial.println(driver_.getChannel());
 
 //    uint64_t aa = networkAddr();
-    //uint64_t aa = serverAddress_;
-    //uint32_t hb = *(((uint32_t*)&aa));
-    //uint32_t lb = *(((uint32_t*)&aa) + 1);
-    //Serial.print(lb, HEX);
-    //Serial.println(hb, HEX);
+    uint64_t aa = 0xCCAABBFFEELL;
+    uint32_t lb = *((uint32_t*)&aa);
+    for (int i = 0; i < sizeof(serverAddress_); ++i) {
+        Serial.print(lb, HEX);
+        Serial.print(" ");
+    }
 
-
-    //Serial.println(driver_.getDataRate());
+    Serial.println("");
 
     yield();
     driver_.openWritingPipe(serverAddress_);

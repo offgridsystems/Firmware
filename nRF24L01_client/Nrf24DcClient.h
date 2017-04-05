@@ -7,7 +7,11 @@
 
 #define DC_START_SESSION 0x01
 #define DC_LOOKUP 0x02
-#define DC_NUMBER_OF_COMMANDS 2
+#define DC_KEEPALIVE 0x03
+#define DC_NUMBER_OF_COMMANDS 3
+#define DC_CHANNEL_COUNT 126
+#define DC_REPS_COUNT 50
+#define DC_DEFAULT_KEEPALIVE_TIMEOUT 100
 
 //class AbstractClientCommand;
 
@@ -72,10 +76,16 @@ public:
     rfDriver& driver;
 
     // Set session timeout 
-    void setSessionTimeout(int16_t timeout);
+    void setSessionTimeout(int16_t timeout_mSec);
 
     // Returns session timeout 
     int16_t sessionTimeout();
+
+    void setKeepaliveTimeout(int16_t timeout_mSec);
+    int16_t keepalveTimeout();
+
+    void setTimeoutBeforeStartSearchingNetwork(int16_t timeout_mSec);
+    int16_t timeoutBeforeStartSearchingNetwork();
 
     // Add command object for handling commands from server
     bool addCommand(AbstractClientCommand* cmd);
@@ -97,19 +107,29 @@ public:
     //           -1 means sessionTimeout()
     bool receiveStartSessionTag(int16_t timeout = -1);
 
+    void clientLoop();
+
+    void keepServer();
+
+    void resetKeepAliveTimer();
+
 private:
     bool isBroadcastMode_;
     uint64_t serverAddress_;
     uint64_t networkAddress_;
     uint64_t clientAddress_;
     uint16_t clientId;
-    uint8_t broadcastChannel_;
+    //uint8_t broadcastChannel_;
     uint8_t workChannel_;
     uint8_t buffer_[32];
     int8_t bufferLen_;
     int16_t sessionTimeout_;
+    int16_t keepAliveTimeout_;
+    uint32_t lastKeepaliveTime_;
+    int16_t timeoutBeforeStartSearchingNetwork_;
 
     AbstractClientCommand* cmdArray_[DC_NUMBER_OF_COMMANDS];
+    uint8_t channelsActivity_[DC_CHANNEL_COUNT];
     uint8_t cmdCount_;
 
     uint8_t dataToSend_[32];
@@ -119,6 +139,9 @@ private:
 
     int8_t bytePos(uint8_t searchedByte, uint8_t* data, uint8_t len);
     void prepareSesionBuffers_();
+    bool isChannelBussy(uint8_t channel);
+    void scanChannels();
+    bool waitForKeepaliveMsg(int16_t timeout);
 
 };
 

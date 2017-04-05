@@ -26,23 +26,25 @@ Nrf24DcServer server(driver);
 
 int sessionTimeout = 3000;  //in milli seconds
 int readingTimeout = 2;     //in milli seconds
+uint64_t t;
+
 
 void setup() {
     // put your setup code here, to run once:
-
+    delay(4000);
     Serial.begin(9600);
     Serial.print("Init nrf24 driver - ");
     Serial.println(server.init());       // initialize server and driver
 
     driver.setAddressWidth(5);           // must be always 5
     driver.setAutoAck(false);
-    driver.setRetries(1, 15);            // set 15 retries and 500uSec between retransmition in autoACK mode.
+    driver.setRetries(2, 15);            // set 15 retries and 500uSec between retransmition in autoACK mode.
     driver.setCRCLength(RF24_CRC_8);     // number of bits of CRC, can be RF24_CRC_8 or RF24_CRC_16
     driver.enableDynamicPayloads();      // alway use this options
     driver.setDataRate(RF24_1MBPS);      // the communication speed (RF24_250KBPS, RF24_1MBPS, RF24_2MBPS)
 
-    server.setWorkChannel(10);           // number of frequency channel for dirrect communicatin between server and client
-    server.setBroadcastChannel(120);     // number of frequency channel for receiving commands from server
+    server.setWorkChannel(66);           // number of frequency channel for dirrect communicatin between server and client
+    //server.setBroadcastChannel(120);     // number of frequency channel for receiving commands from server
     server.setNetworkAddr(NETWORK_ADDR); // Set network address, 3 bytes
 
     // manual adding clients ID that will be handled by server
@@ -63,20 +65,38 @@ void setup() {
     //         deviceIndexById(id) - where id is id of client
     server.putSendedData(-1, "123", 4); 
 
+    t = millis();
 
 }
 
 void loop() {
 
-    Serial.println("Start loking for clients");
-    int n = server.lookForClient(4000);
-    Serial.print("Found ");
-    Serial.print(n);
-    Serial.println(" Devices");
-    for (int i = 0; i < server.handledClientsCount(); ++i)
+    //Serial.println("Send");
+    //driver.stopListening();
+    //driver.openWritingPipe(0xC7C7C7FFFFLL);
+    //driver.setChannel(66);
+    //driver.setAutoAck(false);
+    //driver.write("1234", 4);
+    //delay(1500);
+    //return;
+
+    server.serverLoop();
+
+    if ((millis() - t) > 3000)
     {
-        Serial.println(server.clientIdAt(i), HEX);
+        t = millis();
+        Serial.println("Start loking for clients");
+        int n = server.lookForClient(5000);
+        Serial.print("Found ");
+        Serial.print(n);
+        Serial.println(" Devices");
+        for (int i = 0; i < server.handledClientsCount(); ++i)
+        {
+            Serial.println(server.clientIdAt(i), HEX);
+        }
     }
+    //return;
+
 
     return;
 

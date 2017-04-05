@@ -19,7 +19,8 @@ public:
 
     bool run(String commandParametr)
     {
-        Serial.println(F("Satrt command lookup"));
+        bool res = true;
+        Serial.println(F("Start command lookup"));
         if (commandParametr.length() > 0)
         {
             Serial.print("Command parametr ");
@@ -31,22 +32,23 @@ public:
         if (!client_->startSession())
         {
             Serial.println(F("Start session error"));
-            return false;
+            res = false;
         }
 
-        client_->driver.openReadingPipe(1, client_->clientAddress());
-        client_->driver.startListening();
-
-
-        if (!client_->receiveStartSessionTag(4000))
+        if (res)
         {
-            Serial.println(F("Start not received"));
-            return false;
+            client_->driver.openReadingPipe(1, client_->clientAddress());
+            client_->driver.openWritingPipe(client_->clientAddress());
+            client_->driver.startListening();
         }
-        else
+
+        if (!client_->receiveStartSessionTag(4000) && res)
         {
-            return true;
+            //Serial.println(F("Start not received"));
+            res = false;
         }
+
+        return res;
     }
 };
 
