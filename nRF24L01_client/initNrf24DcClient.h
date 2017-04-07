@@ -8,6 +8,9 @@
 #include "LookupCmd.h"
 #include "KeepaliveCmd.h"
 
+uint8_t key[] = { 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15 };
+
+
 bool initDcClient(Nrf24DcClient &client) 
 {
     Serial.print(F("Init nrf24 driver - "));
@@ -34,6 +37,10 @@ bool initDcClient(Nrf24DcClient &client)
     // copy data for sending to the server during communication session
     // you can call this function anywhere
     client.putDataForSend((void*)"gkjfdghdfjhgjdfhgkjdsfhaljdfgaljgg", 32);
+
+    client.setEcryptKeyPointer(key, sizeof(key) / sizeof(uint8_t));
+    client.setEncryption(true);
+
     return true;
 }
 

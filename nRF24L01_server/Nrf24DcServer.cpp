@@ -229,7 +229,7 @@ bool Nrf24DcServer::setSingleClientMode(int16_t device_id)
     //long long clientAddress = networkAddress_ + device_id;
     //driver_.powerDown();
     //driver_.powerUp();
-    
+
     driver_.stopListening();
 
     driver_.setAutoAck(true);
@@ -281,9 +281,10 @@ bool Nrf24DcServer::sendRequestForLookup()
 
 bool Nrf24DcServer::sendStartSesionTag(uint8_t times)
 {
+    uint8_t buf[] = "S";
     for (int k = 0; k < times; ++k)
     {
-        if (driver_.write("S", 2))
+        if (write(buf, 2))
         {
             return true;
         }
@@ -340,7 +341,7 @@ int16_t Nrf24DcServer::startSession()
         for (int k = 0; k < 1; ++k)
         {
             yield();
-            if (driver_.write("S", 2))
+            if ( sendStartSesionTag() )
             {
                 //Serial.println("Start not sended");
                 continue;
@@ -368,7 +369,7 @@ int16_t Nrf24DcServer::startSession()
             if (driver_.available())
             {
                 rLen = driver_.getDynamicPayloadSize();
-                driver_.read(dataBufferFromClients_[i], rLen);
+                read(dataBufferFromClients_[i], rLen);
                 dataBufferFromClientsSize_[i] = rLen;
                 isRecvData = true;
                 break;
@@ -388,7 +389,7 @@ int16_t Nrf24DcServer::startSession()
         yield();
 
 
-        if (driver_.write(dataBufferToClients_[i], DC_MAX_SIZE_OF_DATA_FOR_SENDING))
+        if (write(dataBufferToClients_[i], DC_MAX_SIZE_OF_DATA_FOR_SENDING))
         {
             commsStatus_[i] = 1;
             ++numberOfHandledDevices;
@@ -497,6 +498,49 @@ void Nrf24DcServer::serverLoop()
     sendKeepAliveMsg();
 }
 
+void Nrf24DcServer::setEncryption(bool flag)
+{
+    isEncrypt_ = flag;
+}
+
+bool Nrf24DcServer::encryption()
+{
+    return isEncrypt_;
+}
+
+void Nrf24DcServer::setEcryptKeyPointer(uint8_t * pointer, uint8_t len)
+{
+    keyPtr_ = pointer;
+    keySize_ = len;
+}
+
+void Nrf24DcServer::encryptMsg(uint8_t * msg, uint8_t size)
+{
+    int keyPos = 0;
+    for (int i = 0; i < size; ++i)
+    {
+        msg[i] = msg[i] ^ this->keyPtr_[keyPos];
+        ++keyPos;
+
+        if (keyPos == keySize_)
+            keyPos = 0;
+    }
+
+}
+
+void Nrf24DcServer::decryptMsg(uint8_t * msg, uint8_t size)
+{
+    int keyPos = 0;
+    for (int i = 0; i < size; ++i)
+    {
+        msg[i] = msg[i] ^ this->keyPtr_[keyPos];
+        ++keyPos;
+
+        if (keyPos == keySize_)
+            keyPos = 0;
+    }
+}
+
 bool Nrf24DcServer::isChannelBussy(uint8_t channel)
 {
     driver_.setChannel(channel);
@@ -529,7 +573,7 @@ int16_t Nrf24DcServer::lookForFreeChannel()
     {
         for (int i = workChannel() + 1; i < DC_CHANNEL_COUNT; ++i)
         {
-            if ( isChannelFreeRadius(i, r))
+            if (isChannelFreeRadius(i, r))
             {
                 return i;
             }
@@ -538,7 +582,7 @@ int16_t Nrf24DcServer::lookForFreeChannel()
 
         for (int i = 0; i < workChannel(); ++i)
         {
-            if ( isChannelFreeRadius(i, r))
+            if (isChannelFreeRadius(i, r))
             {
                 return i;
             }
@@ -570,6 +614,29 @@ bool Nrf24DcServer::isChannelFreeRadius(int8_t channel, int8_t radius)
     }
 
     return res;
+}
+
+void Nrf24DcServer::read(void * buf, uint8_t len)
+{
+    driver_.read(buf, len);
+
+    if (isEncrypt_) 
+    {
+        uint8_t *msgPtr = (uint8_t*)buf;
+        decryptMsg(msgPtr, len);
+    }
+    
+}
+
+bool Nrf24DcServer::write(void * buf, uint8_t len)
+{
+    if (isEncrypt_)
+    {
+        uint8_t *msgPtr = (uint8_t*)buf;
+        encryptMsg(msgPtr, len);
+    }
+
+    return driver_.write(buf, len);
 }
 
 void Nrf24DcServer::prepareArrays()
@@ -611,7 +678,10 @@ bool Nrf24DcServer::sendBroadcastRequestCommand(String command)
 
     //Serial.println("loop to broadcast request for data");
     for (int i = 0; i < DC_NUMBER_OF_BROADCAST_REQUESTS; ++i) {
-        driver_.write(command.c_str(), command.length());
+        const uint8_t len = command.length() > 32 ? 32 : command.length();
+        uint8_t buf[32];
+        memcpy(buf, command.c_str(), len);
+        write(buf, len);
         yield();
     }
     //driver_.printDetails();

@@ -28,6 +28,7 @@ int sessionTimeout = 3000;  //in milli seconds
 int readingTimeout = 2;     //in milli seconds
 uint64_t t;
 
+uint8_t key[] = { 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15 };
 
 void setup() {
     // put your setup code here, to run once:
@@ -67,6 +68,8 @@ void setup() {
 
     t = millis();
 
+    server.setEcryptKeyPointer(key, sizeof(key) / sizeof(uint8_t));
+    server.setEncryption(true);
 }
 
 void loop() {
@@ -78,6 +81,19 @@ void loop() {
     //driver.setAutoAck(false);
     //driver.write("1234", 4);
     //delay(1500);
+    //return;
+
+    //uint8_t msg[] = "Hello world";
+    //auto ss = micros();
+    //server.encryptMsg(msg, 12);
+    ////auto es = micros() - ss;
+    ////Serial.println(es);
+    //Serial.println((char*)msg);
+    //server.decryptMsg(msg, 12);
+    //Serial.println(micros() - ss);
+    //Serial.println((char*)msg);
+    //delay(3000);
+
     //return;
 
     server.serverLoop();

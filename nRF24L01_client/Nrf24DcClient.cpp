@@ -129,7 +129,7 @@ bool Nrf24DcClient::sendDataToServer()
     if (!dataToSendLength_)
         return false;
     else
-        return driver.write(dataToSend_, dataToSendLength_);
+        return write(dataToSend_, dataToSendLength_);
 }
 
 bool Nrf24DcClient::receiveDataFromServer(int16_t timeout)
@@ -140,7 +140,7 @@ bool Nrf24DcClient::receiveDataFromServer(int16_t timeout)
         if (driver.available())
         {
             receivedDataLength_ = driver.getDynamicPayloadSize();
-            driver.read(receivedData_, receivedDataLength_);
+            read(receivedData_, receivedDataLength_);
             //Serial.print("qqqq-");
             //Serial.println(receivedDataLength_);
             return true;
@@ -163,7 +163,7 @@ bool Nrf24DcClient::receiveStartSessionTag(int16_t timeout)
         if (driver.available())
         {
             uint8_t rLen = driver.getDynamicPayloadSize();
-            driver.read(buffer_, rLen);
+            read(buffer_, rLen);
             //Serial.println(rLen);
             if (rLen == 2 && strncmp((char*)buffer_, "S", 1) == 0)
             {
@@ -218,6 +218,49 @@ void Nrf24DcClient::keepServer()
 void Nrf24DcClient::resetKeepAliveTimer()
 {
     lastKeepaliveTime_ = millis();
+}
+
+void Nrf24DcClient::setEncryption(bool flag)
+{
+    isEncrypt_ = flag;
+}
+
+bool Nrf24DcClient::encryption()
+{
+    return isEncrypt_;
+}
+
+void Nrf24DcClient::setEcryptKeyPointer(uint8_t *pointer, uint8_t len)
+{
+    keyPtr_ = pointer;
+    keySize_ = len;
+}
+
+void Nrf24DcClient::encryptMsg(uint8_t *msg, uint8_t size)
+{
+    int keyPos = 0;
+    for (int i = 0; i < size; ++i)
+    {
+        msg[i] = msg[i] ^ this->keyPtr_[keyPos];
+        ++keyPos;
+
+        if (keyPos == keySize_)
+            keyPos = 0;
+    }
+}
+
+void Nrf24DcClient::decryptMsg(uint8_t * msg, uint8_t size)
+{
+    int keyPos = 0;
+    for (int i = 0; i < size; ++i)
+    {
+        msg[i] = msg[i] ^ this->keyPtr_[keyPos];
+        ++keyPos;
+
+        if (keyPos == keySize_)
+            keyPos = 0;
+    }
+
 }
 
 
@@ -288,6 +331,29 @@ bool Nrf24DcClient::waitForKeepaliveMsg(int16_t timeout)
     return false;
 }
 
+void Nrf24DcClient::read(void * buf, uint8_t len)
+{
+    driver.read(buf, len);
+
+    if (isEncrypt_)
+    {
+        uint8_t *msgPtr = (uint8_t*)buf;
+        decryptMsg(msgPtr, len);
+    }
+
+}
+
+bool Nrf24DcClient::write(void * buf, uint8_t len)
+{
+    if (isEncrypt_)
+    {
+        uint8_t *msgPtr = (uint8_t*)buf;
+        encryptMsg(msgPtr, len);
+    }
+
+    return driver.write(buf, len);
+}
+
 int8_t Nrf24DcClient::getReceivedData(void * buffer, int8_t maxLen)
 {
     if (maxLen > receivedDataLength_)
@@ -323,7 +389,7 @@ uint8_t Nrf24DcClient::listenBroadcast()
     {
         receivedPacketSize = driver.getDynamicPayloadSize();
         memset(buffer_, 0, 32);
-        driver.read(buffer_, 32);
+        read(buffer_, 32);
 
         //Serial.print(F(" received packet "));
         //Serial.println((char*)buffer_);

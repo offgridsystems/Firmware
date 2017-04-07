@@ -13,6 +13,8 @@
 #define DC_REPS_COUNT 50
 #define DC_DEFAULT_KEEPALIVE_TIMEOUT 100
 
+#define DC_CRYPTO_KEY_SIZE 16
+
 //class AbstractClientCommand;
 
 typedef RF24 rfDriver;
@@ -113,6 +115,12 @@ public:
 
     void resetKeepAliveTimer();
 
+    void setEncryption(bool flag);
+    bool encryption();
+    void setEcryptKeyPointer(uint8_t *pointer, uint8_t len);
+    void encryptMsg(uint8_t *msg, uint8_t size);
+    void decryptMsg(uint8_t *msg, uint8_t size);
+
 private:
     bool isBroadcastMode_;
     uint64_t serverAddress_;
@@ -137,11 +145,17 @@ private:
     uint8_t receivedData_[32];
     int8_t receivedDataLength_;
 
+    bool isEncrypt_;
+    uint8_t *keyPtr_;
+    uint8_t keySize_;
+
     int8_t bytePos(uint8_t searchedByte, uint8_t* data, uint8_t len);
     void prepareSesionBuffers_();
     bool isChannelBussy(uint8_t channel);
     void scanChannels();
     bool waitForKeepaliveMsg(int16_t timeout);
+    void read(void *buf, uint8_t len);
+    bool write(void *buf, uint8_t len);
 
 };
 

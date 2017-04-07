@@ -149,6 +149,13 @@ class Nrf24DcServer
 
     void serverLoop();
 
+    void setEncryption(bool flag);
+    bool encryption();
+    void setEcryptKeyPointer(uint8_t *pointer, uint8_t len);
+    void encryptMsg(uint8_t *msg, uint8_t size);
+    void decryptMsg(uint8_t *msg, uint8_t size);
+
+
   private:
     rfDriver &driver_;
     uint64_t networkAddress_;
@@ -171,12 +178,19 @@ class Nrf24DcServer
     uint16_t readingTimeout_;
     int16_t keepAliveTimeout_;
 
+    bool isEncrypt_;
+    uint8_t *keyPtr_;
+    uint8_t keySize_;
+
     void prepareArrays();
     bool sendBroadcastRequestCommand(String command);
     bool isChannelBussy(uint8_t channel);
     void scanChannels();
     int16_t lookForFreeChannel();
     bool isChannelFreeRadius(int8_t channel, int8_t radius);
+    
+    void read(void *buf, uint8_t len);
+    bool write(void *buf, uint8_t len);
 
 };
 
