@@ -6,7 +6,7 @@
 #define DC_MAX_CLIENT_NUMBER 300
 #define DC_MAX_SIZE_OF_RECEIVED_DATA 32
 #define DC_MAX_SIZE_OF_DATA_FOR_SENDING 4
-#define DC_NUMBER_OF_BROADCAST_REQUESTS 6
+#define DC_NUMBER_OF_BROADCAST_REQUESTS 3
 
 #define DC_DEFAULT_SESSION_TIMEOUT 3000
 #define DC_DEFAULT_READING_TIMEOUT 3
@@ -70,8 +70,8 @@ class Nrf24DcServer
 
     // Turn on single client mode on.
     // This means that work channel and AuroACK mode will be setted
-    // @parameter clientId - id of client which will communicate with server
-    bool setSingleClientMode(int16_t clientId);
+    // @parameter clientAddr - address of client which will communicate with server
+    bool setSingleClientMode(uint64_t clientAddr);
     
     // Returns number of handled clients added by addClient() or addClientByRange()
     int handledClientsCount();
@@ -152,8 +152,8 @@ class Nrf24DcServer
     void setEncryption(bool flag);
     bool encryption();
     void setEcryptKeyPointer(uint8_t *pointer, uint8_t len);
-    void encryptMsg(uint8_t *msg, uint8_t size);
-    void decryptMsg(uint8_t *msg, uint8_t size);
+    inline void encryptMsg(uint8_t *msg, uint8_t size);
+    inline void decryptMsg(uint8_t *msg, uint8_t size);
 
 
   private:
@@ -189,8 +189,8 @@ class Nrf24DcServer
     int16_t lookForFreeChannel();
     bool isChannelFreeRadius(int8_t channel, int8_t radius);
     
-    void read(void *buf, uint8_t len);
-    bool write(void *buf, uint8_t len);
+    inline void read(void *buf, uint8_t len);
+    inline bool write(void *buf, uint8_t len);
 
 };
 

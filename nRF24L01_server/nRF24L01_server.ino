@@ -42,14 +42,15 @@ void setup() {
     driver.setRetries(2, 15);            // set 15 retries and 500uSec between retransmition in autoACK mode.
     driver.setCRCLength(RF24_CRC_8);     // number of bits of CRC, can be RF24_CRC_8 or RF24_CRC_16
     driver.enableDynamicPayloads();      // alway use this options
-    driver.setDataRate(RF24_1MBPS);      // the communication speed (RF24_250KBPS, RF24_1MBPS, RF24_2MBPS)
-
+    //driver.setDataRate(RF24_1MBPS);      // the communication speed (RF24_250KBPS, RF24_1MBPS, RF24_2MBPS)
+    driver.setDataRate(RF24_250KBPS);      // the communication speed (RF24_250KBPS, RF24_1MBPS, RF24_2MBPS)
+    driver.setPALevel(RF24_PA_LOW);
     server.setWorkChannel(66);           // number of frequency channel for dirrect communicatin between server and client
     //server.setBroadcastChannel(120);     // number of frequency channel for receiving commands from server
     server.setNetworkAddr(NETWORK_ADDR); // Set network address, 3 bytes
 
     // manual adding clients ID that will be handled by server
-    //server.addClient(0xc7);
+    //server.addClient(100);
     //server.addClient(0xc8);
 
     //server.addDeviceByRange(1, 300);
@@ -69,8 +70,10 @@ void setup() {
     t = millis();
 
     server.setEcryptKeyPointer(key, sizeof(key) / sizeof(uint8_t));
-    server.setEncryption(true);
+    server.setEncryption(false);
 }
+
+void startSes();
 
 void loop() {
 
@@ -98,24 +101,27 @@ void loop() {
 
     server.serverLoop();
 
-    if ((millis() - t) > 3000)
+    if ((millis() - t) > 7000)
     {
         t = millis();
         Serial.println("Start loking for clients");
-        int n = server.lookForClient(5000);
+        int n = server.lookForClient(5500);
         Serial.print("Found ");
         Serial.print(n);
-        Serial.println(" Devices");
+        Serial.println(" Clients");
+
         for (int i = 0; i < server.handledClientsCount(); ++i)
         {
-            Serial.println(server.clientIdAt(i), HEX);
+            Serial.println(server.clientIdAt(i));
         }
+
+        
+        startSes();
+
     }
-    //return;
+}
 
-
-    return;
-
+void startSes() {
     Serial.println("Sending to broadcast request for data ");
     uint64_t  startSingleSessionTime = millis();
 
@@ -136,16 +142,14 @@ void loop() {
         for (int i = 0; i < server.handledClientsCount(); ++i)
         {
             Serial.print("Device id - 0x");
-            Serial.println(server.clientIdAt(i), HEX);
+            Serial.println(server.clientIdAt(i));
             Serial.println("Received data:");
 
             for (int j = 0; j < server.lenfgthOfReceivedBufferByIndex(i); ++j)
-                Serial.print((char)*(server.receivedDataByIndex(i)+j));
+                Serial.print((char)*(server.receivedDataByIndex(i) + j));
 
             Serial.println("\n--------------------------------------");
         }
     }
 
-    delay(5000);
-    yield();
 }

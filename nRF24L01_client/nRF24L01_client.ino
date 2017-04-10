@@ -36,10 +36,12 @@ void loop() {
     uint8_t res = client.listenBroadcast();  // returns not 0 if any command was received from server
 
     // 
-    if (res != 0x00 && res != DC_KEEPALIVE)
+    if (res != 0x00 && res != DC_KEEPALIVE && res != DC_LOOKUP)
     {
         Serial.print("Command code : ");
-        Serial.println(res);
+        Serial.print(res);
+        Serial.print(", id : ");
+        Serial.println(client.deviceId());
 
         if (client.getReceivedData(nullptr, 32))   // if received data size not 0 then
         {

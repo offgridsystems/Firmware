@@ -36,7 +36,6 @@ uint16_t Nrf24DcServer::lookForClient(int timeout)
 
         if (sendStartSesionTag())
         {
-            //Serial.println("--");
             addClient(id);
             //driver_.printDetails();
             //Serial.println(id);
@@ -45,6 +44,7 @@ uint16_t Nrf24DcServer::lookForClient(int timeout)
             if (handledClientsCount() >= DC_MAX_CLIENT_NUMBER)
                 break;
         }
+        driver_.flush_tx();
 
         yield();
     }
@@ -223,7 +223,7 @@ bool Nrf24DcServer::setBroadcastMode()
     return true;
 }
 
-bool Nrf24DcServer::setSingleClientMode(int16_t device_id)
+bool Nrf24DcServer::setSingleClientMode(uint64_t clientAddr)
 {
 
     //long long clientAddress = networkAddress_ + device_id;
@@ -234,7 +234,8 @@ bool Nrf24DcServer::setSingleClientMode(int16_t device_id)
 
     driver_.setAutoAck(true);
     driver_.setChannel(workChannel());
-    driver_.openReadingPipe(0, device_id);
+    driver_.openReadingPipe(0, clientAddr);
+    //driver_.openReadingPipe(1, clientAddr);
 
     return true;
 }

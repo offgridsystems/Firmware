@@ -20,13 +20,13 @@ public:
     bool run(String commandParametr)
     {
         bool res = true;
-        Serial.println(F("Start command lookup"));
+        //Serial.println(F("Start command lookup"));
         if (commandParametr.length() > 0)
         {
-            Serial.print("Command parametr ");
-            Serial.println(commandParametr);
+            //Serial.print("Command parametr ");
+            //Serial.println(commandParametr);
             int16_t ch = commandParametr.toInt();
-            client_->setWorkChannel(ch);
+            //client_->setWorkChannel(ch);
         }
 
         if (!client_->startSession())
@@ -37,8 +37,9 @@ public:
 
         if (res)
         {
-            client_->driver.openReadingPipe(1, client_->clientAddress());
-            client_->driver.openWritingPipe(client_->clientAddress());
+            uint64_t clientAddr = client_->clientAddress();
+            client_->driver.openReadingPipe(1, clientAddr);
+            client_->driver.openWritingPipe(clientAddr);
             client_->driver.startListening();
         }
 
@@ -47,6 +48,7 @@ public:
             //Serial.println(F("Start not received"));
             res = false;
         }
+        //client_->driver.printDetails();
 
         return res;
     }

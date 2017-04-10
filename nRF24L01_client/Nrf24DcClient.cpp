@@ -71,6 +71,7 @@ uint64_t  Nrf24DcClient::networkAddr()
 void Nrf24DcClient::setDeviceId(int16_t id)
 {
     clientAddress_ = networkAddress_ + id;
+    clientId = id;
 }
 
 int16_t Nrf24DcClient::deviceId()
