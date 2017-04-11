@@ -13,7 +13,7 @@ Nrf24DcServer::Nrf24DcServer(rfDriver& drv)
 uint16_t Nrf24DcServer::lookForClient(int timeout)
 {
     currnetDeviceCount_ = 0;
-    sendRequestForLookup();
+    sendRequestForLookup(timeout);
     driver_.txStandBy();
     delay(500);
     uint64_t startSessionTime = millis();
@@ -236,6 +236,7 @@ bool Nrf24DcServer::setSingleClientMode(uint64_t clientAddr)
     driver_.setChannel(workChannel());
     driver_.openReadingPipe(0, clientAddr);
     //driver_.openReadingPipe(1, clientAddr);
+    driver_.openWritingPipe(clientAddr);
 
     return true;
 }
@@ -265,16 +266,16 @@ int16_t Nrf24DcServer::clientIndexById(int16_t id)
 bool Nrf24DcServer::sendRequestForSession()
 {
     String command = "ssch:";
-    command += String((int)workChannel());
+    command += String(sessionTimeout());
 
 
     return this->sendBroadcastRequestCommand(command);
 }
 
-bool Nrf24DcServer::sendRequestForLookup()
+bool Nrf24DcServer::sendRequestForLookup(int timeout)
 {
     String command = "lookup:";
-    command += String((int)workChannel());
+    command += String(timeout);
 
 
     return this->sendBroadcastRequestCommand(command);
@@ -282,7 +283,7 @@ bool Nrf24DcServer::sendRequestForLookup()
 
 bool Nrf24DcServer::sendStartSesionTag(uint8_t times)
 {
-    uint8_t buf[] = "S";
+    uint8_t buf[] = "D";
     for (int k = 0; k < times; ++k)
     {
         if (write(buf, 2))
@@ -300,7 +301,8 @@ int16_t Nrf24DcServer::startSession()
 {
     prepareArrays();
     sendRequestForSession();
-    driver_.txStandBy();
+    delay(3);
+    //driver_.txStandBy();
 
     uint64_t startSessionTime = millis();
     int16_t deviceCount = handledClientsCount();
@@ -337,30 +339,20 @@ int16_t Nrf24DcServer::startSession()
         uint64_t clientAddr = clientIdAt(i) + networkAddr();
 
         setSingleClientMode(clientAddr);
-        driver_.openWritingPipe(clientAddr);
 
-        for (int k = 0; k < 1; ++k)
+        if ( !sendStartSesionTag() )
         {
-            yield();
-            if ( sendStartSesionTag() )
-            {
-                //Serial.println("Start not sended");
-                continue;
-            }
-            else
-            {
-                //driver.printDetails();
-                break;
-            }
-
+            //Serial.println("Start not sended ");
+            //driver_.printDetails();
+            continue;
         }
+
         yield();
         driver_.txStandBy();
         driver_.flush_tx();
         uint64_t  recvStartTime = millis();
         bool isRecvData = false;
         rLen = 32;
-        driver_.openReadingPipe(1, clientAddr);
         driver_.startListening();
         yield();
 
@@ -386,16 +378,18 @@ int16_t Nrf24DcServer::startSession()
 
         driver_.flush_tx();
         driver_.stopListening();
-        driver_.openWritingPipe(clientAddr);
+        //driver_.openWritingPipe(clientAddr);
         yield();
 
-
+        //auto m1 = millis();
         if (write(dataBufferToClients_[i], DC_MAX_SIZE_OF_DATA_FOR_SENDING))
         {
             commsStatus_[i] = 1;
             ++numberOfHandledDevices;
         }
-        driver_.txStandBy();
+
+        //Serial.println(millis() - m1);
+        //driver_.txStandBy();
 
     }
 
@@ -441,7 +435,7 @@ uint8_t Nrf24DcServer::lenfgthOfReceivedBufferById(uint16_t id)
 
 void Nrf24DcServer::putSendedData(int16_t idx, const void * data, uint8_t len)
 {
-    if (idx >= currnetDeviceCount_)
+    if (idx >= currnetDeviceCount_ && idx != -1)
         return;
     else
     {
@@ -450,10 +444,10 @@ void Nrf24DcServer::putSendedData(int16_t idx, const void * data, uint8_t len)
 
         if (idx == -1)
         {
-            for (int i = 0; i < handledClientsCount(); ++i)
+            for (int i = 0; i <DC_MAX_CLIENT_NUMBER; ++i)
             {
                 memset(dataBufferToClients_[i], 0, DC_MAX_SIZE_OF_DATA_FOR_SENDING);
-                memcpy(dataBufferToClients_[i], data, len);
+                memcpy(&dataBufferToClients_[i][0], (uint8_t*)data, len);
             }
         }
         else
@@ -489,7 +483,9 @@ void Nrf24DcServer::sendKeepAliveMsg()
     if ((currentTime - startTime) > keepAliveTimeout())
     {
         startTime = currentTime;
-        sendBroadcastRequestCommand("keepAlive:");
+        String cmd = "keepAlive:";
+        cmd += DC_DEFAULT_OFFLINE_TIMEOUT;
+        sendBroadcastRequestCommand(cmd);
     }
 }
 
@@ -532,6 +528,7 @@ void Nrf24DcServer::encryptMsg(uint8_t * msg, uint8_t size)
 void Nrf24DcServer::decryptMsg(uint8_t * msg, uint8_t size)
 {
     int keyPos = 0;
+
     for (int i = 0; i < size; ++i)
     {
         msg[i] = msg[i] ^ this->keyPtr_[keyPos];
@@ -620,24 +617,34 @@ bool Nrf24DcServer::isChannelFreeRadius(int8_t channel, int8_t radius)
 void Nrf24DcServer::read(void * buf, uint8_t len)
 {
     driver_.read(buf, len);
+    //Serial.println((char*)buf);
 
     if (isEncrypt_) 
     {
         uint8_t *msgPtr = (uint8_t*)buf;
         decryptMsg(msgPtr, len);
     }
+
+    //Serial.println(len);
+    //Serial.println((char*)buf);
+    //Serial.println(len);
+
     
 }
 
-bool Nrf24DcServer::write(void * buf, uint8_t len)
+bool Nrf24DcServer::write(const void * buf, const uint8_t len)
 {
+    uint8_t *msgPtr = (uint8_t*)buf;
+    uint8_t tmpBuf[32] = { 0 };
+
     if (isEncrypt_)
     {
-        uint8_t *msgPtr = (uint8_t*)buf;
+        memcpy(tmpBuf, msgPtr, len);
+        msgPtr = &tmpBuf[0];
         encryptMsg(msgPtr, len);
     }
 
-    return driver_.write(buf, len);
+    return driver_.write(msgPtr, len);
 }
 
 void Nrf24DcServer::prepareArrays()

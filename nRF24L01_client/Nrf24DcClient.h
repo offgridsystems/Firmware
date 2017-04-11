@@ -12,6 +12,7 @@
 #define DC_CHANNEL_COUNT 126
 #define DC_REPS_COUNT 50
 #define DC_DEFAULT_KEEPALIVE_TIMEOUT 100
+#define DC_DEFAULT_TIMEOUT_BEFORE_STARTING_SEARCH_SERVER 1000
 
 #define DC_CRYPTO_KEY_SIZE 16
 
@@ -100,7 +101,7 @@ public:
     // if data is received, you can get it by getReceivedData()
     // @parametr timeout - time int mili sec.
     // Return true if any data was received
-    bool receiveDataFromServer(int16_t timeout = 500);
+    bool receiveDataFromServer(int16_t timeout = 5);
 
     // wait for start session command from server
     // during <timeout> time 
@@ -122,32 +123,32 @@ public:
     void decryptMsg(uint8_t *msg, uint8_t size);
 
 private:
-    bool isBroadcastMode_;
-    uint64_t serverAddress_;
-    uint64_t networkAddress_;
-    uint64_t clientAddress_;
-    uint16_t clientId;
+    volatile bool isBroadcastMode_;
+    volatile uint64_t serverAddress_;
+    volatile uint64_t networkAddress_;
+    volatile uint64_t clientAddress_;
+    volatile uint16_t clientId;
     //uint8_t broadcastChannel_;
-    uint8_t workChannel_;
+    volatile uint8_t workChannel_;
     uint8_t buffer_[32];
-    int8_t bufferLen_;
-    int16_t sessionTimeout_;
-    int16_t keepAliveTimeout_;
-    uint32_t lastKeepaliveTime_;
-    int16_t timeoutBeforeStartSearchingNetwork_;
+    volatile int8_t bufferLen_;
+    volatile int16_t sessionTimeout_;
+    volatile int16_t keepAliveTimeout_;
+    volatile uint32_t lastKeepaliveTime_;
+    volatile int16_t timeoutBeforeStartSearchingNetwork_;
 
     AbstractClientCommand* cmdArray_[DC_NUMBER_OF_COMMANDS];
     uint8_t channelsActivity_[DC_CHANNEL_COUNT];
-    uint8_t cmdCount_;
+    volatile uint8_t cmdCount_;
 
     uint8_t dataToSend_[32];
-    int8_t dataToSendLength_;
+    volatile int8_t dataToSendLength_;
     uint8_t receivedData_[32];
-    int8_t receivedDataLength_;
+    volatile int8_t receivedDataLength_;
 
-    bool isEncrypt_;
-    uint8_t *keyPtr_;
-    uint8_t keySize_;
+    volatile bool isEncrypt_;
+    volatile uint8_t *keyPtr_;
+    volatile uint8_t keySize_;
 
     int8_t bytePos(uint8_t searchedByte, uint8_t* data, uint8_t len);
     void prepareSesionBuffers_();
@@ -155,7 +156,7 @@ private:
     void scanChannels();
     bool waitForKeepaliveMsg(int16_t timeout);
     void read(void *buf, uint8_t len);
-    bool write(void *buf, uint8_t len);
+    bool write(const void *buf, const uint8_t len);
 
 };
 

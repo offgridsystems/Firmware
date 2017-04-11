@@ -9,7 +9,9 @@
 #define DC_NUMBER_OF_BROADCAST_REQUESTS 3
 
 #define DC_DEFAULT_SESSION_TIMEOUT 3000
-#define DC_DEFAULT_READING_TIMEOUT 3
+#define DC_DEFAULT_LOOKUP_TIMEOUT 6000
+#define DC_DEFAULT_OFFLINE_TIMEOUT 1000
+#define DC_DEFAULT_READING_TIMEOUT 4
 #define DC_DEFAULT_KEEPALIVE_TIMEOUT 100
 #define DC_CHANNEL_COUNT 126
 #define DC_REPS_COUNT 20
@@ -32,7 +34,7 @@ class Nrf24DcServer
     // @note:
     // this function clears list of handled device
     // and store ids of found clients
-    uint16_t lookForClient(int timeout);
+    uint16_t lookForClient(int timeout = DC_DEFAULT_LOOKUP_TIMEOUT);
 
 
     // This function starts communiction session
@@ -124,7 +126,7 @@ class Nrf24DcServer
     int16_t keepAliveTimeout() const;
 
     bool sendRequestForSession();
-    bool sendRequestForLookup();
+    bool sendRequestForLookup(int timeout);
 
     bool sendStartSesionTag(uint8_t times = 1);
 
@@ -156,7 +158,7 @@ class Nrf24DcServer
     inline void decryptMsg(uint8_t *msg, uint8_t size);
 
 
-  private:
+  public:
     rfDriver &driver_;
     uint64_t networkAddress_;
 	uint64_t serverAddress_;
@@ -175,7 +177,7 @@ class Nrf24DcServer
     uint8_t sendBuffer_[32];
     //uint8_t recvBuffer_[32];
     uint16_t sessionTimeout_;
-    uint16_t readingTimeout_;
+    volatile uint16_t readingTimeout_;
     int16_t keepAliveTimeout_;
 
     bool isEncrypt_;
@@ -190,7 +192,7 @@ class Nrf24DcServer
     bool isChannelFreeRadius(int8_t channel, int8_t radius);
     
     inline void read(void *buf, uint8_t len);
-    inline bool write(void *buf, uint8_t len);
+    inline bool write(const void *buf, const uint8_t len);
 
 };
 

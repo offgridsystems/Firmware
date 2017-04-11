@@ -21,12 +21,11 @@ public:
     {
         bool res = true;
         //Serial.println(F("Start command lookup"));
+
         if (commandParametr.length() > 0)
         {
-            //Serial.print("Command parametr ");
-            //Serial.println(commandParametr);
-            int16_t ch = commandParametr.toInt();
-            //client_->setWorkChannel(ch);
+            int16_t t = commandParametr.toInt() * 1.2;
+            client_->setTimeoutBeforeStartSearchingNetwork(t);
         }
 
         if (!client_->startSession())

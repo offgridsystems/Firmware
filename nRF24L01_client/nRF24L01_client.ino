@@ -32,7 +32,7 @@ void loop() {
     //driver.write("1234", 4);
     ////delay(2000);
     //return;
-    //client.clientLoop();
+    client.clientLoop();
     uint8_t res = client.listenBroadcast();  // returns not 0 if any command was received from server
 
     // 
@@ -54,9 +54,9 @@ void loop() {
             for (int i = 0; i < len; ++i)
             {
                 Serial.print(buf[i], HEX);
-                Serial.print("(");
-                Serial.print((char)buf[i]);
-                Serial.print("), ");
+                Serial.print(" ");
+                //Serial.print((char)buf[i]);
+                //Serial.print("), ");
             }
         }
     }

@@ -15,7 +15,7 @@ Nrf24DcClient::Nrf24DcClient(rfDriver& drv)
     lastKeepaliveTime_ = 0;
 
     setKeepaliveTimeout(DC_DEFAULT_KEEPALIVE_TIMEOUT);
-    setTimeoutBeforeStartSearchingNetwork(500);
+    setTimeoutBeforeStartSearchingNetwork(DC_DEFAULT_TIMEOUT_BEFORE_STARTING_SEARCH_SERVER);
 }
 
 bool Nrf24DcClient::init()
@@ -135,7 +135,7 @@ bool Nrf24DcClient::sendDataToServer()
 
 bool Nrf24DcClient::receiveDataFromServer(int16_t timeout)
 {
-    auto startTime = millis();
+    volatile auto startTime = millis();
     while ((millis() - startTime) <= timeout)
     {
         if (driver.available())
@@ -166,7 +166,7 @@ bool Nrf24DcClient::receiveStartSessionTag(int16_t timeout)
             uint8_t rLen = driver.getDynamicPayloadSize();
             read(buffer_, rLen);
             //Serial.println(rLen);
-            if (rLen == 2 && strncmp((char*)buffer_, "S", 1) == 0)
+            if (rLen == 2 && strncmp((char*)buffer_, "D", 1) == 0)
             {
                 return true;
             }
@@ -344,25 +344,31 @@ void Nrf24DcClient::read(void * buf, uint8_t len)
 
 }
 
-bool Nrf24DcClient::write(void * buf, uint8_t len)
+bool Nrf24DcClient::write(const void * buf, const uint8_t len)
 {
+    uint8_t *msgPtr = (uint8_t*)buf;
+    uint8_t tmpBuf[32] = { 0 };
+
     if (isEncrypt_)
     {
-        uint8_t *msgPtr = (uint8_t*)buf;
+        memcpy(tmpBuf, msgPtr, len);
+        msgPtr = &tmpBuf[0];
         encryptMsg(msgPtr, len);
     }
 
-    return driver.write(buf, len);
+    return driver.write(msgPtr, len);
 }
 
 int8_t Nrf24DcClient::getReceivedData(void * buffer, int8_t maxLen)
 {
     if (maxLen > receivedDataLength_)
         maxLen = receivedDataLength_;
-    //Serial.print("len = ");
-    //Serial.println(maxLen);
+    Serial.print("len = ");
+    Serial.println(maxLen);
     if (buffer)
+    {
         memcpy(buffer, receivedData_, maxLen);
+    }
 
     return maxLen;
 }
