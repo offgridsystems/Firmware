@@ -32,7 +32,7 @@ uint8_t key[] = { 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15 };
 
 void setup() {
     // put your setup code here, to run once:
-    delay(4000);
+    //delay(4000);
     Serial.begin(115200);
     Serial.print("Init nrf24 driver - ");
     Serial.println(server.init());       // initialize server and driver

@@ -44,8 +44,12 @@ public:
 
         if (!client_->receiveStartSessionTag(4000) && res)
         {
-            //Serial.println(F("Start not received"));
+            Serial.println(F("Start Lookup not received"));
             res = false;
+        }
+        else
+        {
+            delay(4);
         }
         //client_->driver.printDetails();
 

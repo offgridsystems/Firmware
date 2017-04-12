@@ -235,7 +235,7 @@ bool Nrf24DcServer::setSingleClientMode(uint64_t clientAddr)
     driver_.setAutoAck(true);
     driver_.setChannel(workChannel());
     driver_.openReadingPipe(0, clientAddr);
-    //driver_.openReadingPipe(1, clientAddr);
+    driver_.openReadingPipe(1, clientAddr);
     driver_.openWritingPipe(clientAddr);
 
     return true;
@@ -284,16 +284,24 @@ bool Nrf24DcServer::sendRequestForLookup(int timeout)
 bool Nrf24DcServer::sendStartSesionTag(uint8_t times)
 {
     uint8_t buf[] = "D";
+    bool res = false;
+
     for (int k = 0; k < times; ++k)
     {
-        if (write(buf, 2))
+        res = write(buf, 2);
+
+        if ( res )
         {
-            return true;
+            break;
         }
+
         yield();
     }
 
-    return false;
+    driver_.txStandBy();
+    driver_.flush_tx();
+
+    return res;
 
 }
 
@@ -301,7 +309,7 @@ int16_t Nrf24DcServer::startSession()
 {
     prepareArrays();
     sendRequestForSession();
-    delay(3);
+    //delay(3);
     //driver_.txStandBy();
 
     uint64_t startSessionTime = millis();
@@ -333,14 +341,16 @@ int16_t Nrf24DcServer::startSession()
             break;
         }
 
-        driver_.stopListening();
-
         driver_.flush_tx();
+        driver_.txStandBy();
+
         uint64_t clientAddr = clientIdAt(i) + networkAddr();
 
         setSingleClientMode(clientAddr);
 
-        if ( !sendStartSesionTag() )
+        bool res = sendStartSesionTag();
+
+        if ( ! res)
         {
             //Serial.println("Start not sended ");
             //driver_.printDetails();
@@ -348,9 +358,8 @@ int16_t Nrf24DcServer::startSession()
         }
 
         yield();
-        driver_.txStandBy();
-        driver_.flush_tx();
         uint64_t  recvStartTime = millis();
+
         bool isRecvData = false;
         rLen = 32;
         driver_.startListening();
@@ -369,6 +378,8 @@ int16_t Nrf24DcServer::startSession()
             }
         }
 
+        driver_.stopListening();
+
         if (!isRecvData)
         {
             //Serial.println("Data from client not received");
@@ -377,7 +388,6 @@ int16_t Nrf24DcServer::startSession()
         yield();
 
         driver_.flush_tx();
-        driver_.stopListening();
         //driver_.openWritingPipe(clientAddr);
         yield();
 
@@ -387,6 +397,7 @@ int16_t Nrf24DcServer::startSession()
             commsStatus_[i] = 1;
             ++numberOfHandledDevices;
         }
+        
 
         //Serial.println(millis() - m1);
         //driver_.txStandBy();
@@ -644,7 +655,9 @@ bool Nrf24DcServer::write(const void * buf, const uint8_t len)
         encryptMsg(msgPtr, len);
     }
 
-    return driver_.write(msgPtr, len);
+    bool res = driver_.write(msgPtr, len);
+    driver_.txStandBy();
+    return res;
 }
 
 void Nrf24DcServer::prepareArrays()
