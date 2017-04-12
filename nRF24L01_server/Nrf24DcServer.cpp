@@ -357,13 +357,18 @@ int16_t Nrf24DcServer::startSession()
             continue;
         }
 
+        if (!write(dataBufferToClients_[i], DC_MAX_SIZE_OF_DATA_FOR_SENDING))
+        {
+            continue;
+        }
+
+
         yield();
         uint64_t  recvStartTime = millis();
 
         bool isRecvData = false;
         rLen = 32;
         driver_.startListening();
-        yield();
 
         while ((millis() - recvStartTime) <= readingTimeout_)
         {
@@ -374,6 +379,7 @@ int16_t Nrf24DcServer::startSession()
                 read(dataBufferFromClients_[i], rLen);
                 dataBufferFromClientsSize_[i] = rLen;
                 isRecvData = true;
+                delay(4);
                 break;
             }
         }
@@ -385,22 +391,9 @@ int16_t Nrf24DcServer::startSession()
             //Serial.println("Data from client not received");
             continue;
         }
-        yield();
 
-        driver_.flush_tx();
-        //driver_.openWritingPipe(clientAddr);
-        yield();
-
-        //auto m1 = millis();
-        if (write(dataBufferToClients_[i], DC_MAX_SIZE_OF_DATA_FOR_SENDING))
-        {
-            commsStatus_[i] = 1;
-            ++numberOfHandledDevices;
-        }
-        
-
-        //Serial.println(millis() - m1);
-        //driver_.txStandBy();
+        commsStatus_[i] = 1;
+        ++numberOfHandledDevices;
 
     }
 

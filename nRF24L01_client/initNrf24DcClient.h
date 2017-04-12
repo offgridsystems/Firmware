@@ -17,16 +17,16 @@ bool initDcClient(Nrf24DcClient &client)
     //Serial.flush();
     Serial.println(client.init());           // initialize client and driver
     client.driver.setAddressWidth(5);        // must be always 5
-    client.driver.setRetries(3, 15);         // set 15 retries and 500uSec between retransmition in autoACK mode.
+    client.driver.setRetries(1, 4);         // set 15 retries and 500uSec between retransmition in autoACK mode.
     client.driver.setCRCLength(RF24_CRC_16);  // number of bits of CRC, can be RF24_CRC_8 or RF24_CRC_16
     client.driver.enableDynamicPayloads();   // alway use this options
     client.driver.setDataRate(RF24_1MBPS);   // the communication speed (RF24_250KBPS, RF24_1MBPS, RF24_2MBPS)
-    client.driver.setPALevel(RF24_PA_LOW);
+    client.driver.setPALevel(RF24_PA_HIGH);
 
     client.setWorkChannel(66);               // number of frequency channel for dirrect communicatin between server and client
     //client.setBroadcastChannel(120);         // number of frequency channel for receiving commands from server
     client.setNetworkAddr(NETWORK_ADDR);     // Set network address, 3 bytes
-    client.setDeviceId(12);                // unique in same network ID
+    client.setDeviceId(11);                // unique in same network ID
     client.setSessionTimeout(3000);          // time while client can comms with server in one session, after this time client aborts session
 
     // Adds handler for communication command
