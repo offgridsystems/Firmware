@@ -47,11 +47,6 @@ public:
             Serial.println(F("Start Lookup not received"));
             res = false;
         }
-        else
-        {
-            delay(4);
-        }
-        //client_->driver.printDetails();
 
         return res;
     }
