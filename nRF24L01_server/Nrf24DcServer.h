@@ -2,18 +2,14 @@
 #ifndef NRF24_DC_SERVER_H
 #define NRF24_DC_SERVER_H
 #include <RF24/RF24.h>
+#include "dc_global.h"
 
 #define DC_MAX_CLIENT_NUMBER 300
-#define DC_MAX_SIZE_OF_RECEIVED_DATA 32
 #define DC_MAX_SIZE_OF_DATA_FOR_SENDING 4
 #define DC_NUMBER_OF_BROADCAST_REQUESTS 3
 
-#define DC_DEFAULT_SESSION_TIMEOUT 3000
 #define DC_DEFAULT_LOOKUP_TIMEOUT 6000
-#define DC_DEFAULT_OFFLINE_TIMEOUT 1000
 #define DC_DEFAULT_READING_TIMEOUT 4
-#define DC_DEFAULT_KEEPALIVE_TIMEOUT 100
-#define DC_CHANNEL_COUNT 126
 #define DC_REPS_COUNT 20
 
 typedef RF24 rfDriver;
@@ -65,7 +61,10 @@ class Nrf24DcServer
 
     //Returns network address.
 	uint64_t networkAddr();
-    
+
+    void setRFDataRate(const rf24_datarate_e speed);
+    void setRF_PA_Level(uint8_t level);
+
     // Turn on broadcast mode.
     // This means that boradcast channel and NoACK mode will be setted
     bool setBroadcastMode();
@@ -129,6 +128,7 @@ class Nrf24DcServer
     bool sendRequestForLookup(int timeout);
 
     bool sendStartSesionTag(uint8_t times = 1);
+    bool sendStartSesionTagWithData(const uint8_t* data, const uint8_t len);
 
     uint8_t* receivedDataById(uint16_t id);
     uint8_t* receivedDataByIndex(uint16_t idx);
@@ -157,6 +157,8 @@ class Nrf24DcServer
     inline void encryptMsg(uint8_t *msg, uint8_t size);
     inline void decryptMsg(uint8_t *msg, uint8_t size);
 
+    void sendEndSessionTag();
+
 
   public:
     rfDriver &driver_;
@@ -168,7 +170,7 @@ class Nrf24DcServer
     
     int16_t handledDevicesId_[DC_MAX_CLIENT_NUMBER];
     int8_t commsStatus_[DC_MAX_CLIENT_NUMBER];
-    uint8_t dataBufferFromClients_[DC_MAX_CLIENT_NUMBER][DC_MAX_SIZE_OF_RECEIVED_DATA];
+    uint8_t dataBufferFromClients_[DC_MAX_CLIENT_NUMBER][DC_MAX_SIZE_OF_RF_PACKET];
     uint8_t dataBufferFromClientsSize_[DC_MAX_CLIENT_NUMBER];
     uint8_t dataBufferToClients_[DC_MAX_CLIENT_NUMBER][DC_MAX_SIZE_OF_DATA_FOR_SENDING];
     uint8_t channelsActivity_[DC_CHANNEL_COUNT];
@@ -183,6 +185,7 @@ class Nrf24DcServer
     bool isEncrypt_;
     uint8_t *keyPtr_;
     uint8_t keySize_;
+    uint8_t receivingEndSessionMsgTimeout_;
 
     void prepareArrays();
     bool sendBroadcastRequestCommand(String command);
@@ -190,6 +193,7 @@ class Nrf24DcServer
     void scanChannels();
     int16_t lookForFreeChannel();
     bool isChannelFreeRadius(int8_t channel, int8_t radius);
+    void waitEndSessionTag();
     
     inline void read(void *buf, uint8_t len);
     inline bool write(const void *buf, const uint8_t len);

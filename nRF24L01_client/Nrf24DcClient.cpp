@@ -20,7 +20,12 @@ Nrf24DcClient::Nrf24DcClient(rfDriver& drv)
 
 bool Nrf24DcClient::init()
 {
-    return driver.begin();
+    bool res = this->driver.begin();
+    this->driver.setAddressWidth(5);        // must be always 5
+    this->driver.setCRCLength(RF24_CRC_16);  // number of bits of CRC, can be RF24_CRC_8 or RF24_CRC_16
+    this->driver.enableDynamicPayloads();   // alway use this options
+    this->driver.setAutoAck(false);
+    return res;
 }
 
 void Nrf24DcClient::setWorkChannel(uint8_t ch)
@@ -66,6 +71,44 @@ void Nrf24DcClient::setNetworkAddr(uint64_t nAddr)
 uint64_t  Nrf24DcClient::networkAddr()
 {
     return networkAddress_;
+}
+
+void Nrf24DcClient::setRFDataRate(const rf24_datarate_e speed)
+{
+    driver.setDataRate(speed);
+    uint8_t delay;
+    uint8_t number;
+
+    switch (speed)
+    {
+    RF24_250KBPS:
+        delay = 5;
+        number = 15;
+        break;
+
+    RF24_1MBPS:
+        delay = 4;
+        number = 15;
+        break;
+
+    RF24_2MBPS:
+        delay = 3;
+        number = 15;
+        break;
+
+    default:
+        delay = 4;
+        number = 15;
+        break;
+    }
+
+    receivingEndSessionMsgTimeout_ = delay * (number + 1) * 0.250;
+    driver.setRetries(delay, number);
+}
+
+void Nrf24DcClient::setRF_PA_Level(uint8_t level)
+{
+    driver.setPALevel(level);
 }
 
 void Nrf24DcClient::setDeviceId(int16_t id)
@@ -163,11 +206,22 @@ bool Nrf24DcClient::receiveStartSessionTag(int16_t timeout)
     {
         if (driver.available())
         {
+            uint8_t ssTagLen = strlen(DC_START_SESSION_TAG_STR);
             uint8_t rLen = driver.getDynamicPayloadSize();
             read(buffer_, rLen);
-            //Serial.println(rLen);
-            if (rLen == 2 && strncmp((char*)buffer_, "D", 1) == 0)
+            waitEndSessionTag();
+
+            if (rLen >= ssTagLen && strncmp((char*)buffer_, DC_START_SESSION_TAG_STR, ssTagLen )== 0)
             {
+                if (rLen > ssTagLen)
+                {
+                    //Serial.println(ssTagLen);
+                    //Serial.print("Buffer_ = ");
+                    //Serial.println((char*)buffer_);
+                    memset(receivedData_, 0, DC_MAX_SIZE_OF_RF_PACKET);
+                    receivedDataLength_ = rLen - ssTagLen;
+                    memcpy(receivedData_, buffer_ + ssTagLen, receivedDataLength_);
+                }
                 return true;
             }
         }
@@ -264,6 +318,15 @@ void Nrf24DcClient::decryptMsg(uint8_t * msg, uint8_t size)
 
 }
 
+void Nrf24DcClient::sendEndSessionTag()
+{
+    driver.setAutoAck(false);
+    write(DC_END_SESSION_TAG_STR, strlen(DC_END_SESSION_TAG_STR));
+    write(DC_END_SESSION_TAG_STR, strlen(DC_END_SESSION_TAG_STR));
+    write(DC_END_SESSION_TAG_STR, strlen(DC_END_SESSION_TAG_STR));
+    driver.setAutoAck(true);
+}
+
 
 int8_t Nrf24DcClient::bytePos(uint8_t searchedByte, uint8_t * data, uint8_t len)
 {
@@ -332,6 +395,22 @@ bool Nrf24DcClient::waitForKeepaliveMsg(int16_t timeout)
     return false;
 }
 
+void Nrf24DcClient::waitEndSessionTag()
+{
+    auto startTime = millis();
+
+    //Serial.println(receivingEndSessionMsgTimeout_);
+    while ((millis() - startTime) < receivingEndSessionMsgTimeout_)
+    {
+        if (driver.available())
+        {
+            uint8_t buf[DC_MAX_SIZE_OF_RF_PACKET] = { 0 };
+            read(buf, DC_MAX_SIZE_OF_RF_PACKET);
+            break;
+        }
+    }
+}
+
 void Nrf24DcClient::read(void * buf, uint8_t len)
 {
     driver.read(buf, len);
@@ -363,8 +442,9 @@ int8_t Nrf24DcClient::getReceivedData(void * buffer, int8_t maxLen)
 {
     if (maxLen > receivedDataLength_)
         maxLen = receivedDataLength_;
-    Serial.print("len = ");
-    Serial.println(maxLen);
+    //Serial.print("len = ");
+    //Serial.println(maxLen);
+
     if (buffer)
     {
         memcpy(buffer, receivedData_, maxLen);

@@ -4,6 +4,7 @@
 #include <RF24/RF24.h>
 //#include "StartSessionCmd.h"
 #include "AbstractClientCommand.h"
+#include "dc_global.h"
 
 #define DC_START_SESSION 0x01
 #define DC_LOOKUP 0x02
@@ -65,6 +66,10 @@ public:
     //Returns network address.
     uint64_t networkAddr();
 
+
+    void setRFDataRate(const rf24_datarate_e speed);
+    void setRF_PA_Level(uint8_t level);
+
     // Set unique ID for device from 1 to 1024
     void setDeviceId(int16_t id);
 
@@ -122,6 +127,9 @@ public:
     void encryptMsg(uint8_t *msg, uint8_t size);
     void decryptMsg(uint8_t *msg, uint8_t size);
 
+    void sendEndSessionTag();
+    void waitEndSessionTag();
+
 private:
     volatile bool isBroadcastMode_;
     volatile uint64_t serverAddress_;
@@ -130,7 +138,7 @@ private:
     volatile uint16_t clientId;
     //uint8_t broadcastChannel_;
     volatile uint8_t workChannel_;
-    uint8_t buffer_[32];
+    uint8_t buffer_[DC_MAX_SIZE_OF_RF_PACKET];
     volatile int8_t bufferLen_;
     volatile int16_t sessionTimeout_;
     volatile int16_t keepAliveTimeout_;
@@ -141,20 +149,22 @@ private:
     uint8_t channelsActivity_[DC_CHANNEL_COUNT];
     volatile uint8_t cmdCount_;
 
-    uint8_t dataToSend_[32];
+    uint8_t dataToSend_[DC_MAX_SIZE_OF_RF_PACKET];
     volatile int8_t dataToSendLength_;
-    uint8_t receivedData_[32];
+    uint8_t receivedData_[DC_MAX_SIZE_OF_RF_PACKET];
     volatile int8_t receivedDataLength_;
 
     volatile bool isEncrypt_;
     volatile uint8_t *keyPtr_;
     volatile uint8_t keySize_;
+    uint8_t receivingEndSessionMsgTimeout_;
 
     int8_t bytePos(uint8_t searchedByte, uint8_t* data, uint8_t len);
     void prepareSesionBuffers_();
     bool isChannelBussy(uint8_t channel);
     void scanChannels();
     bool waitForKeepaliveMsg(int16_t timeout);
+
     void read(void *buf, uint8_t len);
     bool write(const void *buf, const uint8_t len);
 

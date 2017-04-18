@@ -45,34 +45,41 @@ public:
             client_->driver.startListening();
 
 
-            if (!client_->receiveStartSessionTag(t-(millis()-startTime)))
+            if (!client_->receiveStartSessionTag(t - (millis() - startTime)))
             {
                 Serial.println(F("Start not received"));
                 continue;
             }
             //client_->driver.printDetails();
-            isRecvData = client_->receiveDataFromServer();
+            //isRecvData = client_->receiveDataFromServer();
 
-            if (!isRecvData)
-            {
-                continue;
-            }
-            delay(1);
+            //if (!isRecvData)
+            //{
+            //    continue;
+            //}
+
+            client_->waitEndSessionTag();
+            //delay(1);
             client_->driver.stopListening();
 
             client_->driver.openWritingPipe(client_->clientAddress());
             //driver.printDetails();
 
-            if (!client_->sendDataToServer())
+            if (client_->sendDataToServer())
             {
-                isRecvData = false;
+                isRecvData = true;
+                client_->sendEndSessionTag();
                 //Serial.println(F("error send packet"));
                 //continue;
+            }
+            else
+            {
+                isRecvData = false;
             }
 
             client_->driver.txStandBy();
 
-            if ( isRecvData )
+            if (isRecvData)
                 break;
         }
 

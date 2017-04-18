@@ -25,7 +25,7 @@ Nrf24DcServer server(driver);
 #define NETWORK_ADDR 0xC7C7C7LL
 
 int sessionTimeout = 3000;  //in milli seconds
-int readingTimeout = 5;     //in milli seconds
+int readingTimeout = 10;     //in milli seconds
 uint64_t t;
 
 uint8_t key[] = { 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15 };
@@ -37,15 +37,10 @@ void setup() {
     Serial.print("Init nrf24 driver - ");
     Serial.println(server.init());       // initialize server and driver
     
-    server.init();
-    driver.setAddressWidth(5);           // must be always 5
-    driver.setAutoAck(false);
-    driver.setRetries(2, 15);            // set 15 retries and 500uSec between retransmition in autoACK mode.1
-    driver.setCRCLength(RF24_CRC_16);     // number of bits of CRC, can be RF24_CRC_8 or RF24_CRC_16
-    driver.enableDynamicPayloads();      // alway use this options
-    driver.setDataRate(RF24_1MBPS);      // the communication speed (RF24_250KBPS, RF24_1MBPS, RF24_2MBPS)
-    //driver.setDataRate(RF24_250KBPS);      // the communication speed (RF24_250KBPS, RF24_1MBPS, RF24_2MBPS)
-    driver.setPALevel(RF24_PA_HIGH);
+    //server.init();
+    //server.setRFDataRate(RF24_1MBPS);      // the communication speed (RF24_250KBPS, RF24_1MBPS, RF24_2MBPS)
+    server.setRFDataRate(RF24_250KBPS);      // the communication speed (RF24_250KBPS, RF24_1MBPS, RF24_2MBPS)
+    server.setRF_PA_Level(RF24_PA_HIGH);
     server.setWorkChannel(40);           // number of frequency channel for dirrect communicatin between server and client
     //server.setBroadcastChannel(120);     // number of frequency channel for receiving commands from server
     server.setNetworkAddr(NETWORK_ADDR); // Set network address, 3 bytes

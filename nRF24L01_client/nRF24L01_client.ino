@@ -38,6 +38,7 @@ void loop() {
     // 
     if (res != 0x00 && res != DC_KEEPALIVE && res != DC_LOOKUP)
     {
+        Serial.println("---------------------------------------");
         Serial.print("Command code : ");
         Serial.print(res);
         Serial.print(", id : ");
@@ -51,6 +52,7 @@ void loop() {
             Serial.print("Size - ");
             Serial.print(len);
             Serial.println(" bytes");
+            
             for (int i = 0; i < len; ++i)
             {
                 Serial.print(buf[i], HEX);
@@ -58,6 +60,9 @@ void loop() {
                 //Serial.print((char)buf[i]);
                 //Serial.print("), ");
             }
+
+            Serial.println("");
+
         }
     }
 }
