@@ -8,7 +8,7 @@
 #define DC_MAX_SIZE_OF_DATA_FOR_SENDING 4
 #define DC_NUMBER_OF_BROADCAST_REQUESTS 3
 
-#define DC_DEFAULT_LOOKUP_TIMEOUT 6000
+#define DC_DEFAULT_LOOKUP_TIMEOUT 35000
 #define DC_DEFAULT_READING_TIMEOUT 4
 #define DC_REPS_COUNT 20
 
@@ -125,7 +125,7 @@ class Nrf24DcServer
     int16_t keepAliveTimeout() const;
 
     bool sendRequestForSession();
-    bool sendRequestForLookup(int timeout);
+    bool sendRequestForLookup(int32_t timeout);
 
     bool sendStartSesionTag(uint8_t times = 1);
     bool sendStartSesionTagWithData(const uint8_t* data, const uint8_t len);
@@ -193,7 +193,7 @@ class Nrf24DcServer
     void scanChannels();
     int16_t lookForFreeChannel();
     bool isChannelFreeRadius(int8_t channel, int8_t radius);
-    void waitEndSessionTag();
+    void waitEndSessionTag(uint64_t leftTime = 0);
     
     inline void read(void *buf, uint8_t len);
     inline bool write(const void *buf, const uint8_t len);

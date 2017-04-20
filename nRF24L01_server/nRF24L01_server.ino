@@ -70,6 +70,7 @@ void setup() {
 }
 
 void startSes();
+void lookup();
 
 void loop() {
 
@@ -97,23 +98,21 @@ void loop() {
 
     server.serverLoop();
 
-    if ((millis() - t) > 13000)
+    if (Serial.available())
+    {
+        String msg;
+        msg = Serial.readString();
+
+        if (msg == "l")
+            lookup();
+    }
+
+    if ((millis() - t) > 5000)
     {
         t = millis();
-        Serial.println("Start loking for clients");
-        int n = server.lookForClient(5500);
-        Serial.print("Found ");
-        Serial.print(n);
-        Serial.println(" Clients");
-
-        for (int i = 0; i < server.handledClientsCount(); ++i)
-        {
-            Serial.println(server.clientIdAt(i));
-        }
-
-        
+        Serial.println("Enter <l> in terminal for looking up clients.");
+       
         startSes();
-
     }
 }
 
@@ -146,6 +145,21 @@ void startSes() {
 
             Serial.println("\n--------------------------------------");
         }
+    }
+
+}
+
+void lookup()
+{
+    Serial.println("Start loking for clients");
+    int n = server.lookForClient();
+    Serial.print("Found ");
+    Serial.print(n);
+    Serial.println(" Clients");
+
+    for (int i = 0; i < server.handledClientsCount(); ++i)
+    {
+        Serial.println(server.clientIdAt(i));
     }
 
 }

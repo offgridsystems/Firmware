@@ -84,16 +84,16 @@ public:
     rfDriver& driver;
 
     // Set session timeout 
-    void setSessionTimeout(int16_t timeout_mSec);
+    void setSessionTimeout(int32_t timeout_mSec);
 
     // Returns session timeout 
-    int16_t sessionTimeout();
+    int32_t sessionTimeout();
 
     void setKeepaliveTimeout(int16_t timeout_mSec);
     int16_t keepalveTimeout();
 
-    void setTimeoutBeforeStartSearchingNetwork(int16_t timeout_mSec);
-    int16_t timeoutBeforeStartSearchingNetwork();
+    void setTimeoutBeforeStartSearchingNetwork(int32_t timeout_mSec);
+    int32_t timeoutBeforeStartSearchingNetwork();
 
     // Add command object for handling commands from server
     bool addCommand(AbstractClientCommand* cmd);
@@ -140,10 +140,10 @@ private:
     volatile uint8_t workChannel_;
     uint8_t buffer_[DC_MAX_SIZE_OF_RF_PACKET];
     volatile int8_t bufferLen_;
-    volatile int16_t sessionTimeout_;
+    volatile int32_t sessionTimeout_;
     volatile int16_t keepAliveTimeout_;
     volatile uint32_t lastKeepaliveTime_;
-    volatile int16_t timeoutBeforeStartSearchingNetwork_;
+    volatile int32_t timeoutBeforeStartSearchingNetwork_;
 
     AbstractClientCommand* cmdArray_[DC_NUMBER_OF_COMMANDS];
     uint8_t channelsActivity_[DC_CHANNEL_COUNT];

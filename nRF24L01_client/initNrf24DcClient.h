@@ -24,7 +24,7 @@ bool initDcClient(Nrf24DcClient &client)
     client.setWorkChannel(40);               // number of frequency channel for dirrect communicatin between server and client
     //client.setBroadcastChannel(120);         // number of frequency channel for receiving commands from server
     client.setNetworkAddr(NETWORK_ADDR);     // Set network address, 3 bytes
-    client.setDeviceId(13);                // unique in same network ID
+    client.setDeviceId(1024);                // unique in same network ID
     client.setSessionTimeout(3000);          // time while client can comms with server in one session, after this time client aborts session
 
     // Adds handler for communication command

@@ -24,7 +24,7 @@ public:
 
         if (commandParametr.length() > 0)
         {
-            int16_t t = commandParametr.toInt() * 1.2;
+            int32_t t = commandParametr.toInt() * 1.2;
             client_->setTimeoutBeforeStartSearchingNetwork(t);
         }
 
@@ -42,12 +42,13 @@ public:
             client_->driver.startListening();
         }
 
-        if (!client_->receiveStartSessionTag(4000) && res)
+        if (!client_->receiveStartSessionTag(client_->timeoutBeforeStartSearchingNetwork()) && res)
         {
             Serial.println(F("Start Lookup not received"));
             res = false;
         }
 
+        client_->resetKeepAliveTimer();
         return res;
     }
 };

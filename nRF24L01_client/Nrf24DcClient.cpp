@@ -127,12 +127,12 @@ uint64_t Nrf24DcClient::clientAddress()
     return clientAddress_;
 }
 
-void Nrf24DcClient::setSessionTimeout(int16_t timeout)
+void Nrf24DcClient::setSessionTimeout(int32_t timeout)
 {
     sessionTimeout_ = timeout;
 }
 
-int16_t Nrf24DcClient::sessionTimeout()
+int32_t Nrf24DcClient::sessionTimeout()
 {
     return sessionTimeout_;
 }
@@ -147,12 +147,13 @@ int16_t Nrf24DcClient::keepalveTimeout()
     return keepAliveTimeout_;
 }
 
-void Nrf24DcClient::setTimeoutBeforeStartSearchingNetwork(int16_t timeout_mSec)
+void Nrf24DcClient::setTimeoutBeforeStartSearchingNetwork(int32_t timeout_mSec)
 {
-    timeoutBeforeStartSearchingNetwork_ = timeout_mSec;
+    if (timeout_mSec > timeoutBeforeStartSearchingNetwork_)
+        timeoutBeforeStartSearchingNetwork_ = timeout_mSec;
 }
 
-int16_t Nrf24DcClient::timeoutBeforeStartSearchingNetwork()
+int32_t Nrf24DcClient::timeoutBeforeStartSearchingNetwork()
 {
     return timeoutBeforeStartSearchingNetwork_;
 }
@@ -211,7 +212,7 @@ bool Nrf24DcClient::receiveStartSessionTag(int16_t timeout)
             read(buffer_, rLen);
             waitEndSessionTag();
 
-            if (rLen >= ssTagLen && strncmp((char*)buffer_, DC_START_SESSION_TAG_STR, ssTagLen )== 0)
+            if (rLen >= ssTagLen && strncmp((char*)buffer_, DC_START_SESSION_TAG_STR, ssTagLen) == 0)
             {
                 if (rLen > ssTagLen)
                 {
@@ -243,7 +244,7 @@ void Nrf24DcClient::keepServer()
 
     uint32_t currentTime = millis();
 
-    if ((currentTime - lastKeepaliveTime_) > (timeoutBeforeStartSearchingNetwork()*1.2))
+    if ((currentTime - lastKeepaliveTime_) > (timeoutBeforeStartSearchingNetwork()*1.5))
     {
         Serial.println("Keepalive timer overflow. Starting to look for server.");
 
@@ -267,7 +268,7 @@ void Nrf24DcClient::keepServer()
         }
 
     }
-    
+
 }
 
 void Nrf24DcClient::resetKeepAliveTimer()
@@ -378,7 +379,7 @@ bool Nrf24DcClient::waitForKeepaliveMsg(int16_t timeout)
 {
     uint32_t startTime = millis();
 
-    
+
     while ((millis() - startTime) <= timeout)
     {
         uint8_t res = listenBroadcast();

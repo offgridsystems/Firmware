@@ -83,6 +83,7 @@ public:
                 break;
         }
 
+        client_->resetKeepAliveTimer();
         return isRecvData;
     }
 };

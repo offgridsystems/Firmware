@@ -12,27 +12,45 @@ Nrf24DcServer::Nrf24DcServer(rfDriver& drv)
 
 uint16_t Nrf24DcServer::lookForClient(int timeout)
 {
+    uint64_t startSessionTime = millis();
+    int16_t lookupTime = this->keepAliveTimeout()*1.2*DC_CHANNEL_COUNT;
+    uint64_t endTime = startSessionTime + ((this->sessionTimeout() > lookupTime) ? this->sessionTimeout() : lookupTime) * 1.2;
+    Serial.print("Waiting ");
+    Serial.print((int)(endTime-startSessionTime));
+    Serial.println(" msec ");
+
+    while (millis() < endTime)
+    {
+        sendKeepAliveMsg();
+        delay(keepAliveTimeout());
+        yield();
+    }
+
+    Serial.print("Scaning RF (wait ");
+    Serial.print(timeout);
+    Serial.print(" msec).");
+
     currnetDeviceCount_ = 0;
     sendRequestForLookup(timeout);
     driver_.txStandBy();
     delay(500);
-    uint64_t startSessionTime = millis();
+    startSessionTime = millis();
 
-    for (int id = 1; id < 1024; ++id)
+    for (int id = 1; id <= 1024; ++id)
     {
 
         //Serial.println(id);
         if ((millis() - startSessionTime) > timeout)
         {
             Serial.println("Lookup session timeout.");
-            //Serial.println(id);
+            Serial.println(id);
             break;
         }
 
-        uint64_t clientAddr = id + networkAddr();
+        uint64_t clientAddr = (uint64_t)id + networkAddr();
 
         setSingleClientMode(clientAddr);
-        driver_.openWritingPipe(clientAddr);
+        //driver_.openWritingPipe(clientAddr);
 
         if (sendStartSesionTag())
         {
@@ -317,7 +335,7 @@ bool Nrf24DcServer::sendRequestForSession()
     return this->sendBroadcastRequestCommand(command);
 }
 
-bool Nrf24DcServer::sendRequestForLookup(int timeout)
+bool Nrf24DcServer::sendRequestForLookup(int32_t timeout)
 {
     String command = "lookup:";
     command += String(timeout);
@@ -439,8 +457,9 @@ int16_t Nrf24DcServer::startSession()
         bool isRecvData = false;
         rLen = DC_MAX_SIZE_OF_RF_PACKET;
         driver_.startListening();
+        uint64_t leftTime;
 
-        while ((millis() - recvStartTime) <= readingTimeout_)
+        while ((leftTime = (millis() - recvStartTime)) <= receivingEndSessionMsgTimeout_)
         {
             yield();
             if (driver_.available())
@@ -450,7 +469,7 @@ int16_t Nrf24DcServer::startSession()
                 read(dataBufferFromClients_[i], rLen);
                 dataBufferFromClientsSize_[i] = rLen;
                 isRecvData = true;
-                waitEndSessionTag();
+                waitEndSessionTag(leftTime);
                 break;
             }
         }
@@ -689,7 +708,7 @@ bool Nrf24DcServer::isChannelFreeRadius(int8_t channel, int8_t radius)
 
     for (int ch = left; ch <= right; ++ch)
     {
-        
+
         if (channelsActivity_[ch] > 2)
         {
             res = false;
@@ -700,11 +719,11 @@ bool Nrf24DcServer::isChannelFreeRadius(int8_t channel, int8_t radius)
     return res;
 }
 
-void Nrf24DcServer::waitEndSessionTag()
+void Nrf24DcServer::waitEndSessionTag(uint64_t leftTime)
 {
     auto startTime = millis();
 
-    while ((millis() - startTime) < receivingEndSessionMsgTimeout_)
+    while ((millis() - startTime + leftTime) < receivingEndSessionMsgTimeout_)
     {
         if (driver_.available())
         {
