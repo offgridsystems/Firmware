@@ -1,7 +1,8 @@
 
 #ifndef NRF24_DC_SERVER_H
 #define NRF24_DC_SERVER_H
-#include <RF24/RF24.h>
+#include <RF24.h>
+//#include <RF24/RF24.h>
 #include "dc_global.h"
 
 #define DC_MAX_CLIENT_NUMBER 300

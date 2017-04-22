@@ -16,7 +16,8 @@ until session timeout
 */
 
 
-#include <RF24/RF24.h>  //standard arduino library, you can install it on library manager
+#include <RF24.h>  //standard arduino library, you can install it on library manager
+//#include <RF24/RF24.h>  //standard arduino library, you can install it on library manager
 #include "Nrf24DcServer.h"
 
 RF24 driver(9, 10);           // init driver D2 - CE pin, D8 CS pin
@@ -74,34 +75,13 @@ void lookup();
 
 void loop() {
 
-    //Serial.println("Send");
-    //driver.stopListening();
-    //driver.openWritingPipe(0xC7C7C7FFFFLL);
-    //driver.setChannel(66);
-    //driver.setAutoAck(false);
-    //driver.write("1234", 4);
-    //delay(1500);
-    //return;
-
-    //uint8_t msg[] = "Hello world";
-    //auto ss = micros();
-    //server.encryptMsg(msg, 12);
-    ////auto es = micros() - ss;
-    ////Serial.println(es);
-    //Serial.println((char*)msg);
-    //server.decryptMsg(msg, 12);
-    //Serial.println(micros() - ss);
-    //Serial.println((char*)msg);
-    //delay(3000);
-
-    //return;
-
     server.serverLoop();
 
     if (Serial.available())
     {
         String msg;
         msg = Serial.readString();
+        msg.trim();
 
         if (msg == "l")
             lookup();
