@@ -36,7 +36,7 @@ void loop() {
     uint8_t res = client.listenBroadcast();  // returns not 0 if any command was received from server
 
     // 
-    if (res != 0x00 && res != DC_KEEPALIVE && res != DC_LOOKUP)
+    if (res != 0x00 && res != DC_KEEPALIVE && res != DC_LOOKUP && res != DC_CHANGE_CHANNEL)
     {
         Serial.println("---------------------------------------");
         Serial.print("Command code : ");

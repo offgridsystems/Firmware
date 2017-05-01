@@ -149,8 +149,7 @@ int16_t Nrf24DcClient::keepalveTimeout()
 
 void Nrf24DcClient::setTimeoutBeforeStartSearchingNetwork(int32_t timeout_mSec)
 {
-    if (timeout_mSec > timeoutBeforeStartSearchingNetwork_)
-        timeoutBeforeStartSearchingNetwork_ = timeout_mSec;
+    timeoutBeforeStartSearchingNetwork_ = timeout_mSec;
 }
 
 int32_t Nrf24DcClient::timeoutBeforeStartSearchingNetwork()
@@ -499,8 +498,9 @@ uint8_t Nrf24DcClient::listenBroadcast()
             strncpy(command, (char*)buffer_, spliterPos);
             ++spliterPos;
             strncpy(parametr, (char*)buffer_ + spliterPos, receivedPacketSize - spliterPos);
+            
             //Serial.print(F("command "));
-            //Serial.println(spliterPos);
+            //Serial.println((char*)buffer_);
             //Serial.println(command);
             //Serial.println(parametr);
 
@@ -516,6 +516,9 @@ uint8_t Nrf24DcClient::listenBroadcast()
 
                     return cmdArray_[i]->returnCode();
                 }
+
+            //Serial.print("Unknow command - ");
+            //Serial.println(command);
         }
     }
 

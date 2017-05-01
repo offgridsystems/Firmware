@@ -44,6 +44,8 @@ class Nrf24DcServer
     //           or <receivedDataById>  
     int16_t startSession();
 
+    void changeChannelOnClients(uint8_t newChannel);
+
     // Set number of channel for session communication
     void setWorkChannel(uint8_t ch);
 

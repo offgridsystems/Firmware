@@ -279,10 +279,9 @@ bool Nrf24DcServer::removeClientsByRange(int16_t from, int16_t count)
 bool Nrf24DcServer::setBroadcastMode()
 {
     driver_.flush_tx();
+    driver_.stopListening();
     driver_.setChannel(broadcastChannel());
     driver_.setAutoAck(false);
-
-
     return true;
 }
 
@@ -491,6 +490,14 @@ int16_t Nrf24DcServer::startSession()
 
 }
 
+void Nrf24DcServer::changeChannelOnClients(uint8_t newChannel)
+{
+    String cmd = "cc:";
+    cmd += newChannel;
+    
+    sendBroadcastRequestCommand(cmd);
+}
+
 uint8_t * Nrf24DcServer::receivedDataById(uint16_t id)
 {
     int16_t idx = clientIndexById(id);
@@ -560,9 +567,13 @@ void Nrf24DcServer::testChannel()
 
         if (freeChannel != -1)
         {
-            setWorkChannel(freeChannel);
             Serial.print("Found new free channel ");
             Serial.println(freeChannel);
+
+            for (int i = 0; i < 10; ++i)
+                changeChannelOnClients(freeChannel);
+
+            setWorkChannel(freeChannel);
         }
     }
 
@@ -587,6 +598,7 @@ void Nrf24DcServer::serverLoop()
 {
     testChannel();
     sendKeepAliveMsg();
+    
 }
 
 void Nrf24DcServer::setEncryption(bool flag)
@@ -806,7 +818,11 @@ bool Nrf24DcServer::sendBroadcastRequestCommand(String command)
     yield();
     //driver.printRegisters();
 
-    //Serial.println("loop to broadcast request for data");
+    //if (command.substring(0, 9) != "keepAlive") {
+    //    Serial.print("Send broadcast ");
+    //    Serial.println(command);
+    //}
+
     for (int i = 0; i < DC_NUMBER_OF_BROADCAST_REQUESTS; ++i) {
         const uint8_t len = command.length() > 32 ? 32 : command.length();
         uint8_t buf[32];

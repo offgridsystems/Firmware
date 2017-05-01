@@ -41,7 +41,10 @@ void setup() {
     //server.init();
     //server.setRFDataRate(RF24_1MBPS);      // the communication speed (RF24_250KBPS, RF24_1MBPS, RF24_2MBPS)
     server.setRFDataRate(RF24_250KBPS);      // the communication speed (RF24_250KBPS, RF24_1MBPS, RF24_2MBPS)
-    server.setRF_PA_Level(RF24_PA_MIN);
+    //server.setRF_PA_Level(RF24_PA_MAX);
+    server.setRF_PA_Level(RF24_PA_HIGH);
+    //server.setRF_PA_Level(RF24_PA_LOW);
+    //server.setRF_PA_Level(RF24_PA_MIN);
     server.setWorkChannel(40);           // number of frequency channel for dirrect communicatin between server and client
     //server.setBroadcastChannel(120);     // number of frequency channel for receiving commands from server
     server.setNetworkAddr(NETWORK_ADDR); // Set network address, 3 bytes
@@ -87,7 +90,7 @@ void loop() {
             lookup();
     }
 
-    if ((millis() - t) > 5000)
+    if ((millis() - t) > 6000)
     {
         t = millis();
         Serial.println("Enter <l> in terminal for looking up clients.");
