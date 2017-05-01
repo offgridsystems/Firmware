@@ -81,17 +81,17 @@ void Nrf24DcClient::setRFDataRate(const rf24_datarate_e speed)
 
     switch (speed)
     {
-    RF24_250KBPS:
+    case RF24_250KBPS:
         delay = 5;
         number = 15;
         break;
 
-    RF24_1MBPS:
+    case RF24_1MBPS:
         delay = 4;
         number = 15;
         break;
 
-    RF24_2MBPS:
+    case RF24_2MBPS:
         delay = 3;
         number = 15;
         break;
