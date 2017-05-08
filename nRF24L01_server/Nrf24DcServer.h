@@ -6,6 +6,7 @@
 #include "dc_global.h"
 
 #define DC_MAX_CLIENT_NUMBER 300
+#define DC_MAX_CLIENT_ID 20
 #define DC_MAX_SIZE_OF_DATA_FOR_SENDING 4
 #define DC_NUMBER_OF_BROADCAST_REQUESTS 3
 
@@ -33,6 +34,7 @@ class Nrf24DcServer
     // and store ids of found clients
     uint16_t lookForClient(int timeout = DC_DEFAULT_LOOKUP_TIMEOUT);
 
+    uint16_t lookForClientWithDifferentPALevel(int timeout = DC_DEFAULT_LOOKUP_TIMEOUT);
 
     // This function starts communiction session
     // for receiving data from handled clients
@@ -43,6 +45,12 @@ class Nrf24DcServer
     // use function <receivedDataByIndex> 
     //           or <receivedDataById>  
     int16_t startSession();
+
+    int8_t tuneTxPa(int16_t clientId);
+
+    int8_t tuneRxPa(int16_t clientId);
+
+    void tunePA();
 
     void changeChannelOnClients(uint8_t newChannel);
 
@@ -171,6 +179,7 @@ class Nrf24DcServer
     uint8_t workChannel_;
     //int16_t handledDevicesCount_;
     
+    int8_t txPaLevel_[DC_MAX_CLIENT_NUMBER];
     int16_t handledDevicesId_[DC_MAX_CLIENT_NUMBER];
     int8_t commsStatus_[DC_MAX_CLIENT_NUMBER];
     uint8_t dataBufferFromClients_[DC_MAX_CLIENT_NUMBER][DC_MAX_SIZE_OF_RF_PACKET];
@@ -189,6 +198,7 @@ class Nrf24DcServer
     uint8_t *keyPtr_;
     uint8_t keySize_;
     uint8_t receivingEndSessionMsgTimeout_;
+    uint8_t rfPaLevel_;
 
     void prepareArrays();
     bool sendBroadcastRequestCommand(String command);
@@ -200,6 +210,8 @@ class Nrf24DcServer
     
     inline void read(void *buf, uint8_t len);
     inline bool write(const void *buf, const uint8_t len);
+
+    void setPaLevelForClient(int16_t clientId, uint8_t level);
 
 };
 

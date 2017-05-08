@@ -64,7 +64,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>C:\Users\yurec\Documents\Arduino\libraries\RF24;c:\Program Files (x86)\Arduino\hardware\teensy\avr\libraries\SPI;C:\Users\yurec\Documents\Arduino\libraries\RF24\utility;c:\Program Files (x86)\Arduino\libraries;c:\Program Files (x86)\Arduino\hardware\teensy\avr\libraries;C:\Users\yurec\Documents\Arduino\libraries;c:\Program Files (x86)\Arduino\hardware\teensy\avr\cores\teensy3;c:\Program Files (x86)\Arduino\hardware\teensy\avr\cores\teensy3\avr;c:\Program Files (x86)\Arduino\hardware\teensy\avr\cores\teensy3\util;c:\Program Files (x86)\Arduino\hardware\teensy\avr\cores\teensy3\utils;c:\Program Files (x86)\Arduino\hardware\teensy\avr\cores\teensy3\avr;$(ProjectDir)c:\Program Files (x86)\Arduino\hardware\tools\arm\arm-none-eabi\include;$(ProjectDir)..\nRF24L01_client;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\yurec\Documents\Arduino\libraries\RF24;c:\Program Files (x86)\Arduino\hardware\teensy\avr\libraries\SPI;c:\Program Files (x86)\Arduino\hardware\teensy\avr\libraries\FastCRC;C:\Users\yurec\Documents\Arduino\libraries\RF24\utility;c:\Program Files (x86)\Arduino\libraries;c:\Program Files (x86)\Arduino\hardware\teensy\avr\libraries;C:\Users\yurec\Documents\Arduino\libraries;c:\Program Files (x86)\Arduino\hardware\teensy\avr\cores\teensy3;c:\Program Files (x86)\Arduino\hardware\teensy\avr\cores\teensy3\avr;c:\Program Files (x86)\Arduino\hardware\teensy\avr\cores\teensy3\util;c:\Program Files (x86)\Arduino\hardware\teensy\avr\cores\teensy3\utils;c:\Program Files (x86)\Arduino\hardware\teensy\avr\cores\teensy3\avr;$(ProjectDir)c:\Program Files (x86)\Arduino\hardware\tools\arm\arm-none-eabi\include;$(ProjectDir)..\nRF24L01_client;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ForcedIncludeFiles>$(ProjectDir)__vm\.nRF24L01_client.vsarduino.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
       <WholeProgramOptimization>false</WholeProgramOptimization>
       <PreprocessorDefinitions>__HARDWARE_MKl26z64__;__HARDWARE_MKL26Z64__;__MKL26Z64__;TEENSYDUINO=134;ARDUINO=10801;F_CPU=48000000;USB_SERIAL;LAYOUT_US_ENGLISH;__cplusplus=201103L;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -85,6 +85,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AbstractClientCommand.h" />
+    <ClInclude Include="ChangeChannelCmd.h" />
+    <ClInclude Include="dc_global.h" />
+    <ClInclude Include="DC_RF24DriverProxy.h" />
     <ClInclude Include="KeepaliveCmd.h" />
     <ClInclude Include="initNrf24DcClient.h" />
     <ClInclude Include="LookupCmd.h" />
@@ -93,9 +96,11 @@
     </ClInclude>
     <ClInclude Include="RamMonitor.h" />
     <ClInclude Include="StartSessionCmd.h" />
+    <ClInclude Include="TuneTxPaCmd.h" />
     <ClInclude Include="__vm\.nRF24L01_client.vsarduino.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="DC_RF24DriverProxy.cpp" />
     <ClCompile Include="Nrf24DcClient.cpp" />
   </ItemGroup>
   <PropertyGroup>

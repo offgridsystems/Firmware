@@ -69,12 +69,12 @@ public:
             {
                 isRecvData = true;
                 client_->sendEndSessionTag();
-                //Serial.println(F("error send packet"));
                 //continue;
             }
             else
             {
                 isRecvData = false;
+                Serial.println(F("error send packet"));
             }
 
             client_->driver.txStandBy();

@@ -83,22 +83,22 @@ void Nrf24DcClient::setRFDataRate(const rf24_datarate_e speed)
     {
     case RF24_250KBPS:
         delay = 5;
-        number = 15;
+        number = 10;
         break;
 
     case RF24_1MBPS:
         delay = 4;
-        number = 15;
+        number = 10;
         break;
 
     case RF24_2MBPS:
         delay = 3;
-        number = 15;
+        number = 10;
         break;
 
     default:
         delay = 4;
-        number = 15;
+        number = 10;
         break;
     }
 
@@ -323,7 +323,7 @@ void Nrf24DcClient::sendEndSessionTag()
     driver.setAutoAck(false);
     write(DC_END_SESSION_TAG_STR, strlen(DC_END_SESSION_TAG_STR));
     write(DC_END_SESSION_TAG_STR, strlen(DC_END_SESSION_TAG_STR));
-    write(DC_END_SESSION_TAG_STR, strlen(DC_END_SESSION_TAG_STR));
+    //write(DC_END_SESSION_TAG_STR, strlen(DC_END_SESSION_TAG_STR));
     driver.setAutoAck(true);
 }
 
@@ -527,9 +527,11 @@ uint8_t Nrf24DcClient::listenBroadcast()
 
 bool Nrf24DcClient::startSession()
 {
+    driver.stopListening();
     isBroadcastMode_ = false;
     driver.setAutoAck(true);
     driver.setChannel(workChannel());
+    driver.openReadingPipe(1, clientAddress());
     prepareSesionBuffers_();
     return true;
 }

@@ -28,6 +28,7 @@ Nrf24DcServer server(driver);
 int sessionTimeout = 3000;  //in milli seconds
 int readingTimeout = 10;     //in milli seconds
 uint64_t t;
+int16_t numberOfFailComms = 0;
 
 uint8_t key[] = { 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15 };
 
@@ -41,8 +42,8 @@ void setup() {
     //server.init();
     //server.setRFDataRate(RF24_1MBPS);      // the communication speed (RF24_250KBPS, RF24_1MBPS, RF24_2MBPS)
     server.setRFDataRate(RF24_250KBPS);      // the communication speed (RF24_250KBPS, RF24_1MBPS, RF24_2MBPS)
-    //server.setRF_PA_Level(RF24_PA_MAX);
-    server.setRF_PA_Level(RF24_PA_HIGH);
+    server.setRF_PA_Level(RF24_PA_MAX);
+    //server.setRF_PA_Level(RF24_PA_HIGH);
     //server.setRF_PA_Level(RF24_PA_LOW);
     //server.setRF_PA_Level(RF24_PA_MIN);
     server.setWorkChannel(40);           // number of frequency channel for dirrect communicatin between server and client
@@ -86,8 +87,16 @@ void loop() {
         msg = Serial.readString();
         msg.trim();
 
-        if (msg == "l")
+        if (msg == "l") {
             lookup();
+            server.tunePA();
+        }
+
+        if (msg == "t")
+            server.tunePA();
+            //server.tuneTxPa(server.clientIdAt(0));
+
+        numberOfFailComms = 0;
     }
 
     if ((millis() - t) > 6000)
@@ -108,12 +117,20 @@ void startSes() {
     int numberOfHandledDevices = server.startSession();
     yield();
 
+    if (numberOfHandledDevices != server.handledClientsCount())
+    {
+        ++numberOfFailComms;
+    }
+
     uint32_t finishTime = millis() - startSingleSessionTime;
     Serial.print("Session duration ");
     Serial.print(finishTime);
     Serial.println("mSec");
-    Serial.print("Number of handled devices = ");
+    Serial.print("Number of handled clients = ");
     Serial.println(numberOfHandledDevices);
+
+    Serial.print("Number of failed comms = ");
+    Serial.println(numberOfFailComms);
 
     if (numberOfHandledDevices)
     {
@@ -134,8 +151,9 @@ void startSes() {
 
 void lookup()
 {
-    Serial.println("Start loking for clients");
-    int n = server.lookForClient();
+    Serial.println("Start looking for clients");
+    //int n = server.lookForClient();
+    int n = server.lookForClientWithDifferentPALevel();
     Serial.print("Found ");
     Serial.print(n);
     Serial.println(" Clients");

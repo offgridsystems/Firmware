@@ -8,6 +8,8 @@
 #include "LookupCmd.h"
 #include "KeepaliveCmd.h"
 #include "ChangeChannelCmd.h"
+#include "TuneTxPaCmd.h"
+#include "TuneRxPaCmd.h"
 
 uint8_t key[] = { 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15 };
 
@@ -20,15 +22,15 @@ bool initDcClient(Nrf24DcClient &client)
 
     //client.setRFDataRate(RF24_1MBPS);   // the communication speed (RF24_250KBPS, RF24_1MBPS, RF24_2MBPS)
     client.setRFDataRate(RF24_250KBPS);      // the communication speed (RF24_250KBPS, RF24_1MBPS, RF24_2MBPS)
-    //client.setRF_PA_Level(RF24_PA_MAX);
-    client.setRF_PA_Level(RF24_PA_HIGH);
+    client.setRF_PA_Level(RF24_PA_MAX);
+    //client.setRF_PA_Level(RF24_PA_HIGH);
     //client.setRF_PA_Level(RF24_PA_LOW);
     //client.setRF_PA_Level(RF24_PA_MIN);
 
     client.setWorkChannel(40);               // number of frequency channel for dirrect communicatin between server and client
     //client.setBroadcastChannel(120);         // number of frequency channel for receiving commands from server
     client.setNetworkAddr(NETWORK_ADDR);     // Set network address, 3 bytes
-    client.setDeviceId(13);                // unique in same network ID
+    client.setDeviceId(15);                // unique in same network ID
     client.setSessionTimeout(3000);          // time while client can comms with server in one session, after this time client aborts session
 
     // Adds handler for communication command
@@ -37,6 +39,8 @@ bool initDcClient(Nrf24DcClient &client)
     client.addCommand(new LookupCmd(&client)); 
     client.addCommand(new KeepaliveCmd(&client));
     client.addCommand(new ChangeChannelCmd(&client));
+    client.addCommand(new TuneTxPaCmd(&client));
+    client.addCommand(new TuneRxPaCmd(&client));
 
     // copy data for sending to the server during communication session
     // you can call this function anywhere

@@ -22,6 +22,7 @@ public:
         //Serial.println(F("Satrt command CC"));
         //Serial.print(F("command parametr"));
         //Serial.println(commandParametr);
+        client_->setTimeoutBeforeStartSearchingNetwork(DC_DEFAULT_OFFLINE_TIMEOUT);
         if (commandParametr.length() > 0)
         {
             int16_t t = commandParametr.toInt();

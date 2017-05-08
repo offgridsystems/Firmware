@@ -42,9 +42,24 @@
     <ClInclude Include="RamMonitor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="DC_RF24DriverProxy.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="dc_global.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ChangeChannelCmd.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TuneTxPaCmd.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Nrf24DcClient.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DC_RF24DriverProxy.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
