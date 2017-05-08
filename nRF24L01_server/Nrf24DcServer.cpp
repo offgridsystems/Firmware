@@ -506,7 +506,7 @@ int16_t Nrf24DcServer::startSession()
         driver_.startListening();
         uint64_t leftTime;
 
-        Serial.println(receivingEndSessionMsgTimeout_);
+        //Serial.println(receivingEndSessionMsgTimeout_);
         while ((leftTime = (millis() - recvStartTime)) <= receivingEndSessionMsgTimeout_)
         {
             yield();
