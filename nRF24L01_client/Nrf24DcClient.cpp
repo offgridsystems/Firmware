@@ -15,7 +15,7 @@ Nrf24DcClient::Nrf24DcClient(rfDriver& drv)
     lastKeepaliveTime_ = 0;
 
     setKeepaliveTimeout(DC_DEFAULT_KEEPALIVE_TIMEOUT);
-    setTimeoutBeforeStartSearchingNetwork(DC_DEFAULT_TIMEOUT_BEFORE_STARTING_SEARCH_SERVER);
+    setTimeoutBeforeStartSearchingNetwork(DC_DEFAULT_OFFLINE_TIMEOUT);
 }
 
 bool Nrf24DcClient::init()

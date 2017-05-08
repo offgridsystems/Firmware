@@ -25,8 +25,8 @@ public:
 
         Serial.print(F("Starting to tune Rx PA 1 "));
         Serial.println(commandParametr);
-
         client_->setTimeoutBeforeStartSearchingNetwork(DC_DEFAULT_OFFLINE_TIMEOUT);
+
         if (commandParametr.length() > 0)
         {
             int16_t id = commandParametr.toInt();
