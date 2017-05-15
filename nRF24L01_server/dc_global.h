@@ -13,6 +13,6 @@
 #define DC_MAX_SIZE_OF_RF_PACKET 32
 
 uint8_t getBestPaLevelResult(int32_t* goodResults, int32_t* fallResults, uint8_t resultCount);
-
+void myDelay(int32_t mSec);
 #endif // !DCGLOBAL_H
 

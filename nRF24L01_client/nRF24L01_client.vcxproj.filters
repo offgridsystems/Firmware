@@ -54,12 +54,18 @@
     <ClInclude Include="TuneTxPaCmd.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="TuneRxPaCmd.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Nrf24DcClient.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="DC_RF24DriverProxy.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="dc_global.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

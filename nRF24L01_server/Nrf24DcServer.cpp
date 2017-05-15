@@ -22,7 +22,7 @@ uint16_t Nrf24DcServer::lookForClient(int timeout)
     while (millis() < endTime)
     {
         sendKeepAliveMsg();
-        delay(keepAliveTimeout());
+        myDelay(keepAliveTimeout());
         yield();
     }
 
@@ -33,7 +33,7 @@ uint16_t Nrf24DcServer::lookForClient(int timeout)
     currnetDeviceCount_ = 0;
     sendRequestForLookup(timeout);
     driver_.txStandBy();
-    delay(500);
+    myDelay(500);
     startSessionTime = millis();
 
     for (int id = 1; id <= DC_MAX_CLIENT_ID; ++id)
@@ -56,7 +56,7 @@ uint16_t Nrf24DcServer::lookForClient(int timeout)
         {
             addClient(id);
             //driver_.printDetails();
-            //Serial.println(id);
+            Serial.println(id);
 
 
             if (handledClientsCount() >= DC_MAX_CLIENT_NUMBER)
@@ -630,16 +630,16 @@ void Nrf24DcServer::tunePA()
     {
         this->tuneTxPa(this->clientIdAt(i));
         this->sendKeepAliveMsg();
-        delay(500);
+        myDelay(500);
         this->tuneRxPa(this->clientIdAt(i));
         this->sendKeepAliveMsg();
-        delay(500);
+        myDelay(500);
         this->tuneTxPa(this->clientIdAt(i));
         this->sendKeepAliveMsg();
-        delay(500);
+        myDelay(500);
         this->tuneRxPa(this->clientIdAt(i));
         this->sendKeepAliveMsg();
-        delay(500);
+        myDelay(500);
 
         uint8_t paCount[4] = { 0 };
         for (int i = 0; i < handledClientsCount(); ++i) {

@@ -54,8 +54,11 @@ public:
                     client_->driver.read(buf, DC_MAX_SIZE_OF_RF_PACKET);
                     ++r;
                 }
+                yield();
             }
             Serial.println(r);
+            yield();
+
         }
         //Serial.println("Results: ");
 

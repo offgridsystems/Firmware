@@ -56,6 +56,7 @@ public:
                     ++res;
                 else
                     ++fall;
+                yield();
             }
             results[i] = res;
             resultsFalls[i] = fall;
@@ -63,6 +64,7 @@ public:
             Serial.println(res);
             Serial.println(fall);
             client_->driver.txStandBy();
+            yield();
         }
 
         uint8_t pa = getBestPaLevelResult(results, resultsFalls, 4);

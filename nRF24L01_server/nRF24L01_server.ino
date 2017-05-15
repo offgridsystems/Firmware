@@ -89,7 +89,7 @@ void loop() {
 
         if (msg == "l") {
             lookup();
-            delay(1000);
+            myDelay(1000);
             server.tunePA();
         }
 

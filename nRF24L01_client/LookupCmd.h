@@ -44,7 +44,7 @@ public:
 
         if (!client_->receiveStartSessionTag(client_->timeoutBeforeStartSearchingNetwork()) && res)
         {
-            Serial.println(F("Start Lookup not received"));
+            Serial.println("Start Lookup not received");
             res = false;
         }
 
