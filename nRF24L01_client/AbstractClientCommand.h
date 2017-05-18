@@ -17,7 +17,7 @@ public:
     virtual ~AbstractClientCommand() = default;
     
     virtual bool run(String commandParametr) = 0;
-    bool isCommand(String commandName)
+    bool isCommand(String &commandName)
     {
         //Serial.print(F("isCommand "));
         //Serial.println(commandName);

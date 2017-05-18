@@ -45,6 +45,12 @@ public:
     // if buffer = nullptr then function returns only size of received data
     int8_t getReceivedData(void* buffer, int8_t maxLen);
 
+    // Setting data received during communication session
+    // @parametrs buffer - pointer to the source buffer
+    //            len - size of destination buffer
+    // store data to internal buffer, that can be reade by getReceivedData()
+    void setReceivedData(const void* buffer, const int8_t len);
+
     // Listen broadast chanel to commands from server
     // call this function in main loop
     uint8_t listenBroadcast();
@@ -170,6 +176,7 @@ private:
 
     void read(void *buf, uint8_t len);
     bool write(const void *buf, const uint8_t len);
+    void write3(const void *buf, const uint8_t len);
 
 };
 

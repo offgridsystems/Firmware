@@ -172,8 +172,10 @@ bool Nrf24DcClient::sendDataToServer()
 {
     if (!dataToSendLength_)
         return false;
-    else
-        return write(dataToSend_, dataToSendLength_);
+    else {
+        write3(dataToSend_, dataToSendLength_);
+        return true;
+    }
 }
 
 bool Nrf24DcClient::receiveDataFromServer(int16_t timeout)
@@ -383,7 +385,7 @@ bool Nrf24DcClient::waitForKeepaliveMsg(int16_t timeout)
     {
         uint8_t res = listenBroadcast();
 
-        if (res == DC_KEEPALIVE)
+        if (res != 0)
         {
             return true;
         }
@@ -438,6 +440,27 @@ bool Nrf24DcClient::write(const void * buf, const uint8_t len)
     return driver.write(msgPtr, len);
 }
 
+void Nrf24DcClient::write3(const void * buf, const uint8_t len)
+{
+    uint8_t *msgPtr = (uint8_t*)buf;
+    uint8_t tmpBuf[32] = { 0 };
+
+    if (isEncrypt_)
+    {
+        memcpy(tmpBuf, msgPtr, len);
+        msgPtr = &tmpBuf[0];
+        encryptMsg(msgPtr, len);
+    }
+
+    driver.setRetries(0, 0);
+    driver.setAutoAck(false);
+    driver.startFastWrite(msgPtr, len, false);
+    driver.startFastWrite(msgPtr, len, false);
+    //driver.startFastWrite(msgPtr, len, false);
+    //driver.write(msgPtr, len);
+    driver.txStandBy();
+}
+
 int8_t Nrf24DcClient::getReceivedData(void * buffer, int8_t maxLen)
 {
     if (maxLen > receivedDataLength_)
@@ -451,6 +474,14 @@ int8_t Nrf24DcClient::getReceivedData(void * buffer, int8_t maxLen)
     }
 
     return maxLen;
+}
+
+void Nrf24DcClient::setReceivedData(const void * buffer, const int8_t len)
+{
+    if (len > DC_MAX_SIZE_OF_RF_PACKET)
+        return;
+
+    memcpy(receivedData_, buffer, len);
 }
 
 uint8_t Nrf24DcClient::listenBroadcast()
@@ -476,18 +507,14 @@ uint8_t Nrf24DcClient::listenBroadcast()
     {
         receivedPacketSize = driver.getDynamicPayloadSize();
         memset(buffer_, 0, 32);
-        read(buffer_, 32);
-
-        //Serial.print(F(" received packet "));
+        read(buffer_, receivedPacketSize);
+        driver.stopListening();
         //Serial.println((char*)buffer_);
+        //Serial.println(receivedPacketSize);
     }
 
     if (receivedPacketSize >= 1)
     {
-        //delay(1000);
-        //Serial.print(F(" received packet "));
-        //Serial.println(receivedPacketSize);
-        //Serial.println((char*)&buffer_[0]);
         int8_t spliterPos = 0;
         spliterPos = bytePos((uint8_t)':', buffer_, receivedPacketSize);
 
@@ -498,16 +525,10 @@ uint8_t Nrf24DcClient::listenBroadcast()
             strncpy(command, (char*)buffer_, spliterPos);
             ++spliterPos;
             strncpy(parametr, (char*)buffer_ + spliterPos, receivedPacketSize - spliterPos);
-            
-            //Serial.print(F("command "));
-            //Serial.println((char*)buffer_);
-            //Serial.println(command);
-            //Serial.println(parametr);
-
+            String cmdStr = String(command);
             for (int i = 0; i < cmdCount_; ++i)
-                if (cmdArray_[i]->isCommand(String(command)))
+                if (cmdArray_[i]->isCommand(cmdStr))
                 {
-                    //Serial.println(F("Satrt command ssh"));
                     driver.stopListening();
                     isBroadcastMode_ = false;
 
@@ -516,9 +537,6 @@ uint8_t Nrf24DcClient::listenBroadcast()
 
                     return cmdArray_[i]->returnCode();
                 }
-
-            //Serial.print("Unknow command - ");
-            //Serial.println(command);
         }
     }
 
@@ -530,6 +548,7 @@ bool Nrf24DcClient::startSession()
     driver.stopListening();
     isBroadcastMode_ = false;
     driver.setAutoAck(true);
+    driver.setRetries(3, 3);
     driver.setChannel(workChannel());
     driver.openReadingPipe(1, clientAddress());
     prepareSesionBuffers_();

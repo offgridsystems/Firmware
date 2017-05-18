@@ -19,69 +19,65 @@ public:
 
     bool run(String commandParametr)
     {
+        auto r = micros();
         //Serial.println(F("Satrt command ssh"));
         client_->resetKeepAliveTimer();
 
-        int16_t t = 1000;
         bool isRecvData = false;
+        client_->setTimeoutBeforeStartSearchingNetwork(DC_DEFAULT_OFFLINE_TIMEOUT);
+
         if (commandParametr.length() > 0)
         {
-            t = commandParametr.toInt() * 1.2;
-            client_->setTimeoutBeforeStartSearchingNetwork(t);
-        }
+            int sepIdx = commandParametr.indexOf(',');
 
-        auto startTime = millis();
-        while ((millis() - startTime) < t)
+            if (sepIdx == -1) {
+                Serial.println(F("Separator <,> was not found."));
+                return false;
+            }
+
+            int16_t id = commandParametr.substring(0, sepIdx).toInt();
+
+            if (id != client_->deviceId()) {
+                //Serial.print(F("Not my id "));
+                //Serial.println(id);
+                return false;
+            }
+
+            int dataLen = commandParametr.length() - sepIdx;
+            client_->setReceivedData(commandParametr.substring(sepIdx + 1).c_str(), dataLen);
+        } 
+        else
         {
-            client_->driver.stopListening();
-
-            if (!client_->startSession())
-            {
-                Serial.println(F("Start session error"));
-                continue;
-            }
-
-            client_->driver.openReadingPipe(1, client_->clientAddress());
-            client_->driver.startListening();
-
-
-            if (!client_->receiveStartSessionTag(t - (millis() - startTime)))
-            {
-                Serial.println(F("Start not received"));
-                continue;
-            }
-            //client_->driver.printDetails();
-            //isRecvData = client_->receiveDataFromServer();
-
-            //if (!isRecvData)
-            //{
-            //    continue;
-            //}
-
-            client_->waitEndSessionTag();
-            //delay(1);
-            client_->driver.stopListening();
-
-            client_->driver.openWritingPipe(client_->clientAddress());
-            //driver.printDetails();
-
-            if (client_->sendDataToServer())
-            {
-                isRecvData = true;
-                client_->sendEndSessionTag();
-                //continue;
-            }
-            else
-            {
-                isRecvData = false;
-                Serial.println(F("error send packet"));
-            }
-
-            client_->driver.txStandBy();
-
-            if (isRecvData)
-                break;
+            Serial.println(F("Command parametr length = 0."));
+            return false;
         }
+
+        //Serial.println(F("Start session "));
+        delayMicroseconds(800);
+        if (!client_->startSession())
+        {
+            Serial.println(F("Start session error"));
+            return false;
+        }
+
+        client_->driver.openWritingPipe(client_->clientAddress());
+        //driver.printDetails();
+
+        if (client_->sendDataToServer())
+        {
+            isRecvData = true;
+            Serial.println(F("Sended "));
+
+            //client_->sendEndSessionTag();
+            //continue;
+        }
+        else
+        {
+            isRecvData = false;
+            Serial.println(F("error send packet"));
+            //return false;
+        }
+        Serial.println(micros() - r);
 
         client_->resetKeepAliveTimer();
         return isRecvData;

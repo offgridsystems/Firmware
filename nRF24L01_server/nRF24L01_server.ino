@@ -25,7 +25,7 @@ Nrf24DcServer server(driver);
 
 #define NETWORK_ADDR 0xC7C7C7LL
 
-int sessionTimeout = 3000;  //in milli seconds
+int sessionTimeout = 1000;  //in milli seconds
 int readingTimeout = 10;     //in milli seconds
 uint64_t t;
 int16_t numberOfFailComms = 0;
@@ -40,19 +40,21 @@ void setup() {
     Serial.println(server.init());       // initialize server and driver
     
     //server.init();
-    //server.setRFDataRate(RF24_1MBPS);      // the communication speed (RF24_250KBPS, RF24_1MBPS, RF24_2MBPS)
-    server.setRFDataRate(RF24_250KBPS);      // the communication speed (RF24_250KBPS, RF24_1MBPS, RF24_2MBPS)
+    server.setSessionTimeout(sessionTimeout);
+    server.setRFDataRate(RF24_1MBPS);      // the communication speed (RF24_250KBPS, RF24_1MBPS, RF24_2MBPS)
+    //server.setRFDataRate(RF24_250KBPS);      // the communication speed (RF24_250KBPS, RF24_1MBPS, RF24_2MBPS)
     server.setRF_PA_Level(RF24_PA_MAX);
     //server.setRF_PA_Level(RF24_PA_HIGH);
     //server.setRF_PA_Level(RF24_PA_LOW);
     //server.setRF_PA_Level(RF24_PA_MIN);
-    server.setWorkChannel(40);           // number of frequency channel for dirrect communicatin between server and client
+    server.setWorkChannel(120);           // number of frequency channel for dirrect communicatin between server and client
     //server.setBroadcastChannel(120);     // number of frequency channel for receiving commands from server
     server.setNetworkAddr(NETWORK_ADDR); // Set network address, 3 bytes
 
     // manual adding clients ID that will be handled by server
-    //server.addClient(100);
-    //server.addClient(0xc8);
+    //server.addClient(9);
+    //server.addClient(11);
+    //server.addClient(13);
 
     //server.addDeviceByRange(1, 300);
 

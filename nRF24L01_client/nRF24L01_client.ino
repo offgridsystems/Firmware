@@ -7,7 +7,8 @@
 #define NETWORK_ADDR 0xC7C7C7LL
 
 
-RF24 driver(D2, D8);
+//RF24 driver(D2, D8);  // wemos d1 spi pins
+RF24 driver(9, 10);
 Nrf24DcClient client(driver);
 
 uint8_t buf[33] = { 0 };

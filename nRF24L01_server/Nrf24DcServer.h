@@ -14,6 +14,7 @@
 #define DC_DEFAULT_READING_TIMEOUT 4
 #define DC_REPS_COUNT 20
 
+#define DC_END_SESSION_TIME 800
 typedef RF24 rfDriver;
 
 class Nrf24DcServer
@@ -45,6 +46,8 @@ class Nrf24DcServer
     // use function <receivedDataByIndex> 
     //           or <receivedDataById>  
     int16_t startSession();
+
+    bool singleClientSession(const int16_t id, const void *dataToSend, int16_t dataToSendLen, void *receivedData, uint8_t& receivedDataLen);
 
     int8_t tuneTxPa(int16_t clientId);
 
@@ -78,7 +81,7 @@ class Nrf24DcServer
 
     // Turn on broadcast mode.
     // This means that boradcast channel and NoACK mode will be setted
-    bool setBroadcastMode();
+    bool setBroadcastMode(int16_t id = -1);
 
     // Turn on single client mode on.
     // This means that work channel and AuroACK mode will be setted
@@ -135,7 +138,7 @@ class Nrf24DcServer
     void setKeepAliveTimeout(int16_t timeout);
     int16_t keepAliveTimeout() const;
 
-    bool sendRequestForSession();
+    bool sendRequestForSession(int16_t id, uint8_t *data, uint8_t dataLen);
     bool sendRequestForLookup(int32_t timeout);
 
     bool sendStartSesionTag(uint8_t times = 1);
@@ -201,7 +204,7 @@ class Nrf24DcServer
     uint8_t rfPaLevel_;
 
     void prepareArrays();
-    bool sendBroadcastRequestCommand(String command);
+    bool sendBroadcastRequestCommand(String command, int16_t id = -1);
     bool isChannelBussy(uint8_t channel);
     void scanChannels();
     int16_t lookForFreeChannel();
@@ -210,6 +213,7 @@ class Nrf24DcServer
     
     inline void read(void *buf, uint8_t len);
     inline bool write(const void *buf, const uint8_t len);
+    inline void write3(const void *buf, const uint8_t len);
 
     void setPaLevelForClient(int16_t clientId, uint8_t level);
 

@@ -32,8 +32,15 @@ uint16_t Nrf24DcServer::lookForClient(int timeout)
 
     currnetDeviceCount_ = 0;
     sendRequestForLookup(timeout);
-    driver_.txStandBy();
     myDelay(500);
+    bool trash;
+    driver_.whatHappened(trash, trash, trash);
+    //driver_.printDetails();
+    //driver_.txStandBy();
+    //driver_.stopListening();
+    //digitalWrite(9, LOW);
+    //myDelay(1);
+    //driver_.flush_tx();
     startSessionTime = millis();
 
     for (int id = 1; id <= DC_MAX_CLIENT_ID; ++id)
@@ -43,7 +50,7 @@ uint16_t Nrf24DcServer::lookForClient(int timeout)
         if ((millis() - startSessionTime) > timeout)
         {
             Serial.println("Lookup session timeout.");
-            Serial.println(id);
+            //Serial.println(id);
             break;
         }
 
@@ -62,7 +69,7 @@ uint16_t Nrf24DcServer::lookForClient(int timeout)
             if (handledClientsCount() >= DC_MAX_CLIENT_NUMBER)
                 break;
         }
-        driver_.flush_tx();
+        //driver_.flush_tx();
 
         yield();
     }
@@ -312,11 +319,16 @@ bool Nrf24DcServer::removeClientsByRange(int16_t from, int16_t count)
     return true;
 }
 
-bool Nrf24DcServer::setBroadcastMode()
+bool Nrf24DcServer::setBroadcastMode(int16_t id)
 {
-    driver_.flush_tx();
+    //driver_.flush_tx();
     driver_.stopListening();
-    driver_.setPALevel(this->rfPaLevel_);
+
+    if (id == -1)
+        driver_.setPALevel(this->rfPaLevel_);
+    else
+        driver_.setPALevel(this->txPaLevel_[this->clientIndexById(id)]);
+
     driver_.setChannel(broadcastChannel());
     driver_.setAutoAck(false);
     return true;
@@ -333,6 +345,7 @@ bool Nrf24DcServer::setSingleClientMode(uint64_t client_id)
 
     driver_.setAutoAck(true);
     driver_.setChannel(workChannel());
+    driver_.setRetries(3, 4);
 
     uint8_t paLevel;
     int16_t idx = this->clientIndexById(client_id);
@@ -373,13 +386,16 @@ int16_t Nrf24DcServer::clientIndexById(int16_t id)
 }
 
 
-bool Nrf24DcServer::sendRequestForSession()
+bool Nrf24DcServer::sendRequestForSession(int16_t id, uint8_t *data, uint8_t dataLen)
 {
     String command = "ssch:";
-    command += String(sessionTimeout());
+    command += String(id);
+    command += ",";
+    for (int i = 0; i < dataLen; ++i)
+        command.append(data[i]);
 
-
-    return this->sendBroadcastRequestCommand(command);
+    //Serial.println(command);
+    return this->sendBroadcastRequestCommand(command, id);
 }
 
 bool Nrf24DcServer::sendRequestForLookup(int32_t timeout)
@@ -402,7 +418,7 @@ bool Nrf24DcServer::sendStartSesionTag(uint8_t times)
 
         if (res)
         {
-            sendEndSessionTag();
+            //sendEndSessionTag();
             break;
         }
 
@@ -448,16 +464,14 @@ bool Nrf24DcServer::sendStartSesionTagWithData(const uint8_t * dataPtr, const ui
 
 int16_t Nrf24DcServer::startSession()
 {
-    prepareArrays();
-    sendRequestForSession();
-    //delay(3);
-    //driver_.txStandBy();
-
-    uint64_t startSessionTime = millis();
     int16_t deviceCount = handledClientsCount();
-    uint8_t rLen;
-    //Serial.println(deviceCount);
 
+    if (deviceCount == 0)
+        return 0;
+
+    prepareArrays();
+    uint64_t startSessionTime = millis();
+    uint8_t rLen;
     int i = -1;
     int numberOfHandledDevices = 0;
 
@@ -482,49 +496,7 @@ int16_t Nrf24DcServer::startSession()
             break;
         }
 
-        driver_.flush_tx();
-        driver_.txStandBy();
-
-        //uint64_t clientAddr = clientIdAt(i) + networkAddr();
-
-        setSingleClientMode(clientIdAt(i));
-
-        bool res = sendStartSesionTagWithData(dataBufferToClients_[i], DC_MAX_SIZE_OF_DATA_FOR_SENDING);
-
-        if (!res)
-        {
-            //Serial.println("Start not sended ");
-            //driver_.printDetails();
-            continue;
-        }
-
-        yield();
-        uint64_t  recvStartTime = millis();
-
-        bool isRecvData = false;
-        rLen = DC_MAX_SIZE_OF_RF_PACKET;
-        driver_.startListening();
-        uint64_t leftTime;
-
-        //Serial.println(receivingEndSessionMsgTimeout_);
-        while ((leftTime = (millis() - recvStartTime)) <= receivingEndSessionMsgTimeout_)
-        {
-            yield();
-            if (driver_.available())
-            {
-                rLen = driver_.getDynamicPayloadSize();
-                memset(dataBufferFromClients_[i], 0, DC_MAX_SIZE_OF_RF_PACKET);
-                read(dataBufferFromClients_[i], rLen);
-                dataBufferFromClientsSize_[i] = rLen;
-                isRecvData = true;
-                waitEndSessionTag(leftTime);
-                break;
-            }
-        }
-
-        driver_.stopListening();
-
-        if (!isRecvData)
+        if (!this->singleClientSession(clientIdAt(i), dataBufferToClients_[i], DC_MAX_SIZE_OF_DATA_FOR_SENDING, dataBufferFromClients_[i], dataBufferFromClientsSize_[i]))
         {
             //Serial.println("Data from client not received");
             continue;
@@ -532,11 +504,49 @@ int16_t Nrf24DcServer::startSession()
 
         commsStatus_[i] = 1;
         ++numberOfHandledDevices;
-
     }
 
+    delay(1);
     return numberOfHandledDevices;
 
+}
+
+bool Nrf24DcServer::singleClientSession(const int16_t id, const void * dataToSend, int16_t dataToSendLen, void * receivedData, uint8_t &receivedDataLen)
+{
+    int16_t clientIdx = clientIndexById(id);
+    if (clientIdx == -1)
+        return false;
+
+    sendRequestForSession(id, (uint8_t*)dataToSend, dataToSendLen);
+    //uint64_t clientAddr = clientIdAt(i) + networkAddr();
+
+    setSingleClientMode(id);
+    driver_.startListening();
+
+    yield();
+    uint64_t  recvStartTime = millis();
+
+    bool isRecvData = false;
+    uint8_t rLen = DC_MAX_SIZE_OF_RF_PACKET;
+
+    while ((millis() - recvStartTime) <= DC_DEFAULT_READING_TIMEOUT)
+    {
+        yield();
+        if (driver_.available())
+        {
+            rLen = driver_.getDynamicPayloadSize();
+            memset(dataBufferFromClients_[clientIdx], 0, DC_MAX_SIZE_OF_RF_PACKET);
+            read(dataBufferFromClients_[clientIdx], rLen);
+            receivedDataLen = rLen;
+            dataBufferFromClientsSize_[clientIdx] = rLen;
+            isRecvData = true;
+            waitEndSessionTag(1);
+            break;
+        }
+    }
+
+    driver_.stopListening();
+    return isRecvData;
 }
 
 int8_t Nrf24DcServer::tuneTxPa(int16_t clientId)
@@ -630,16 +640,16 @@ void Nrf24DcServer::tunePA()
     {
         this->tuneTxPa(this->clientIdAt(i));
         this->sendKeepAliveMsg();
-        myDelay(500);
+        myDelay(100);
         this->tuneRxPa(this->clientIdAt(i));
         this->sendKeepAliveMsg();
-        myDelay(500);
+        myDelay(100);
         this->tuneTxPa(this->clientIdAt(i));
         this->sendKeepAliveMsg();
-        myDelay(500);
+        myDelay(100);
         this->tuneRxPa(this->clientIdAt(i));
         this->sendKeepAliveMsg();
-        myDelay(500);
+        myDelay(100);
 
         uint8_t paCount[4] = { 0 };
         for (int i = 0; i < handledClientsCount(); ++i) {
@@ -903,16 +913,15 @@ bool Nrf24DcServer::isChannelFreeRadius(int8_t channel, int8_t radius)
 
 void Nrf24DcServer::waitEndSessionTag(uint64_t leftTime)
 {
+    delayMicroseconds(DC_END_SESSION_TIME);
+    return;
     auto startTime = millis();
 
     while ((millis() - startTime + leftTime) < receivingEndSessionMsgTimeout_)
     {
-        if (driver_.available())
-        {
-            uint8_t buf[DC_MAX_SIZE_OF_RF_PACKET] = { 0 };
-            read(buf, DC_MAX_SIZE_OF_RF_PACKET);
+        if (!driver_.testCarrier())
             break;
-        }
+        yield();
     }
 }
 
@@ -947,8 +956,30 @@ bool Nrf24DcServer::write(const void * buf, const uint8_t len)
     }
 
     bool res = driver_.write(msgPtr, len);
-    driver_.txStandBy();
+    //driver_.txStandBy();
     return res;
+}
+
+void Nrf24DcServer::write3(const void * buf, const uint8_t len)
+{
+    uint8_t *msgPtr = (uint8_t*)buf;
+    uint8_t tmpBuf[32] = { 0 };
+
+    if (isEncrypt_)
+    {
+        memcpy(tmpBuf, msgPtr, len);
+        msgPtr = &tmpBuf[0];
+        encryptMsg(msgPtr, len);
+    }
+
+    //driver_.setRetries(0, 0);
+    driver_.setAutoAck(false);
+    driver_.startFastWrite(msgPtr, len, false);
+    driver_.startFastWrite(msgPtr, len, false);
+    //driver_.startFastWrite(msgPtr, len, false);
+    //driver_.write(msgPtr, len, false);
+    //driver_.write(msgPtr, len, false);
+    driver_.txStandBy();
 }
 
 void Nrf24DcServer::setPaLevelForClient(int16_t clientId, uint8_t level)
@@ -987,13 +1018,9 @@ void Nrf24DcServer::prepareArrays()
 
 }
 
-bool Nrf24DcServer::sendBroadcastRequestCommand(String command)
+bool Nrf24DcServer::sendBroadcastRequestCommand(String command, int16_t id)
 {
-    driver_.stopListening();
-    //driver_.powerDown();
-    //driver_.powerUp();
-
-    if (!setBroadcastMode())
+    if (!setBroadcastMode(id))
         return false;
 
     //Serial.println(driver_.getChannel());
@@ -1011,7 +1038,6 @@ bool Nrf24DcServer::sendBroadcastRequestCommand(String command)
     yield();
     driver_.openWritingPipe(serverAddress_);
 
-    yield();
     //driver.printRegisters();
 
     //if (command.substring(0, 9) != "keepAlive") {
@@ -1019,13 +1045,14 @@ bool Nrf24DcServer::sendBroadcastRequestCommand(String command)
     //    Serial.println(command);
     //}
 
-    for (int i = 0; i < DC_NUMBER_OF_BROADCAST_REQUESTS; ++i) {
+
+    //for (int i = 0; i < DC_NUMBER_OF_BROADCAST_REQUESTS; ++i) {
         const uint8_t len = command.length() > 32 ? 32 : command.length();
         uint8_t buf[32];
         memcpy(buf, command.c_str(), len);
-        write(buf, len);
-        yield();
-    }
+        write3(buf, len);
+    //    yield();
+    //}
     //driver_.printDetails();
 
     return true;

@@ -19,12 +19,8 @@ public:
 
     bool run(String commandParametr)
     {
-        //Serial.println(F("Satrt command CC"));
-        //Serial.print(F("command parametr"));
-        //Serial.println(commandParametr);
-        
-        Serial.print(F("Starting to tune Tx PA 1 "));
         Serial.println(commandParametr);
+        delay(2);
         client_->setTimeoutBeforeStartSearchingNetwork(DC_DEFAULT_OFFLINE_TIMEOUT);
 
         if (commandParametr.length() > 0)

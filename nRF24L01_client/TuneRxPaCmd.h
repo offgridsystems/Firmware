@@ -23,9 +23,10 @@ public:
         //Serial.print(F("command parametr"));
         //Serial.println(commandParametr);
 
-        Serial.print(F("Starting to tune Rx PA 1 "));
+        Serial.print("Starting to tune Rx PA ");
         Serial.println(commandParametr);
         client_->setTimeoutBeforeStartSearchingNetwork(DC_DEFAULT_OFFLINE_TIMEOUT);
+        delay(2);
 
         if (commandParametr.length() > 0)
         {

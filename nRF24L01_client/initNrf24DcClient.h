@@ -16,23 +16,23 @@ uint8_t key[] = { 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15 };
 
 bool initDcClient(Nrf24DcClient &client) 
 {
-    delay(4000);
+    //delay(4000);
     Serial.print(F("Init nrf24 driver - "));
     //Serial.flush();
     Serial.println(client.init());           // initialize client and driver
 
-    //client.setRFDataRate(RF24_1MBPS);   // the communication speed (RF24_250KBPS, RF24_1MBPS, RF24_2MBPS)
-    client.setRFDataRate(RF24_250KBPS);      // the communication speed (RF24_250KBPS, RF24_1MBPS, RF24_2MBPS)
+    client.setRFDataRate(RF24_1MBPS);   // the communication speed (RF24_250KBPS, RF24_1MBPS, RF24_2MBPS)
+    //client.setRFDataRate(RF24_250KBPS);      // the communication speed (RF24_250KBPS, RF24_1MBPS, RF24_2MBPS)
     client.setRF_PA_Level(RF24_PA_MAX);
     //client.setRF_PA_Level(RF24_PA_HIGH);
     //client.setRF_PA_Level(RF24_PA_LOW);
     //client.setRF_PA_Level(RF24_PA_MIN);
 
-    client.setWorkChannel(40);               // number of frequency channel for dirrect communicatin between server and client
+    client.setWorkChannel(120);               // number of frequency channel for dirrect communicatin between server and client
     //client.setBroadcastChannel(120);         // number of frequency channel for receiving commands from server
     client.setNetworkAddr(NETWORK_ADDR);     // Set network address, 3 bytes
-    client.setDeviceId(13);                // unique in same network ID
-    client.setSessionTimeout(3000);          // time while client can comms with server in one session, after this time client aborts session
+    client.setDeviceId(9);                // unique in same network ID
+    client.setSessionTimeout(1000);          // time while client can comms with server in one session, after this time client aborts session
 
     // Adds handler for communication command
     // You also can create and add own commands, for help - read commets in AbstarctClientCommand.h
