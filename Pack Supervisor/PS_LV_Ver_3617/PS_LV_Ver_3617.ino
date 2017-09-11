@@ -771,9 +771,9 @@ void loop() {
   // float Volts = ((datAvg * temp) * 78) ;     // calibrate 7.4V high side input after low side input
   // float Volts = ((datAvg*3.3)/4096) * 83;    // calibrate 7.4V high side input after low side input
   float Volts;
- // Volts = datAvg * 0.0575;                    // low voltage calibrate
- // Volts = datAvg * 0.0565;                    // 84.1 low voltage calibrate
- // Volts = datAvg * 0.056679;                  // 84.26 low voltage calibrate
+  // Volts = datAvg * 0.0575;                   // low voltage calibrate
+  // Volts = datAvg * 0.0565;                   // 84.1 low voltage calibrate
+  // Volts = datAvg * 0.056679;                 // 84.26 low voltage calibrate
   Volts = datAvg * 0.056680;                    // calibrate at 85V for HVD accuracy
   /* if (Vpack > 70){                           // high voltage cal or ...
      Volts = ((datAvg*3.3)/4096) * 29.40;       // low voltage calibrate
@@ -792,46 +792,43 @@ void loop() {
   Serial.print(" Vpack: ");     Serial.print(Vpack,2);  Serial.print("VDC"); Serial.println ();
 
   // Make logic determinations for relays = ON or OFF, and use hysteresis to prevent relay oscillation
- const float Vpack_HVD = ((Vcell_HVD_Spec + 0.02) * No_Of_Cells) ;    // eg 4.21+.02=4.23 x 20 = 84.6 (.02 is headroom to balance 
+  const float Vpack_HVD = ((Vcell_HVD_Spec + 0.02) * No_Of_Cells) ;   // eg 4.21+.02=4.23 x 20 = 84.6 (.02 is headroom to balance 
                                                                       //(remember high cellV will open relay too)
   int Vpack_LVD = Vcell_LVD_Spec * No_Of_Cells;                       // eg 2.9 x 20 = 58
   int Vpack_HV_Run_Limit = Vpack_HVD * 1.2;                           // Make high voltage run limit 10% higher than HVD
   int Vpack_Lo_Run_Limit = Vpack_LVD;
 
-  ChargeRelay = OFF;                                                  // default to relay off
+  //---------CHARGE RELAY------------------------------------------------------------------------------------------------------------
   // pack check for charger relay and cell check for charger relay
+  ChargeRelay = OFF;                                                          // default to relay off
   // if ((Vpack > Vpack_HVD) || (Hist_Highest_Vcell > Vcell_HVD_Spec)) ChargeRelay = OFF;  // if Vbat is too high, turn off charger
   // else if ((Hist_Highest_Vcell < (Vcell_HVD_Spec - HYSTERESIS)) && (Vpack < (Vpack_HVD - HYSTERESIS))) ChargeRelay = ON;  // else now is ok so turn back on
-  if ((Hist_Highest_Vcell < (Vcell_HVD_Spec )) && (Vpack < (Vpack_HVD))) {    //4.21 if LG
-    if ((digitalRead(CHARGE_INPUT) == 0)) {
-      Serial.print(" Charge input IS ON ");
-      Serial.print(" Charge Timer =  ");  Serial.print(gCharge_Timer); Serial.println(" hrs");
-      if (gCharge_Timer == 0) ChargeRelay = ON;          // if Charge input is activated turn on Charge relay
-      // open charge relays for one day if all Cells are in Vbalance
-      if (Hist_Lowest_Vcell > Vcell_Balance) {           // 4.11 if LG
-        // shut down relay, start 1 day timer
-        gCharge_Timer = 24;                              //24 hours
+
+  if ((Hist_Highest_Vcell < (Vcell_HVD_Spec )) && (Vpack < (Vpack_HVD))) {    // Check cell and pack V before turning on relay (4.21 if LG)
+    if ((digitalRead(CHARGE_INPUT) == 0)) {                                   // Check charger input for low side switch
+      Serial.print(F(" Charge input ON - Timer = "));  Serial.print(gCharge_Timer);  Serial.println(F(" hrs"));
+      if (gCharge_Timer == 0) ChargeRelay = ON;                               // if timer is 0 turn on charge relay for up to a day
+      if (Hist_Lowest_Vcell > Vcell_Balance) {                                // shut down relay, start 1 day timer (4.11 if LG)
+        gCharge_Timer = 24;                                                   //24 hours
         ChargeRelay = OFF;
-        Serial.println(" Charge relay IS OFF for 24 hours because cells are ALL in balance ");
+        Serial.println(F(" Charge relay IS OFF for 24 hours because cells are ALL in balance "));
       }
-      else {                                             //reset charge timer if Vcell < 4V
+      else {                                                                  //reset charge timer if Vcell < 4V
         if (Hist_Lowest_Vcell < CELL_RECONNECT_V) {
           gCharge_Timer = 0;
-          Serial.println(" Charge timer reset to 0 hrs because Vcell lowest discharged below 4V ");
+          Serial.println(F(" Charge timer reset to 0 hrs because Vcell lowest discharged below 4V "));
         }
       }
     }
     else {
-      Serial.println(" Charge relay IS OFF because charge input is OFF ");
-      gCharge_Timer = 0;                                 // reset 24 hour timer because charger is disconnected
+      Serial.println(F(" Charge relay IS OFF because charge input is OFF "));
+      gCharge_Timer = 0;                                                      // reset 24 hour timer because charger is disconnected
     }
   }
-  else {
-    // Open charge relay if cells or pack go over limits
+  else {                                                                      // Open charge relay if cells or pack go over limits
     Serial.println("**** FAULT - Cell or pack voltage is too high to initiate charger now.... ");
-    // relay is shut relay, start 1 day timer
-    gCharge_Timer = 24;                                  //24 hours
-    Serial.print(" Charge Timer =  ");  Serial.print(gCharge_Timer); Serial.println(" hrs");
+    gCharge_Timer = 24;                                                       //relay is shut and counter is set to 24 hours
+    Serial.print(F(" Charge input OFF - Timer = "));  Serial.print(gCharge_Timer);  Serial.println(F(" hrs"));
   }
 
   MtrControlRelay = OFF;                                 // default to relay off
