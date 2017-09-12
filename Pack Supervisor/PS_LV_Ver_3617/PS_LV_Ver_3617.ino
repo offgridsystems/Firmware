@@ -59,27 +59,27 @@ struct DATA {
   float sCellV_Loside ;      // Low voltage side cells
   float schecksum;           // checksum for data integrity
   //bool sCharge;
-};
-DATA data;
+}; DATA data;
+
 // nRF24 2.4Mhz packet comms
 
 //---------GLOBAL VARAIBLES-------------------------------------------
 //declare gMode vars
-uint8_t   gMode = 0;            // default to sleep at wakeup
+uint8_t   gMode = 0;                     // default to sleep at wakeup
 const byte SLEEPMODE = 0;
 const byte PAUSEMODE = 5;
 const byte CHARGEMODE = 10;
 const byte DRIVEMODE = 15;
 const byte FAULTSHUTDOWN = 20;
-const byte MODE0 = 25;          // temporary rename when have english names
+const byte MODE0 = 25;                   // temporary rename when have english names
 const byte MODE1 = 30;
 const byte MODE2 = 35;
 const byte MODE3 = 40;
 const byte MODE4 = 45;
 
-//declare gFaultMode types      // faults that may cause shutdown or current limit reduction
-uint8_t  gFaultMode = 0;        // default to no faults at wakeup
-const byte NOFAULT = 0;         // cleared fault
+//declare gFaultMode types               // faults that may cause shutdown or current limit reduction
+uint8_t  gFaultMode = 0;                 // default to no faults at wakeup
+const byte NOFAULT = 0;                  // cleared fault
 const byte OVERTEMP = 1;
 const byte UNDERTEMP = 5;
 const byte OVERVOLT_BLOCK = 10;
@@ -88,18 +88,23 @@ const byte UNDERVOLT_BLOCK = 20;
 const byte UNDERVOLT_CELL = 25;
 const byte DEADV_BLOCK = 30;
 const byte DEADV_CELL = 35;
-const byte FAULTMODE0 = 40;     // temporary... rename when have english names
+const byte FAULTMODE0 = 40;              // temporary... rename when have english names
 const byte FAULTMODE1 = 45;
 const byte FAULTMODE2 = 50;
 const byte FAULTMODE3 = 55;
 
 // ---------CAN BUS VARIABLES-------------------------------------------
-static CAN_message_t rxmsg, txmsg;
+static CAN_message_t rxmsg, txmsg;    
+static uint8_t Tx_counter = 0;
+static uint32_t BMS_ID = 0xF4;
+static uint32_t BMS_TO_CHARGER = 0x1806E5F4;
+static uint32_t CHG_ID = 0xE5;
+static uint32_t CHG_BROADCAST = 0x18FF50E5;
 
-// ---------COMMS VARIABLES-------------------------------------------
+//---------COMMS VARIABLES-------------------------------------------
 uint16_t CommsFaults = 0;
 bool Disconnected_Block = 0;
-uint16_t Disconnected_BlockNum = 0;   // BLock 0 not used - START at Block 1
+uint16_t Disconnected_BlockNum = 0;     // BLock 0 not used - START at Block 1
 float Highest_Vcell;
 float Lowest_Vcell;
 uint16_t Highest_Tcell;
@@ -108,20 +113,20 @@ float Temp1 ;
 float Temp2 ;
 uint16_t Temp3 ;
 uint16_t Temp4 ;
-float Hist_Highest_Vcell ;        // running average of ALL blocks highest cell voltage
+float Hist_Highest_Vcell ;               // running average of ALL blocks highest cell voltage
 float Hist_Lowest_Vcell ;
-float  Hist_Highest_Tcell;        // running ave of ALL blocks highest cell temperature
+float  Hist_Highest_Tcell;               // running ave of ALL blocks highest cell temperature
 float  Hist_Lowest_Tcell;
 
-#define VREF (3.266)              // ADC reference voltage (= power supply)
-#define VINPUT (2.171)            // ADC input voltage from resistive divider to VREF
-#define ADCMAX (65535)            // maximum possible reading from ADC
-#define EXPECTED (ADCMAX*(VINPUT/VREF))     // expected ADC reading
-#define SAMPLES (200)             // how many samples to use for ADC read - 200 seemed to work best   
-#define ADC_RESOLUTION (12)       // ADC resolution in bits, usable from 10-13 on this chip
-#define DAC_RESOLUTION (10)       // DAC resolution in bits, usable from 0-12 on this chip (same setup as PWM outputs)
+#define VREF (3.266)                     // ADC reference voltage (= power supply)
+#define VINPUT (2.171)                   // ADC input voltage from resistive divider to VREF
+#define ADCMAX (65535)                   // maximum possible reading from ADC
+#define EXPECTED (ADCMAX*(VINPUT/VREF))  // expected ADC reading
+#define SAMPLES (200)                    // how many samples to use for ADC read - 200 seemed to work best   
+#define ADC_RESOLUTION (12)              // ADC resolution in bits, usable from 10-13 on this chip
+#define DAC_RESOLUTION (10)              // DAC resolution in bits, usable from 0-12 on this chip (same setup as PWM outputs)
 
-// Declare output pins
+//---------OUTPUT PINS-------------------------------------------
 // relays
 const byte RELAYDR1 = 5;
 const byte RELAYDR2 = 6;
@@ -129,11 +134,11 @@ const byte RELAYDR2 = 6;
 //  const byte RELAYDR2 = 4;
 //  const byte RELAYDR3 = 5;
 //  const byte RELAYDR4 = 6;
-uint16_t Mrelay_Cycles = 0;    // Motor relay cycle counter
-uint16_t Crelay_Cycles = 0;    // Charger relay cycle counter
+uint16_t Mrelay_Cycles = 0;             // Motor relay cycle counter
+uint16_t Crelay_Cycles = 0;             // Charger relay cycle counter
 
 // Analog DAC
-int DAC_OUT = A14; //use A14 as Analog Out (DAC)
+int DAC_OUT = A14;                      //use A14 as Analog Out (DAC)
 
 // pwm for op amp digital dacs (note 10 bits PWM same setup as Analog DAC output)
 const byte PWM1 = 20;
@@ -148,52 +153,53 @@ const byte LIMP_OUTPUT = 18;            // on off signal to motor control at 20%
 const byte CHARGER_CONTROL = PWM2;      // 0-2-5V output for charger control near balance (FIDO is 2-5V = 0-100% linear charge)
 const byte CHARGER_RELAY = RELAYDR1;
 const byte MTRCONTROL_RELAY = RELAYDR2;
-uint8_t No_Of_Cells = 20 ;  // default to 10 DKblock = 72V system for FIDO
+uint8_t No_Of_Cells = 20 ;              // default to 10 DKblock = 72V system for FIDO
 const  uint8_t NUMBER_OF_BLOCKS = (No_Of_Cells / 2);
-const float VPACKNOMINAL = 72.0;    // Fido is 72V system
+const float VPACKNOMINAL = 72.0;        // Fido is 72V system
 
 // LEARN BLOCKS
-const byte LEARN_BLOCKS_IN = 2;       // input pin 2
-const byte LEARN_TIMEOUT = 4;       // 4 minute learn timeout
+const byte LEARN_BLOCKS_IN = 2;         // input pin 2
+const byte LEARN_TIMEOUT = 4;           // 4 minute learn timeout
 uint8_t blockNum[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0}; // the array of 10 blocks for FIDO, this will have to be user configurable
-bool LearnBlockSwitch = 1;         // switch used to determine if block values should be zeroed
+bool LearnBlockSwitch = 1;              // switch used to determine if block values should be zeroed
 
 // block array for block 'awareness'
-const uint8_t COMM_TIMEOUT = 255;     // max 4+ minute comm timeout
+const uint8_t COMM_TIMEOUT = 255;       // max 4+ minute comm timeout
 uint8_t Block_Comm_Timer[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
-//---------CELL TYPES-------------------------------------------
-int Cell_Type = 0;                  // default to LG type
-const byte  LG_MH1 = 0;             // 3200mah
-const byte  LG_MJ1 = 0;             // 3500mah
-const byte  SANYO_NCR18650B = 20;   // 3400mah
+//---------CELL TYPES-----------------------------------------------------------
+int Cell_Type = 1;                      // default to LG type
+const byte  LG_MH1 = 0;                 // 3200mah
+const byte  LG_MJ1 = 1;                 // 3500mah
+const byte  SANYO_NCR18650B = 20;       // 3400mah
 const byte  CELLTYPE0 = 40;
 const byte  CELLTYPE1 = 60;
 const byte  CELLTYPE2 = 80;
 
-// Declare lithium Ion cell spec vars
-float Vcell_HVD_Spec = 4.4;	          // threshold where alarm is set and LED goes red.
+//---------LITHIUM ION CELL SPEC VARIABLES--------------------------------------
+float Vcell_HVD_Spec = 4.4;	            // threshold where alarm is set and LED goes red.
 // load later when cell type is chosen
-float Vcell_Balance;                  // voltage above where Cells will balance
+float Vcell_Charge_Taper;               
+float Vcell_Balance;                    // voltage above where Cells will balance
 float Vcell_Nominal_Spec;
-float Vcell_Low_Spec;                 // threshold where fans and heaters are turned off to save power
-float Vcell_LVD_Spec;  	              // threshold where all electronics turns off......about 2VPC
-const float CELL_RECONNECT_V = 4.000; // reconnect charger at this (lowest) cell voltage
+float Vcell_Low_Spec;                   // threshold where fans and heaters are turned off to save power
+float Vcell_LVD_Spec;  	                // threshold where all electronics turns off......about 2VPC
+const float CELL_RECONNECT_V = 4.000;   // reconnect charger at this (lowest) cell voltage
 
-//---------CELL TEMP VARIABLES-------------------------------------------
-//const int Tcell_SMOKE = 95;         // At 95C and above there may be smoke ...danger shut off all fans and electronics
-const int NTC_SMOKE = 111;            // ADC counts for 100C
-const int NTC_63C = 390;              // ADC counts for ~~63C
-const int NTC_60C = 416;              // ADC counts for 60C
-const int NTC_WARM = 987;             // ADC counts for 35C
-const int NTC_AMBIENT = 1365;         // ADC counts for 25C
-const int NTC_COLD = 3000;            // ADC counts for -10C
+//---------CELL TEMP VARIABLES---------------------------------------------------
+//const int Tcell_SMOKE = 95;           // At 95C and above there may be smoke ...danger shut off all fans and electronics
+const int NTC_SMOKE = 111;              // ADC counts for 100C
+const int NTC_63C = 390;                // ADC counts for ~~63C
+const int NTC_60C = 416;                // ADC counts for 60C
+const int NTC_WARM = 987;               // ADC counts for 35C
+const int NTC_AMBIENT = 1365;           // ADC counts for 25C
+const int NTC_COLD = 3000;              // ADC counts for -10C
 
-//---------USER INPUT PINS-----------------------------------------------
-const byte CHARGE_INPUT = 22;         // charger presence or absence
-const byte KEYSWITCH_INPUT = 23;      // key switch on or off
+//---------USER INPUT PINS-------------------------------------------------------
+const byte CHARGE_INPUT = 22;           // charger presence or absence
+const byte KEYSWITCH_INPUT = 23;        // key switch on or off
 
-// Relay settings and vars
+//---------RELAY SETTINGS AND VARS-----------------------------------------------
 bool ChargeRelay = 0;
 bool MtrControlRelay = 0;
 // const float VPACK_HI_CHG_LIMIT = 60.0;   // do not allow charger to raise pack > 4.20V cell x 20 cells = 84VDC
@@ -297,12 +303,13 @@ const int T_HISTORYCHECK = 1;         // update historical vars every 1 secs
 int HistoryTimer = T_HISTORYCHECK;
 // int Temp1 = 0;
 
-//---------WATCHDOG TIMER-------------------------------------------
-/*************************************************************************************
-  Set one second (it's adjustable with WDOG_T register) watchdog enable  by redefining 
-  the startup_early_hook which by default disables the COP (TURN OFF WHEN DEBUGGING). 
-  Must be before void setup();
- *************************************************************************************/
+/*=================================================================================================================================//
+// Watchdog Timer
+//=================================================================================================================================//
+// Set one second (it's adjustable with WDOG_T register) watchdog enable  by redefining 
+// the startup_early_hook which by default disables the COP (TURN OFF WHEN DEBUGGING). 
+// Must be before void setup();
+//=================================================================================================================================*/
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -314,21 +321,24 @@ void startup_early_hook() {
 }
 #ifdef __cplusplus
 }
-#endif
+#endif // Watchdog Timer END
 
-//=================================================================================================================================//
+/*=================================================================================================================================//
 // Main Setup
-//=================================================================================================================================//
+//=================================================================================================================================*/
 void setup(){
 
-  Serial.begin(115200);             // Serial output @ 115200bps
-  // delay(2000);                   // Delay for comm window open
-  Can0.begin(250000);               // Join CAN at 250Kpbs
-  CAN_filter_t extFilter;           // CAN_filter_t struct holds location of extended filter
-  extFilter.ext=1;                  // Set filter to receive extended CAN
-  for(uint8_t MBnum=0; MBnum<16; MBnum++) { // Set all Mailboxes to extended
+  Serial.begin(115200);                       // Serial output @ 115200bps
+  // delay(2000);                             // Delay for comm window open
+
+  //CAN Bus Setup-------------------------------------------------------------------------------------
+  Can0.begin(250000);                         // Join CAN at 250Kpbs
+  CAN_filter_t extFilter;                     // CAN_filter_t struct holds location of extended filter
+  extFilter.ext=1;                            // Set filter to receive extended CAN
+  for(uint8_t MBnum=0; MBnum<16; MBnum++) {   // Set all Mailboxes to extended
     Can0.setFilter(extFilter,MBnum);
-  }
+  } //CAN Bus Setup END--------------------------------------------------------------------------------
+  
   // Unused I/O make digital output for low impedance and EMI-resistant
   pinMode(A12, INPUT_PULLUP);       // weak pullup for now
   pinMode(A13, INPUT_PULLUP);   
@@ -357,19 +367,21 @@ void setup(){
   analogWriteResolution(DAC_RESOLUTION);  // DAC0 value 0 to 1023
 
   // Lithium Cell specifications
-  if (Cell_Type == LG_MH1) {          //cell parameters for LG MH1 3200mah
+  if (Cell_Type == LG_MH1) {          // cell parameters for LG MH1 3200mah
     Vcell_HVD_Spec = 4.21;            // High voltage disconnect, charger disconnected 4.25 max spec leave room for 0.1% acc.
     Vcell_Nominal_Spec = 3.67;
     Vcell_Low_Spec = 2.91;            // End voltage cutoff 2.5V is spec, but no energy there, plus lifetime is important
     Vcell_LVD_Spec = 2.91;            // low voltage disconnect, all off
     Vcell_Balance = 4.11;             // start balancing
+    Vcell_Charge_Taper = 4.05;        // voltage where full current tapers off
   } 
-  if (Cell_Type == LG_MJ1) {          //cell parameters for LG MH1 3500mah
+  if (Cell_Type == LG_MJ1) {          // cell parameters for LG MH1 3500mah
     Vcell_HVD_Spec = 4.21;            // High voltage disconnect, charger disconnected
     Vcell_Nominal_Spec = 3.635;
     Vcell_Low_Spec = 2.91;            // End voltage cutoff 2.5V is spec, but no energy there, plus lifetime is important
     Vcell_LVD_Spec = 2.91;            // low voltage disconnect, all off
     Vcell_Balance = 4.10;             // start balancing
+    Vcell_Charge_Taper = 4.05;        // voltage where full current tapers off
   }
   if (Cell_Type == SANYO_NCR18650B) { // else choose Panasonic/Sanyo NCR18650B
     Vcell_HVD_Spec = 4.3;
@@ -799,21 +811,49 @@ void loop() {
   int Vpack_Lo_Run_Limit = Vpack_LVD;
 
   //---------CHARGE RELAY------------------------------------------------------------------------------------------------------------
-  // pack check for charger relay and cell check for charger relay
+  // pack check & cell check for charger relay
   ChargeRelay = OFF;                                                          // default to relay off
-  // if ((Vpack > Vpack_HVD) || (Hist_Highest_Vcell > Vcell_HVD_Spec)) ChargeRelay = OFF;  // if Vbat is too high, turn off charger
-  // else if ((Hist_Highest_Vcell < (Vcell_HVD_Spec - HYSTERESIS)) && (Vpack < (Vpack_HVD - HYSTERESIS))) ChargeRelay = ON;  // else now is ok so turn back on
-
-  if ((Hist_Highest_Vcell < (Vcell_HVD_Spec )) && (Vpack < (Vpack_HVD))) {    // Check cell and pack V before turning on relay (4.21 if LG)
-    if ((digitalRead(CHARGE_INPUT) == 0)) {                                   // Check charger input for low side switch
-      Serial.print(F(" Charge input ON - Timer = "));  Serial.print(gCharge_Timer);  Serial.println(F(" hrs"));
-      if (gCharge_Timer == 0) ChargeRelay = ON;                               // if timer is 0 turn on charge relay for up to a day
+  if ((Hist_Highest_Vcell < (Vcell_HVD_Spec )) && (Vpack < (Vpack_HVD))) {    // check cell and pack V before turning on relay (4.21 if LG)
+    if ((digitalRead(CHARGE_INPUT) == 0)) {                                   // check charger input for low side switch
+      Serial.print(F(" Charge input ON / Timer = "));  Serial.print(gCharge_Timer);  Serial.println(F(" hrs"));
+      if (gCharge_Timer == 0) {
+        ChargeRelay = ON;                                                     // if timer is 0 turn on charge relay for up to a day
+      }
+      if(Hist_Highest_Vcell < Vcell_Charge_Taper) {                           // if cells are lower than taper turn on full
+        if(Tx_counter < seconds) {                                            // send message at 1 per second
+          Tx_counter = seconds;                                               // update counter
+          txmsg.ext = 1;                                                      // set message as extended
+          txmsg.id = BMS_TO_CHARGER;                                          // set id
+          txmsg.len = 5;                                                      // message length in bytes
+          txmsg.buf[0] = 0x03;                                                // byte 0 & 1 are voltage 83.0v
+          txmsg.buf[1] = 0x3E;
+          txmsg.buf[2] = 0x00;                                                // byte 2 & 3 are current 11.0a
+          txmsg.buf[3] = 0x6E;
+          txmsg.buf[4] = 0x00;                                                // byte 4 is on 00 or off 01
+          Can0.write(txmsg);
+          
+        }
+      }
+      if(Hist_Highest_Vcell > Vcell_Charge_Taper) {                           // if cells are lower than taper turn on full
+        if(Tx_counter < seconds) {                                            // send message at 1 per second)
+          Tx_counter = seconds;                                               // update counter
+          txmsg.ext = 1;                                                      // set message as extended
+          txmsg.id = BMS_TO_CHARGER;                                          // set id
+          txmsg.len = 5;                                                      // message length in bytes
+          txmsg.buf[0] = 0x03;                                                // byte 0 & 1 are voltage 83.0v
+          txmsg.buf[1] = 0x3E;
+          txmsg.buf[2] = 0x00;                                                // byte 2 & 3 are current 0.1a
+          txmsg.buf[3] = 0x01;
+          txmsg.buf[4] = 0x00;                                                // byte 4 is on 00 or off 01
+          Can0.write(txmsg);
+        }
+      }
       if (Hist_Lowest_Vcell > Vcell_Balance) {                                // shut down relay, start 1 day timer (4.11 if LG)
-        gCharge_Timer = 24;                                                   //24 hours
+        gCharge_Timer = 24;                                                   // 24 hours
         ChargeRelay = OFF;
         Serial.println(F(" Charge relay IS OFF for 24 hours because cells are ALL in balance "));
       }
-      else {                                                                  //reset charge timer if Vcell < 4V
+      else {                                                                  // reset charge timer if Vcell < 4V
         if (Hist_Lowest_Vcell < CELL_RECONNECT_V) {
           gCharge_Timer = 0;
           Serial.println(F(" Charge timer reset to 0 hrs because Vcell lowest discharged below 4V "));
@@ -827,7 +867,7 @@ void loop() {
   }
   else {                                                                      // Open charge relay if cells or pack go over limits
     Serial.println("**** FAULT - Cell or pack voltage is too high to initiate charger now.... ");
-    gCharge_Timer = 24;                                                       //relay is shut and counter is set to 24 hours
+    gCharge_Timer = 24;                                                       // relay is shut and counter is set to 24 hours
     Serial.print(F(" Charge input OFF - Timer = "));  Serial.print(gCharge_Timer);  Serial.println(F(" hrs"));
   }
 
@@ -858,10 +898,10 @@ void loop() {
   }
   else {} // cells not hot
 
-  Serial.print(" Charger HVD: ");     Serial.print(Vpack_HVD, 2);  Serial.print("VDC"); Serial.println ();
-  Serial.print(" Motor LVD: ");     Serial.print(Vpack_LVD, 1);  Serial.print("VDC"); Serial.println ();
-  Serial.print(" Vpack_HV_Run_Limit: ");     Serial.print(Vpack_HV_Run_Limit, 1);  Serial.print("VDC"); Serial.println ();
-  Serial.print(" Vpack_Lo_Run_Limit: ");     Serial.print(Vpack_Lo_Run_Limit, 1);  Serial.print("VDC"); Serial.println ();
+  Serial.print(" Charger HVD: ");         Serial.print(Vpack_HVD, 2);           Serial.println("VDC");
+  Serial.print(" Motor LVD: ");           Serial.print(Vpack_LVD, 1);           Serial.println("VDC");
+  Serial.print(" Vpack_HV_Run_Limit: ");  Serial.print(Vpack_HV_Run_Limit, 1);  Serial.println("VDC");
+  Serial.print(" Vpack_Lo_Run_Limit: ");  Serial.print(Vpack_Lo_Run_Limit, 1);  Serial.println("VDC");
   Serial.println ();
 
   // if undervolt cell AND Comms timeout (= comms error), wait until no comms error to turn on Drive
@@ -874,7 +914,7 @@ void loop() {
   //if ((ChargeRelay == ON) && (digitalRead(CHARGE_INPUT == LOW)))    // Charger input goes low when charger is conn
   if ((ChargeRelay == ON)) {                                          // Charger input goes low when charger is conn
     digitalWrite(CHARGER_RELAY, HIGH);
-    Serial.println("Charger relay K1 is closed");
+    Serial.println(F("Charger relay K1 is closed"));
     gMode = CHARGEMODE;
   }
   else {
@@ -994,16 +1034,15 @@ void loop() {
     float tempa;                  // 4 bytes or 32 bits
     float tempb;
     if (manager.recvfromAck(buf, &len, &from)) {
-      Serial.print("DKBlock Client: ");
+      Serial.print(F("DKBlock Client: "));
       Serial.print(from, DEC);
-      Serial.print(" Length");  Serial.print(" = ");  Serial.print(len);
-      Serial.println();
+      Serial.print(F(" Length = "));  Serial.println(len);
 
-      Serial.print(((DATA*)buf) -> sCellV_Hiside ); Serial.print(" VDC Hi Cell   ");
-      Serial.print(((DATA*)buf) -> sThottest); Serial.print(" Hot NTC counts   ");
-      Serial.print(((DATA*)buf) -> sTcoldest); Serial.print(" Cold NTC counts   ");
-      Serial.print(((DATA*)buf) -> sCellV_Loside ); Serial.print(" VDC Lo Cell   ");
-      Serial.print(((DATA*)buf) -> schecksum ); Serial.println(" Checksum from BLOCK");
+      Serial.print(((DATA*)buf) -> sCellV_Hiside );   Serial.print(F(" VDC Hi Cell   "));
+      Serial.print(((DATA*)buf) -> sThottest);        Serial.print(F(" Hot NTC counts   "));
+      Serial.print(((DATA*)buf) -> sTcoldest);        Serial.print(F(" Cold NTC counts   "));
+      Serial.print(((DATA*)buf) -> sCellV_Loside );   Serial.print(F(" VDC Lo Cell   "));
+      Serial.print(((DATA*)buf) -> schecksum );       Serial.println(F(" Checksum from BLOCK"));
 
       // filter for wrong payload length
       if (len != PAYLOAD) {
