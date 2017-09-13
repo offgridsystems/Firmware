@@ -1,8 +1,7 @@
 // DK Supervisor PCB production code for Teensy 3.1 3.2   7/8/15  T Economu 
 // Used Arduino 1.6.6 for first Fido pilot run 5 packs or 50 pcs 
-// Fido using Arduino IDE 1.8.4 with Teensyduino 1.39 
+// Fido using Arduino IDE 1.8.4 with Teensyduino 1.39 (Switching to Sublime Text 3 and Stino Dev Plugin)
 //
-
 // Date       Who     Ver Date code   WAS/IS changes
 //---------------------------------------------------------------------------------------------------------------------
 //
@@ -55,7 +54,7 @@ uint8_t buf[RH_NRF24_MAX_MESSAGE_LEN];
 struct DATA {
   float sCellV_Hiside;       // high voltage side cells of dkblock
   uint16_t sThottest;        // hottest NTC counts (lower is hotter)
-  uint16_t sTcoldest;        // coldtest NTC counts
+  uint16_t sTcoldest;        // coldest NTC counts
   float sCellV_Loside ;      // Low voltage side cells
   float schecksum;           // checksum for data integrity
   //bool sCharge;
@@ -71,7 +70,7 @@ const byte PAUSEMODE = 5;
 const byte CHARGEMODE = 10;
 const byte DRIVEMODE = 15;
 const byte FAULTSHUTDOWN = 20;
-const byte MODE0 = 25;                   // temporary rename when have english names
+const byte MODE0 = 25;                   // temporary rename when have English names
 const byte MODE1 = 30;
 const byte MODE2 = 35;
 const byte MODE3 = 40;
@@ -88,23 +87,24 @@ const byte UNDERVOLT_BLOCK = 20;
 const byte UNDERVOLT_CELL = 25;
 const byte DEADV_BLOCK = 30;
 const byte DEADV_CELL = 35;
-const byte FAULTMODE0 = 40;              // temporary... rename when have english names
+const byte FAULTMODE0 = 40;              // temporary... rename when have English names
 const byte FAULTMODE1 = 45;
 const byte FAULTMODE2 = 50;
 const byte FAULTMODE3 = 55;
 
 // ---------CAN BUS VARIABLES-------------------------------------------
-static CAN_message_t rxmsg, txmsg;    
-static uint8_t Tx_counter = 0;
-static uint32_t BMS_ID = 0xF4;
+static CAN_message_t txmsg; //rxmsg   
+const uint16_t Tx_msg_interval = 1000;
+elapsedMillis Tx_counter;
+//static uint32_t BMS_ID = 0xF4;
 static uint32_t BMS_TO_CHARGER = 0x1806E5F4;
-static uint32_t CHG_ID = 0xE5;
-static uint32_t CHG_BROADCAST = 0x18FF50E5;
+//static uint32_t CHG_ID = 0xE5;
+//static uint32_t CHG_BROADCAST = 0x18FF50E5;
 
 //---------COMMS VARIABLES-------------------------------------------
 uint16_t CommsFaults = 0;
 bool Disconnected_Block = 0;
-uint16_t Disconnected_BlockNum = 0;     // BLock 0 not used - START at Block 1
+uint16_t Disconnected_BlockNum = 0;      // BLock 0 not used - START at Block 1
 float Highest_Vcell;
 float Lowest_Vcell;
 uint16_t Highest_Tcell;
@@ -115,8 +115,8 @@ uint16_t Temp3 ;
 uint16_t Temp4 ;
 float Hist_Highest_Vcell ;               // running average of ALL blocks highest cell voltage
 float Hist_Lowest_Vcell ;
-float  Hist_Highest_Tcell;               // running ave of ALL blocks highest cell temperature
-float  Hist_Lowest_Tcell;
+float Hist_Highest_Tcell;                // running ave of ALL blocks highest cell temperature
+float Hist_Lowest_Tcell;
 
 #define VREF (3.266)                     // ADC reference voltage (= power supply)
 #define VINPUT (2.171)                   // ADC input voltage from resistive divider to VREF
@@ -477,7 +477,8 @@ void setup(){
   manager.setRetries(3);
   //manager.setPayloadSize(12);     // 2 floats (4x2 bytes) = 8bytes +  2 + 2 = 12 bytes MUST AGREE WITH CLIENTS!!
 
-  Serial.println("Start Pack Supervisor: ");
+  Serial.println(F("Start Pack Supervisor"));
+  Serial.print(F("Firmware Ver: "));  Serial.println(VERSION);
 
   // only turn LIMP mode off at power cycle - Jul 12, 2017
     digitalWrite(LIMP_OUTPUT, LOW);
@@ -500,19 +501,19 @@ void WatchdogReset (void) {      // reset COP watchdog timer to 1.1 sec
 //=================================================================================================================================//
 void loop() {
 
-  Serial.println(); Serial.println();
-  Serial.print("Firmware Ver: ");  Serial.print(VERSION);
-  Serial.print("  Server Address: ");  Serial.print(SERVER_ADDRESS);
-  Serial.print("  PS Mode: ");  Serial.println(gMode);
+  Serial.println();
+  Serial.println();
+  Serial.print(F("  Server Address: "));  Serial.print(SERVER_ADDRESS);
+  Serial.print(F("  PS Mode: "));         Serial.println(gMode);
 
   WatchdogReset();  // reset the watchdog timer (times out in 1 sec so make sure loop is under about 500-600msec)
 
-    Serial.println();
-    Serial.print("Secs = ");  Serial.println(seconds);          // debug printout to pc (open serial monitor window)
-    Serial.print("Mins = ");  Serial.println(minutes);
-    Serial.print("Hrs = ");  Serial.println(hours);
-    Serial.print("  millisecond counter: ");  Serial.println(millis());
-    Serial.print(" Historical Avg Hottest Tcell: ");     Serial.print(Hist_Highest_Tcell, 0);  Serial.print(" ADC counts ");
+  Serial.println();
+  Serial.print(F("Secs = "));  Serial.println(seconds);          // debug printout to pc (open serial monitor window)
+  Serial.print(F("Mins = "));  Serial.println(minutes);
+  Serial.print(F("Hrs = "));   Serial.println(hours);
+  Serial.print(F("Millisecond counter: "));           Serial.println(millis());
+  Serial.print(F("Historical Avg Hottest Tcell: "));  Serial.print(Hist_Highest_Tcell, 0);  Serial.print(" ADC counts ");
 
   // make clock tick tock
   currentmicros = micros(); // read the time.
@@ -816,12 +817,10 @@ void loop() {
   if ((Hist_Highest_Vcell < (Vcell_HVD_Spec )) && (Vpack < (Vpack_HVD))) {    // check cell and pack V before turning on relay (4.21 if LG)
     if ((digitalRead(CHARGE_INPUT) == 0)) {                                   // check charger input for low side switch
       Serial.print(F(" Charge input ON / Timer = "));  Serial.print(gCharge_Timer);  Serial.println(F(" hrs"));
-      if (gCharge_Timer == 0) {
-        ChargeRelay = ON;                                                     // if timer is 0 turn on charge relay for up to a day
-      }
-      if(Hist_Highest_Vcell < Vcell_Charge_Taper) {                           // if cells are lower than taper turn on full
-        if(Tx_counter < seconds) {                                            // send message at 1 per second
-          Tx_counter = seconds;                                               // update counter
+      if (gCharge_Timer == 0) ChargeRelay = ON;                               // if timer is 0 turn on charge relay for up to a day
+      if(Tx_counter >= Tx_msg_interval) {                                     // send message at set speed (1 per second)
+        Tx_counter = 0;                                                       // update counter
+        if(Hist_Highest_Vcell < Vcell_Charge_Taper) {                         // if cells are lower than taper turn on full
           txmsg.ext = 1;                                                      // set message as extended
           txmsg.id = BMS_TO_CHARGER;                                          // set id
           txmsg.len = 5;                                                      // message length in bytes
@@ -831,12 +830,8 @@ void loop() {
           txmsg.buf[3] = 0x6E;
           txmsg.buf[4] = 0x00;                                                // byte 4 is on 00 or off 01
           Can0.write(txmsg);
-          
         }
-      }
-      if(Hist_Highest_Vcell > Vcell_Charge_Taper) {                           // if cells are lower than taper turn on full
-        if(Tx_counter < seconds) {                                            // send message at 1 per second)
-          Tx_counter = seconds;                                               // update counter
+        if(Hist_Highest_Vcell > Vcell_Charge_Taper) {                         // if cells are lower than taper turn on low
           txmsg.ext = 1;                                                      // set message as extended
           txmsg.id = BMS_TO_CHARGER;                                          // set id
           txmsg.len = 5;                                                      // message length in bytes
@@ -871,6 +866,7 @@ void loop() {
     Serial.print(F(" Charge input OFF - Timer = "));  Serial.print(gCharge_Timer);  Serial.println(F(" hrs"));
   }
 
+  //---------MOTOR RELAY------------------------------------------------------------------------------------------------------------
   MtrControlRelay = OFF;                                 // default to relay off
   // Pack check for motor relay and cell check for motor relay
   if ((Vpack > Vpack_HV_Run_Limit) || (Vpack < Vpack_Lo_Run_Limit)) {
@@ -1161,7 +1157,7 @@ void loop() {
     Serial.print("Comms faults = "); Serial.print(CommsFaults);
     digitalWrite(LED2red, HIGH);
   }
-  // nRF24 2.4Mhz packet comms
+  // nRF24 2.4Mhz packet comms 
   digitalWrite(LED2green, LOW);
   digitalWrite(LED2red, LOW);
 
