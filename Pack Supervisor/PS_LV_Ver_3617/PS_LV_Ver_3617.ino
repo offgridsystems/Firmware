@@ -26,6 +26,10 @@
 
  const uint16_t VERSION = 3617;   // 2817 = 28th week of 2017
 
+//---------VERBOSE MODE? MAYBE YOU WANT DEBUG?--------------------------------------------
+#define VERBOSE                   // All the org serial output
+//#define DEBUG                     // debug data serial output 
+
 // nRF24 2.4Mhz packet comms
 // nrf24_reliable_datagram_server.pde
 // -*- mode: C++ -*-
@@ -38,9 +42,9 @@
 #include <SPI.h>                    // use SPI bus to comm with RF24 radio
 #include <EEPROM.h>                 // use EEPROM to store Blocks connected to pack
 #include <FlexCAN.h>                // CAN Bus connection
+#include <VERBOSE.h> 
 
-
-// ---------SERVER ADDRESS-------------------------------------------
+//---------SERVER ADDRESS-------------------------------------------
 // DO NOT! use 0 or 255! ---does not work!
 #define SERVER_ADDRESS 5
 // Singleton instance of the radio driver
@@ -356,10 +360,10 @@ void setup(){
   // nRF24 2.4Mhz packet comms
   if (!manager.init())
   {
-    Serial.println("Comms init failed");
+    VERBOSE_PRINT("Comms init failed");
     manager.init();     // and try again if not the first time
   }
-  else   Serial.println("Comms init success");
+  else  VERBOSE_PRINTLN("Comms init success");
   // nRF24 2.4Mhz packet comms
 
   // PWM out
@@ -423,18 +427,18 @@ void setup(){
 
   analogWrite(CHARGER_CONTROL, 0);    // prog CHG current to 0
 
-  Serial.println("1: Green LED1 ");
+  VERBOSE_PRINTLN("1: Green LED1 ");
   WatchdogReset();                    // reset the watchdog timer
 
   digitalWrite(LED1green, HIGH); delay(100);  // LED on for .1 second
-  Serial.println("1: then go RED ");
+  VERBOSE_PRINTLN("1: then go RED ");
   digitalWrite(LED1green, LOW);
   WatchdogReset();                    // reset the watchdog timer
   digitalWrite(LED1red, HIGH); delay(100);    // LED on for .1 second
-  Serial.println("2: Green LED2");
+  VERBOSE_PRINTLN("2: Green LED2");
   WatchdogReset();                    // reset the watchdog timer
   digitalWrite(LED2green, HIGH); delay(100);  // LED on for .1 second
-  Serial.println("3: Now go RED ");
+  VERBOSE_PRINTLN("3: Now go RED ");
   digitalWrite(LED2green, LOW);
   WatchdogReset();                    // reset the watchdog timer
   digitalWrite(LED2red, HIGH); delay(100);    // LED on for .1 second
@@ -460,15 +464,15 @@ void setup(){
   for (EE_address = 0; EE_address < 10; EE_address++) {
     EE_value = EEPROM.read(EE_address);   // read for print debug
     blockNum[EE_address] = EE_value;      // READ EEprom at power up
-    Serial.print("READ from EEprom address:  ");  Serial.print(blockNum[EE_address]);   Serial.print(" = Block#: ");  Serial.println(EE_value);
-    Serial.print("READ from EEprom address:  ");  Serial.print(EE_address);   Serial.print(" = Block#: ");  Serial.println(EE_value);
-    Serial.print("READ from EEprom address:  ");  Serial.print(EE_address);   Serial.print(" = Block#: ");  Serial.println(EE_value);
-    Serial.print("READ from EEprom address:  ");  Serial.print(EE_address);   Serial.print(" = Block#: ");  Serial.println(EE_value);
-    Serial.print("READ from EEprom address:  ");  Serial.print(EE_address);   Serial.print(" = Block#: ");  Serial.println(EE_value);
-    Serial.print("READ from EEprom address:  ");  Serial.print(EE_address);   Serial.print(" = Block#: ");  Serial.println(EE_value);
-    Serial.print("READ from EEprom address:  ");  Serial.print(EE_address);   Serial.print(" = Block#: ");  Serial.println(EE_value);
-    Serial.print("READ from EEprom address:  ");  Serial.print(EE_address);   Serial.print(" = Block#: ");  Serial.println(EE_value);
-    Serial.print("READ from EEprom address:  ");  Serial.print(EE_address);   Serial.print(" = Block#: ");  Serial.println(EE_value);
+    VERBOSE_PRINT("READ from EEprom address:  ");  VERBOSE_PRINT(blockNum[EE_address]);   VERBOSE_PRINT(" = Block#: ");  VERBOSE_PRINTLN(EE_value);
+    VERBOSE_PRINT("READ from EEprom address:  ");  VERBOSE_PRINT(EE_address);   VERBOSE_PRINT(" = Block#: ");  VERBOSE_PRINTLN(EE_value);
+    VERBOSE_PRINT("READ from EEprom address:  ");  VERBOSE_PRINT(EE_address);   VERBOSE_PRINT(" = Block#: ");  VERBOSE_PRINTLN(EE_value);
+    VERBOSE_PRINT("READ from EEprom address:  ");  VERBOSE_PRINT(EE_address);   VERBOSE_PRINT(" = Block#: ");  VERBOSE_PRINTLN(EE_value);
+    VERBOSE_PRINT("READ from EEprom address:  ");  VERBOSE_PRINT(EE_address);   VERBOSE_PRINT(" = Block#: ");  VERBOSE_PRINTLN(EE_value);
+    VERBOSE_PRINT("READ from EEprom address:  ");  VERBOSE_PRINT(EE_address);   VERBOSE_PRINT(" = Block#: ");  VERBOSE_PRINTLN(EE_value);
+    VERBOSE_PRINT("READ from EEprom address:  ");  VERBOSE_PRINT(EE_address);   VERBOSE_PRINT(" = Block#: ");  VERBOSE_PRINTLN(EE_value);
+    VERBOSE_PRINT("READ from EEprom address:  ");  VERBOSE_PRINT(EE_address);   VERBOSE_PRINT(" = Block#: ");  VERBOSE_PRINTLN(EE_value);
+    VERBOSE_PRINT("READ from EEprom address:  ");  VERBOSE_PRINT(EE_address);   VERBOSE_PRINT(" = Block#: ");  VERBOSE_PRINTLN(EE_value);
   }
 
   // default RF24 manager settings are 2000ms timeout and 3 retries. Timeout can be 2x to avoid collisions. These are too long for COP, and we don't want
@@ -477,12 +481,12 @@ void setup(){
   manager.setRetries(3);
   //manager.setPayloadSize(12);     // 2 floats (4x2 bytes) = 8bytes +  2 + 2 = 12 bytes MUST AGREE WITH CLIENTS!!
 
-  Serial.println(F("Start Pack Supervisor"));
-  Serial.print(F("Firmware Ver: "));  Serial.println(VERSION);
+  VERBOSE_PRINTLN(F("Start Pack Supervisor"));
+  VERBOSE_PRINT(F("Firmware Ver: "));  VERBOSE_PRINTLN(VERSION);
 
   // only turn LIMP mode off at power cycle - Jul 12, 2017
     digitalWrite(LIMP_OUTPUT, LOW);
-    Serial.println("'Limp Mode'  is off because DK is being reset ");
+    VERBOSE_PRINTLN("'Limp Mode'  is off because DK is being reset ");
 } // Setup End
 
 //=================================================================================================================================//
@@ -501,19 +505,19 @@ void WatchdogReset (void) {      // reset COP watchdog timer to 1.1 sec
 //=================================================================================================================================//
 void loop() {
 
-  Serial.println();
-  Serial.println();
-  Serial.print(F("  Server Address: "));  Serial.print(SERVER_ADDRESS);
-  Serial.print(F("  PS Mode: "));         Serial.println(gMode);
+  VERBOSE_PRINTLN();
+  VERBOSE_PRINTLN();
+  VERBOSE_PRINT(F("  Server Address: "));  VERBOSE_PRINT(SERVER_ADDRESS);
+  VERBOSE_PRINT(F("  PS Mode: "));         VERBOSE_PRINTLN(gMode);
 
   WatchdogReset();  // reset the watchdog timer (times out in 1 sec so make sure loop is under about 500-600msec)
 
-  Serial.println();
-  Serial.print(F("Secs = "));  Serial.println(seconds);          // debug printout to pc (open serial monitor window)
-  Serial.print(F("Mins = "));  Serial.println(minutes);
-  Serial.print(F("Hrs = "));   Serial.println(hours);
-  Serial.print(F("Millisecond counter: "));           Serial.println(millis());
-  Serial.print(F("Historical Avg Hottest Tcell: "));  Serial.print(Hist_Highest_Tcell, 0);  Serial.print(" ADC counts ");
+  VERBOSE_PRINTLN();
+  VERBOSE_PRINT(F("Secs = "));  VERBOSE_PRINTLN(seconds);          // debug printout to pc (open serial monitor window)
+  VERBOSE_PRINT(F("Mins = "));  VERBOSE_PRINTLN(minutes);
+  VERBOSE_PRINT(F("Hrs = "));   VERBOSE_PRINTLN(hours);
+  VERBOSE_PRINT(F("Millisecond counter: "));           VERBOSE_PRINTLN(millis());
+  VERBOSE_PRINT(F("Historical Avg Hottest Tcell: "));  VERBOSE_PRINT_0(Hist_Highest_Tcell);  VERBOSE_PRINT(" ADC counts ");
 
   // make clock tick tock
   currentmicros = micros(); // read the time.
@@ -556,7 +560,7 @@ void loop() {
         blockNum[0] = blockNum[1] = blockNum[2] = blockNum[3] = blockNum[4] = blockNum[5] = blockNum[6] = blockNum[7] = blockNum[8] = blockNum[9] = 0;
         // first time through, zero all block array locations, so they can be populated by the learn blocks feature
         LearnBlockSwitch = OFF ;
-        Serial.print("    ZERO Blocks: "); Serial.print("    ZERO Blocks: "); Serial.print("    ZERO Blocks: ");
+        VERBOSE_PRINT("    ZERO Blocks: "); VERBOSE_PRINT("    ZERO Blocks: "); VERBOSE_PRINT("    ZERO Blocks: ");
       }
     }
     else if (seconds > 55)  tempx = 0;     // if switch is not pressed, 0 out var after 5 seconds
@@ -565,30 +569,30 @@ void loop() {
   {
     LEARNBLOCKS = OFF;
   }
-  Serial.println();
-  Serial.print("    Learn Blocks is ON/OFF: ");  Serial.println(LEARNBLOCKS);
-  Serial.println("  These Block numbers populate these memory locations: ");
-  Serial.print("EEprom location 0 =  "); Serial.print("Block Addr "); Serial.println(blockNum[0]);
-  Serial.print("EEprom location 1 =  "); Serial.print("Block Addr "); Serial.println(blockNum[1]);
-  Serial.print("EEprom location 2 =  "); Serial.print("Block Addr "); Serial.println(blockNum[2]);
-  Serial.print("EEprom location 3 =  "); Serial.print("Block Addr "); Serial.println(blockNum[3]);
-  Serial.print("EEprom location 4 =  "); Serial.print("Block Addr "); Serial.println(blockNum[4]);
-  Serial.print("EEprom location 5 =  "); Serial.print("Block Addr "); Serial.println(blockNum[5]);
-  Serial.print("EEprom location 6 =  "); Serial.print("Block Addr "); Serial.println(blockNum[6]);
-  Serial.print("EEprom location 7 =  "); Serial.print("Block Addr "); Serial.println(blockNum[7]);
-  Serial.print("EEprom location 8 =  "); Serial.print("Block Addr "); Serial.println(blockNum[8]);
-  Serial.print("EEprom location 9 =  "); Serial.print("Block Addr ");Serial.println(blockNum[9]);
-  Serial.println();
+  VERBOSE_PRINTLN();
+  VERBOSE_PRINT("    Learn Blocks is ON/OFF: ");  VERBOSE_PRINTLN(LEARNBLOCKS);
+  VERBOSE_PRINTLN("  These Block numbers populate these memory locations: ");
+  VERBOSE_PRINT("EEprom location 0 =  "); VERBOSE_PRINT("Block Addr "); VERBOSE_PRINTLN(blockNum[0]);
+  VERBOSE_PRINT("EEprom location 1 =  "); VERBOSE_PRINT("Block Addr "); VERBOSE_PRINTLN(blockNum[1]);
+  VERBOSE_PRINT("EEprom location 2 =  "); VERBOSE_PRINT("Block Addr "); VERBOSE_PRINTLN(blockNum[2]);
+  VERBOSE_PRINT("EEprom location 3 =  "); VERBOSE_PRINT("Block Addr "); VERBOSE_PRINTLN(blockNum[3]);
+  VERBOSE_PRINT("EEprom location 4 =  "); VERBOSE_PRINT("Block Addr "); VERBOSE_PRINTLN(blockNum[4]);
+  VERBOSE_PRINT("EEprom location 5 =  "); VERBOSE_PRINT("Block Addr "); VERBOSE_PRINTLN(blockNum[5]);
+  VERBOSE_PRINT("EEprom location 6 =  "); VERBOSE_PRINT("Block Addr "); VERBOSE_PRINTLN(blockNum[6]);
+  VERBOSE_PRINT("EEprom location 7 =  "); VERBOSE_PRINT("Block Addr "); VERBOSE_PRINTLN(blockNum[7]);
+  VERBOSE_PRINT("EEprom location 8 =  "); VERBOSE_PRINT("Block Addr "); VERBOSE_PRINTLN(blockNum[8]);
+  VERBOSE_PRINT("EEprom location 9 =  "); VERBOSE_PRINT("Block Addr ");VERBOSE_PRINTLN(blockNum[9]);
+  VERBOSE_PRINTLN();
 
   byte tempbl = 0  ;
   //byte TWO_MINUTES = 30;      // 240 seconds (4 min)
   byte TWO_MINUTES = 120;       // 120 seconds (2 min)
   //bool Disconnected_Block;    // start with no fault
   
-  Serial.println("  These Block numbers contain these timeout values: ");
+  VERBOSE_PRINTLN("  These Block numbers contain these timeout values: ");
   
   while ( tempbl < NUMBER_OF_BLOCKS ) {
-       Serial.print("Block: "); Serial.print(blockNum[tempbl]); Serial.print(" = "); Serial.println(Block_Comm_Timer[tempbl]);
+       VERBOSE_PRINT("Block: "); VERBOSE_PRINT(blockNum[tempbl]); VERBOSE_PRINT(" = "); VERBOSE_PRINTLN(Block_Comm_Timer[tempbl]);
        //tempbl++;
        // run comm disconnect timer on all blocks here - count to 4 min and stop
        if (Comm_Flag) 
@@ -601,12 +605,12 @@ void loop() {
        }
       tempbl++;
     }
-  Serial.println();
+  VERBOSE_PRINTLN();
   if (Disconnected_Block) {
-    Serial.print("Block: "); Serial.print(Disconnected_BlockNum); Serial.print(" = "); Serial.println("DISCONNECTED");
+    VERBOSE_PRINT("Block: "); VERBOSE_PRINT(Disconnected_BlockNum); VERBOSE_PRINT(" = "); VERBOSE_PRINTLN("DISCONNECTED");
     }
   
-  Serial.println();
+  VERBOSE_PRINTLN();
   bool Tempdisc = NO;
   tempbl = 0  ;
   // Now check all blocks for comms in 4 min, when timers are reset, clear Disconnect switches
@@ -614,7 +618,7 @@ void loop() {
      {
           if (Block_Comm_Timer[tempbl] > TWO_MINUTES) {
             Tempdisc = YES;                           //  yes at least one block is disconnected
-            Serial.print("Block DISCONNECT.... ");Serial.println("Block DISCONNECT");
+            VERBOSE_PRINT("Block DISCONNECT.... ");VERBOSE_PRINTLN("Block DISCONNECT");
           }
       tempbl++;
     }
@@ -622,10 +626,10 @@ void loop() {
     if (Tempdisc == NO) {
        Disconnected_Block = NO;                       //  no block is disconnected
        Disconnected_BlockNum = 0;
-    Serial.print("All Blocks connected....");
-    Serial.println("All Blocks connected");
+    VERBOSE_PRINT("All Blocks connected....");
+    VERBOSE_PRINTLN("All Blocks connected");
     }
-  Serial.println();
+  VERBOSE_PRINTLN();
 
   // Write new learned block values to EEPROM
   // start writing and reading from the first byte (address 0) of the EEPROM
@@ -639,8 +643,8 @@ void loop() {
     {
       EEPROM.write(EE_address, blockNum[EE_address]);
       EE_value = EEPROM.read(EE_address);
-      Serial.print("Once/min save Block#: "); Serial.print(EE_value); Serial.print("to this EEprom address:  "); Serial.println(EE_address);
-      Serial.print("Once/min save Block#: "); Serial.print(EE_value); Serial.print("to this EEprom address:  "); Serial.println(EE_address);
+      VERBOSE_PRINT("Once/min save Block#: "); VERBOSE_PRINT(EE_value); VERBOSE_PRINT("to this EEprom address:  "); VERBOSE_PRINTLN(EE_address);
+      VERBOSE_PRINT("Once/min save Block#: "); VERBOSE_PRINT(EE_value); VERBOSE_PRINT("to this EEprom address:  "); VERBOSE_PRINTLN(EE_address);
 
     }
     if (blockNum[0]) LEARNBLOCKS = OFF;               // if last block is saved to EE, turn off Learn blocks
@@ -682,10 +686,10 @@ void loop() {
   float datAvg = (datSum) / n;      // find the mean
   int Tambient = datAvg;            // save ambient
 
-  Serial.print(NTCambient);  Serial.print(" :");
-  Serial.print("  NTC ambient avg value: ");  Serial.print(Tambient);  Serial.println ();
+  VERBOSE_PRINT(NTCambient);  VERBOSE_PRINT(" :");
+  VERBOSE_PRINT("  NTC ambient avg value: ");  VERBOSE_PRINT(Tambient);  VERBOSE_PRINTLN ();
   if (datAvg < 100){
-    Serial.print("NTC possibly shorted ");  Serial.println ();
+    VERBOSE_PRINT("NTC possibly shorted ");  VERBOSE_PRINTLN ();
   }
 
   // measure charge current input
@@ -705,13 +709,13 @@ void loop() {
   
   datAvg = datSum / n;  // find the mean
 
-  Serial.print(ICHG);
+  VERBOSE_PRINT(ICHG);
   if (datAvg < 50)
   {
-    Serial.print("ICHG -> Error - Input is shorted or no signal ");
+    VERBOSE_PRINT("ICHG -> Error - Input is shorted or no signal ");
   }
-  Serial.print("Chan: "); Serial.print(ICHG);
-  Serial.print(" ICHG avg value: ");     Serial.println(datAvg, 2);
+  VERBOSE_PRINT("Chan: "); VERBOSE_PRINT(ICHG);
+  VERBOSE_PRINT(" ICHG avg value: ");     VERBOSE_PRINTLN_2(datAvg);
 
   if ((gMode != CHARGEMODE) && (gMode != DRIVEMODE)) // calibrate sensor when not charging or drivemode
   {
@@ -735,12 +739,16 @@ void loop() {
   TempAmps = (datAvg / 10.3);    // scale current to amps
   //gAmps = (TempAmps + gAmps + gAmps + gAmps + gAmps) / 5.00; // average for noise reduction
   gAmps = (TempAmps + (gAmps * 9)) / 10.00; // average for noise reduction
-  Serial.print(" Amps avg value: ");
-  if (polarity)  Serial.print("+");
-  else Serial.print("-");
-  Serial.print(gAmps, 3);
-  Serial.println(" (POS => charge and NEG => discharge)");
-  Serial.println ();
+  VERBOSE_PRINT(" Amps avg value: ");
+  if(polarity){
+    VERBOSE_PRINT("+");
+  }
+  else{
+    VERBOSE_PRINT("-");
+  }
+  VERBOSE_PRINT_3(gAmps);
+  VERBOSE_PRINTLN(" (POS => charge and NEG => discharge)");
+  VERBOSE_PRINTLN ();
 
   // measure discharge current
   datSum = 0;       // reset our accumulated sum of input values to zero
@@ -755,12 +763,12 @@ void loop() {
 
   datAvg = (1.0 * datSum) / n;  // find the mean
 
-  Serial.print(IDISCHG);
-  Serial.print(" IDISCHG avg value: ");     Serial.print(datAvg, 2);
+  VERBOSE_PRINT(IDISCHG);
+  VERBOSE_PRINT(" IDISCHG avg value: ");     VERBOSE_PRINT_2(datAvg);
   if (datAvg < 50) {
-    Serial.print("IDISCHG -> Error - Input is shorted or no signal ");
+    VERBOSE_PRINT("IDISCHG -> Error - Input is shorted or no signal ");
   }
-  Serial.println ();
+  VERBOSE_PRINTLN ();
   digitalWrite(LED1green, HIGH);  //on
   
   // read and scale Pack voltage input
@@ -801,8 +809,8 @@ void loop() {
   Vpack = Volts / 3;
   // now do fine calibration on signal
   // Vpack = Vpack - 0.010;                     // add offset to signal
-  Serial.print(VSCALEDPACK);
-  Serial.print(" Vpack: ");     Serial.print(Vpack,2);  Serial.print("VDC"); Serial.println ();
+  VERBOSE_PRINT(VSCALEDPACK);
+  VERBOSE_PRINT(" Vpack: ");     VERBOSE_PRINT_2(Vpack);  VERBOSE_PRINT("VDC"); VERBOSE_PRINTLN ();
 
   // Make logic determinations for relays = ON or OFF, and use hysteresis to prevent relay oscillation
   const float Vpack_HVD = ((Vcell_HVD_Spec + 0.02) * No_Of_Cells) ;   // eg 4.21+.02=4.23 x 20 = 84.6 (.02 is headroom to balance 
@@ -816,7 +824,7 @@ void loop() {
   ChargeRelay = OFF;                                                          // default to relay off
   if ((Hist_Highest_Vcell < (Vcell_HVD_Spec )) && (Vpack < (Vpack_HVD))) {    // check cell and pack V before turning on relay (4.21 if LG)
     if ((digitalRead(CHARGE_INPUT) == 0)) {                                   // check charger input for low side switch
-      Serial.print(F(" Charge input ON / Timer = "));  Serial.print(gCharge_Timer);  Serial.println(F(" hrs"));
+      VERBOSE_PRINT(F(" Charge input ON / Timer = "));  VERBOSE_PRINT(gCharge_Timer);  VERBOSE_PRINTLN(F(" hrs"));
       if (gCharge_Timer == 0) ChargeRelay = ON;                               // if timer is 0 turn on charge relay for up to a day
       if(Tx_counter >= Tx_msg_interval) {                                     // send message at set speed (1 per second)
         Tx_counter = 0;                                                       // update counter
@@ -830,6 +838,11 @@ void loop() {
           txmsg.buf[3] = 0x6E;
           txmsg.buf[4] = 0x00;                                                // byte 4 is on 00 or off 01
           Can0.write(txmsg);
+          DEBUG_PRINT_HEX(txmsg.id); DEBUG_PRINT(" ")
+          for(int i = 0; i<5; i++){
+            DEBUG_PRINT_HEX(txmsg.buf[i]); DEBUG_PRINT(" ")
+          }
+          DEBUG_PRINTLN();
         }
         if(Hist_Highest_Vcell > Vcell_Charge_Taper) {                         // if cells are lower than taper turn on low
           txmsg.ext = 1;                                                      // set message as extended
@@ -841,48 +854,53 @@ void loop() {
           txmsg.buf[3] = 0x01;
           txmsg.buf[4] = 0x00;                                                // byte 4 is on 00 or off 01
           Can0.write(txmsg);
+          DEBUG_PRINT_HEX(txmsg.id); DEBUG_PRINT(" ")
+          for(int i = 0; i<5; i++){
+            DEBUG_PRINT_HEX(txmsg.buf[i]); DEBUG_PRINT(" ")
+          }
+          DEBUG_PRINTLN();
         }
       }
       if (Hist_Lowest_Vcell > Vcell_Balance) {                                // shut down relay, start 1 day timer (4.11 if LG)
         gCharge_Timer = 24;                                                   // 24 hours
         ChargeRelay = OFF;
-        Serial.println(F(" Charge relay IS OFF for 24 hours because cells are ALL in balance "));
+        VERBOSE_PRINTLN(F(" Charge relay IS OFF for 24 hours because cells are ALL in balance "));
       }
       else {                                                                  // reset charge timer if Vcell < 4V
         if (Hist_Lowest_Vcell < CELL_RECONNECT_V) {
           gCharge_Timer = 0;
-          Serial.println(F(" Charge timer reset to 0 hrs because Vcell lowest discharged below 4V "));
+          VERBOSE_PRINTLN(F(" Charge timer reset to 0 hrs because Vcell lowest discharged below 4V "));
         }
       }
     }
     else {
-      Serial.println(F(" Charge relay IS OFF because charge input is OFF "));
+      VERBOSE_PRINTLN(F(" Charge relay IS OFF because charge input is OFF "));
       gCharge_Timer = 0;                                                      // reset 24 hour timer because charger is disconnected
     }
   }
   else {                                                                      // Open charge relay if cells or pack go over limits
-    Serial.println("**** FAULT - Cell or pack voltage is too high to initiate charger now.... ");
+    VERBOSE_PRINTLN("**** FAULT - Cell or pack voltage is too high to initiate charger now.... ");
     gCharge_Timer = 24;                                                       // relay is shut and counter is set to 24 hours
-    Serial.print(F(" Charge input OFF - Timer = "));  Serial.print(gCharge_Timer);  Serial.println(F(" hrs"));
+    VERBOSE_PRINT(F(" Charge input OFF - Timer = "));  VERBOSE_PRINT(gCharge_Timer);  VERBOSE_PRINTLN(F(" hrs"));
   }
 
   //---------MOTOR RELAY------------------------------------------------------------------------------------------------------------
   MtrControlRelay = OFF;                                 // default to relay off
   // Pack check for motor relay and cell check for motor relay
   if ((Vpack > Vpack_HV_Run_Limit) || (Vpack < Vpack_Lo_Run_Limit)) {
-    Serial.println(" Drive relay IS OFF because Vpack is too LOW or too HIGH");
+    VERBOSE_PRINTLN(" Drive relay IS OFF because Vpack is too LOW or too HIGH");
     //MtrControlRelay = OFF;                             // if pack voltage too high turn off motor control
   }
   else {
     if ((Vpack < (Vpack_HV_Run_Limit - HYSTERESIS)) && (Hist_Lowest_Vcell > Vcell_LVD_Spec)) { // check pack and cell specs
       if ((digitalRead(CHARGE_INPUT) != 0) && (digitalRead(KEYSWITCH_INPUT) == 0)) {
         MtrControlRelay = ON;   // if pack ok, and charger is off (or disconnected) turn on motor control
-        Serial.println(" Drive relay IS ON because KEYSWITCH is ON AND CHARGE input is OFF ");
+        VERBOSE_PRINTLN(" Drive relay IS ON because KEYSWITCH is ON AND CHARGE input is OFF ");
       }
-      else Serial.println(" Drive relay IS OFF because KEYSWITCH is OFF or CHARGE input is ON, but packV and cellV are within limits ");
+      else VERBOSE_PRINTLN(" Drive relay IS OFF because KEYSWITCH is OFF or CHARGE input is ON, but packV and cellV are within limits ");
     }
     else {
-      Serial.println(" Drive relay IS OFF because Vpack or Vcell is too LOW - SO CHARGE PACK ");
+      VERBOSE_PRINTLN(" Drive relay IS OFF because Vpack or Vcell is too LOW - SO CHARGE PACK ");
       gFaultMode = UNDERVOLT_CELL ;         
     }
   }
@@ -890,46 +908,46 @@ void loop() {
   if (Hist_Highest_Tcell < NTC_63C) {
       MtrControlRelay = OFF;               // cell >63C so turn off motor and charger relays
       ChargeRelay = OFF;
-      Serial.println(" Charge AND Drive relay ARE OFF because cell OVERTEMP ");
+      VERBOSE_PRINTLN(" Charge AND Drive relay ARE OFF because cell OVERTEMP ");
   }
   else {} // cells not hot
 
-  Serial.print(" Charger HVD: ");         Serial.print(Vpack_HVD, 2);           Serial.println("VDC");
-  Serial.print(" Motor LVD: ");           Serial.print(Vpack_LVD, 1);           Serial.println("VDC");
-  Serial.print(" Vpack_HV_Run_Limit: ");  Serial.print(Vpack_HV_Run_Limit, 1);  Serial.println("VDC");
-  Serial.print(" Vpack_Lo_Run_Limit: ");  Serial.print(Vpack_Lo_Run_Limit, 1);  Serial.println("VDC");
-  Serial.println ();
+  VERBOSE_PRINT(" Charger HVD: ");         VERBOSE_PRINT_2(Vpack_HVD);           VERBOSE_PRINTLN("VDC");
+  VERBOSE_PRINT(" Motor LVD: ");           VERBOSE_PRINT_1(Vpack_LVD);           VERBOSE_PRINTLN("VDC");
+  VERBOSE_PRINT(" Vpack_HV_Run_Limit: ");  VERBOSE_PRINT_1(Vpack_HV_Run_Limit);  VERBOSE_PRINTLN("VDC");
+  VERBOSE_PRINT(" Vpack_Lo_Run_Limit: ");  VERBOSE_PRINT_1(Vpack_Lo_Run_Limit);  VERBOSE_PRINTLN("VDC");
+  VERBOSE_PRINTLN ();
 
   // if undervolt cell AND Comms timeout (= comms error), wait until no comms error to turn on Drive
   if ((Disconnected_Block == YES) && (gFaultMode == UNDERVOLT_CELL)) {
      if (gFaultMode == UNDERVOLT_CELL) MtrControlRelay = OFF; 
-     Serial.println(" Drive relay is OFF because cell UNDERVOLT/Cell Disconnect ");
+     VERBOSE_PRINTLN(" Drive relay is OFF because cell UNDERVOLT/Cell Disconnect ");
      //if (gFaultMode == OVERVOLT_CELL) ChargeRelay = OFF; 
   }
   //   electrically switch relays on/off
   //if ((ChargeRelay == ON) && (digitalRead(CHARGE_INPUT == LOW)))    // Charger input goes low when charger is conn
   if ((ChargeRelay == ON)) {                                          // Charger input goes low when charger is conn
     digitalWrite(CHARGER_RELAY, HIGH);
-    Serial.println(F("Charger relay K1 is closed"));
+    VERBOSE_PRINTLN(F("Charger relay K1 is closed"));
     gMode = CHARGEMODE;
   }
   else {
     gMode = PAUSEMODE;
     digitalWrite(CHARGER_RELAY, LOW);
-    Serial.println("Charger relay K1 is open");
+    VERBOSE_PRINTLN("Charger relay K1 is open");
   }
 
   if ((MtrControlRelay == ON)) {                                      // keyswitch input goes lo when turned on
     digitalWrite(MTRCONTROL_RELAY, HIGH);
-    Serial.println(" Motor Relay K2 is closed");
+    VERBOSE_PRINTLN(" Motor Relay K2 is closed");
     gMode = DRIVEMODE;
   }
   else {
     digitalWrite(MTRCONTROL_RELAY, LOW);
-    Serial.println("Motor Relay K2 is open");
+    VERBOSE_PRINTLN("Motor Relay K2 is open");
   }
 
-  //Serial.print("CRelay cycles: ");  Serial.print(Crelay_Cycles);  Serial.print("  MRelay cycles: ");  Serial.print(Mrelay_Cycles);
+  //VERBOSE_PRINT("CRelay cycles: ");  VERBOSE_PRINT(Crelay_Cycles);  VERBOSE_PRINT("  MRelay cycles: ");  VERBOSE_PRINT(Mrelay_Cycles);
 
   // control charger current with DAC2
   float TargetI;                              //Amps
@@ -947,8 +965,8 @@ void loop() {
   else {
     TargetI = BalanceChargeCurrent;           // 200ma charge rate from there up to keep cells balanced
   }
-  Serial.print(" Target Charge amps: ");  Serial.println(TargetI, 2);
-  Serial.print(" Actual Charge amps: ");  Serial.println(gAmps, 2);
+  VERBOSE_PRINT(" Target Charge amps: ");  VERBOSE_PRINTLN_2(TargetI);
+  VERBOSE_PRINT(" Actual Charge amps: ");  VERBOSE_PRINTLN_2(gAmps);
 
   // init current pot
   if (gMode != CHARGEMODE) gTempPot = STARTING_CHARGE_RATE;
@@ -965,7 +983,7 @@ void loop() {
   //charge control fix Apr 2017
     analogWrite(CHARGER_CONTROL, gTempPot);       // PWM2 = DAC2 == CHG control 2-5V = 0-100%
   //charge control fix Apr 2017
-  Serial.print(" Charger control setting: ");    Serial.print(gTempPot);  Serial.println(" out of 1024: ");
+  VERBOSE_PRINT(" Charger control setting: ");    VERBOSE_PRINT(gTempPot);  VERBOSE_PRINTLN(" out of 1024: ");
 
   // output SOC signal from op amp PWM - digital DAC outputs
   // 60-80V Vpack ==> 0-100% for now, VOLTAGE IS NOT A GOOD FUEL GAUAGE, but it's ok for now November 2016 until good SOC meter is built
@@ -976,7 +994,7 @@ void loop() {
   //Average SOCv over minutes (improvement) - Jul 12, 2017
   if ((MtrControlRelay == OFF) && (ChargeRelay == OFF)) gSOCv = Vpack ;           // both motor and charger relays are off == init SOC == Vpack
   // float gSOCv;
-  Serial.print(" Vbat based SOC: ");    Serial.print(gSOCv);  Serial.println("........................... ");
+  VERBOSE_PRINT(" Vbat based SOC: ");    VERBOSE_PRINT(gSOCv);  VERBOSE_PRINTLN("........................... ");
   
   gSOCv = (Vpack + (gSOCv * 999)) / 1000.0; // average for noise reduction 
   
@@ -994,9 +1012,9 @@ void loop() {
   analogWrite(PWM1, TempV);                 // Pin 20 - PWM1 ==DAC1 == SOC output
   // analogWrite(PWM2, TempV);              // PWM2 = DAC2 == CHG control
 
-  Serial.print(" PWM1 Counts (SOC): ");     Serial.print(TempV, 0);
+  VERBOSE_PRINT(" PWM1 Counts (SOC): ");     VERBOSE_PRINT_0(TempV);
   SOCv = (TempV / 1024) * 100;              // now write to KOSO meter var
-  Serial.print(" SOC: ");     Serial.print(SOCv);  Serial.println ("%");
+  VERBOSE_PRINT(" SOC: ");     VERBOSE_PRINT(SOCv);  VERBOSE_PRINTLN ("%");
 
   /*---Limp Logic---*/
   // only turn LIMP mode off at power cycle or keyswitch cycle (improvement limp latch) Jul 12, 2017
@@ -1005,17 +1023,21 @@ void loop() {
   }
   else if (digitalRead(KEYSWITCH_INPUT) != 0) {             // Check for power cycle
     digitalWrite(LIMP_OUTPUT, LOW);                         // Set LIMP off
-    Serial.println(F("'Limp Mode' is off because of Keyswitch ON/OFF cycle"));
+    VERBOSE_PRINTLN(F("'Limp Mode' is off because of Keyswitch ON/OFF cycle"));
   }
   if (digitalRead(LIMP_OUTPUT) == 0) {                      // Check for LIMP off
-    Serial.println(F("'Limp Mode' is off because of because SOC > 20% and cell temp is below 60C"));
+    VERBOSE_PRINTLN(F("'Limp Mode' is off because of because SOC > 20% and cell temp is below 60C"));
   }
   else {                                                    // LIMP is on
-    if (Hist_Highest_Tcell < NTC_60C) Serial.println(F("'Limp Mode'  is on because Cell temp is over 60C"));
-    else  Serial.println(F("'Limp Mode'  is on because SOC is or has been under 20% - and keyswitch has not reset this condition"));
+    if (Hist_Highest_Tcell < NTC_60C){
+      VERBOSE_PRINTLN(F("'Limp Mode'  is on because Cell temp is over 60C"));
+    }
+    else{
+      VERBOSE_PRINTLN(F("'Limp Mode'  is on because SOC is or has been under 20% - and keyswitch has not reset this condition"));
+    }
   }
   
-  Serial.println();
+  VERBOSE_PRINTLN();
   digitalWrite(LED2green, HIGH);
 
   // nRF24 2.4Mhz packet comms
@@ -1030,19 +1052,19 @@ void loop() {
     float tempa;                  // 4 bytes or 32 bits
     float tempb;
     if (manager.recvfromAck(buf, &len, &from)) {
-      Serial.print(F("DKBlock Client: "));
-      Serial.print(from, DEC);
-      Serial.print(F(" Length = "));  Serial.println(len);
+      VERBOSE_PRINT(F("DKBlock Client: "));
+      VERBOSE_PRINT_DEC(from);
+      VERBOSE_PRINT(F(" Length = "));  VERBOSE_PRINTLN(len);
 
-      Serial.print(((DATA*)buf) -> sCellV_Hiside );   Serial.print(F(" VDC Hi Cell   "));
-      Serial.print(((DATA*)buf) -> sThottest);        Serial.print(F(" Hot NTC counts   "));
-      Serial.print(((DATA*)buf) -> sTcoldest);        Serial.print(F(" Cold NTC counts   "));
-      Serial.print(((DATA*)buf) -> sCellV_Loside );   Serial.print(F(" VDC Lo Cell   "));
-      Serial.print(((DATA*)buf) -> schecksum );       Serial.println(F(" Checksum from BLOCK"));
+      VERBOSE_PRINT(((DATA*)buf) -> sCellV_Hiside );   VERBOSE_PRINT(F(" VDC Hi Cell   "));
+      VERBOSE_PRINT(((DATA*)buf) -> sThottest);        VERBOSE_PRINT(F(" Hot NTC counts   "));
+      VERBOSE_PRINT(((DATA*)buf) -> sTcoldest);        VERBOSE_PRINT(F(" Cold NTC counts   "));
+      VERBOSE_PRINT(((DATA*)buf) -> sCellV_Loside );   VERBOSE_PRINT(F(" VDC Lo Cell   "));
+      VERBOSE_PRINT(((DATA*)buf) -> schecksum );       VERBOSE_PRINTLN(F(" Checksum from BLOCK"));
 
       // filter for wrong payload length
       if (len != PAYLOAD) {
-        Serial.println(" WRONG data length so do not use this bad data!!!!!!");
+        VERBOSE_PRINTLN(" WRONG data length so do not use this bad data!!!!!!");
         goto badcomm;     // check for correct payload, get out if not
       }
       // filter for bad checksum
@@ -1052,23 +1074,23 @@ void loop() {
       Temp4 = (((DATA*)buf) -> sTcoldest );
       tempb = (((DATA*)buf) -> schecksum );
       tempa = Temp1 + Temp2 + Temp3 + Temp4;
-      Serial.print(" Calculated checksum is = "); Serial.println(tempa,6); Serial.print(" Received checksum is = "); Serial.println(tempb,6);
+      VERBOSE_PRINT(" Calculated checksum is = "); VERBOSE_PRINTLN_6(tempa); VERBOSE_PRINT(" Received checksum is = "); VERBOSE_PRINTLN_6(tempb);
       //if (tempa != tempb)
       Temp1= tempb - floatmatch;
       Temp2 = tempb + floatmatch;
-      Serial.print(" Checksum window to allow var for FP math is:   "); Serial.print(Temp1,6);   Serial.print(" and high   ");     Serial.println(Temp2,6);
+      VERBOSE_PRINT(" Checksum window to allow var for FP math is:   "); VERBOSE_PRINT_6(Temp1);   VERBOSE_PRINT(" and high   ");     VERBOSE_PRINTLN_6(Temp2);
       if ((tempa < (tempb + floatmatch)) && (tempa > (tempb - floatmatch))) {    // allow data if checksum is within 250uV accuracy
-        Serial.print(" Checksum does agree with client!!!!!!!!!!");  
+        VERBOSE_PRINT(" Checksum does agree with client!!!!!!!!!!");  
       }
       else{
-        Serial.print(" Checksum does NOT agree with client"); 
-        Serial.print(" Bad comms so no save BAD DATA"); 
-        Serial.print(" Checksum does NOT agree with client"); 
-        Serial.print(" Bad comms so no save BAD DATA"); 
-        Serial.print(" Checksum does NOT agree with client"); 
+        VERBOSE_PRINT(" Checksum does NOT agree with client"); 
+        VERBOSE_PRINT(" Bad comms so no save BAD DATA"); 
+        VERBOSE_PRINT(" Checksum does NOT agree with client"); 
+        VERBOSE_PRINT(" Bad comms so no save BAD DATA"); 
+        VERBOSE_PRINT(" Checksum does NOT agree with client"); 
         goto badcomm;                                                 // bad data = no save
       }      
-      Serial.print(" Calculated checksum is = "); Serial.print(tempa,6); Serial.print(" Received checksum is = "); Serial.println(tempb,6);
+      VERBOSE_PRINT(" Calculated checksum is = "); VERBOSE_PRINT_6(tempa); VERBOSE_PRINT(" Received checksum is = "); VERBOSE_PRINTLN_6(tempb);
       GoodComms = YES;
 
       // learn blocks to connect to here...if in LEARN BLOCKS mode
@@ -1082,8 +1104,8 @@ void loop() {
 
         while ( x > 0 ) {
           if (from == blockNum[x - 1]) {  // first check = has BLOCK already been saved?
-            Serial.print("THIS BLOCK IS ALREADY SAVED IN LOCATION: "); Serial.println(x - 1);
-            Serial.print("from: "); Serial.print(from); Serial.print("blockNum: "); Serial.println(x - 1);
+            VERBOSE_PRINT("THIS BLOCK IS ALREADY SAVED IN LOCATION: "); VERBOSE_PRINTLN(x - 1);
+            VERBOSE_PRINT("from: "); VERBOSE_PRINT(from); VERBOSE_PRINT("blockNum: "); VERBOSE_PRINTLN(x - 1);
             This_Block_Saved = YES;
             Block_Comm_Timer[x] = 0;      // zero comm timer for this block
           }
@@ -1094,8 +1116,8 @@ void loop() {
           if (This_Block_Saved != YES) {  // if not saved, save BLOCK to zeroed location
             if (blockNum[x - 1] == 0) {   // not saved so store this block in an unused or zeroed location
               blockNum[x - 1] = from;
-              Serial.print("success saving Block#: "); Serial.print(from);
-              Serial.print(" into RAM location: "); Serial.println(x - 1);
+              VERBOSE_PRINT("success saving Block#: "); VERBOSE_PRINT(from);
+              VERBOSE_PRINT(" into RAM location: "); VERBOSE_PRINTLN(x - 1);
               goto exitsaveblock;
             }
           }
@@ -1106,7 +1128,7 @@ void loop() {
         x = NUMBER_OF_BLOCKS;
         while ( x > 0 ) {
           if (from == blockNum[x - 1]) {  // check if BLOCK already been saved?
-            Serial.print("This block is ALREADY SAVED: "); Serial.println(x - 1);
+            VERBOSE_PRINT("This block is ALREADY SAVED: "); VERBOSE_PRINTLN(x - 1);
             This_Block_Saved = YES;
             Block_Comm_Timer[x-1] = 0;    // zero comm timer for this block
           }
@@ -1114,35 +1136,35 @@ void loop() {
         }
       }
       exitsaveblock:
-      // Serial.print("Blocknum Saved: "); Serial.println(This_Block_Saved);
+      // VERBOSE_PRINT("Blocknum Saved: "); VERBOSE_PRINTLN(This_Block_Saved);
       if (This_Block_Saved) {             // if data is sent by a DKblock in this pack, read the data
-        Serial.println(" USE this GOOD data");
-        Serial.print(((DATA*)buf) -> sCellV_Hiside ); Serial.print(" VDC Hi Cell   ");
-        Serial.print(((DATA*)buf) -> sThottest); Serial.print(" Hot NTC counts   ");
-        Serial.print(((DATA*)buf) -> sTcoldest); Serial.print(" Cold NTC counts   ");
-        Serial.print(((DATA*)buf) -> sCellV_Loside ); Serial.print(" VDC Lo Cell   ");
-        Serial.print(((DATA*)buf) -> schecksum ); Serial.println(" CHECKSUM");
+        VERBOSE_PRINTLN(" USE this GOOD data");
+        VERBOSE_PRINT(((DATA*)buf) -> sCellV_Hiside ); VERBOSE_PRINT(" VDC Hi Cell   ");
+        VERBOSE_PRINT(((DATA*)buf) -> sThottest); VERBOSE_PRINT(" Hot NTC counts   ");
+        VERBOSE_PRINT(((DATA*)buf) -> sTcoldest); VERBOSE_PRINT(" Cold NTC counts   ");
+        VERBOSE_PRINT(((DATA*)buf) -> sCellV_Loside ); VERBOSE_PRINT(" VDC Lo Cell   ");
+        VERBOSE_PRINT(((DATA*)buf) -> schecksum ); VERBOSE_PRINTLN(" CHECKSUM");
 
         Temp1 = (((DATA*)buf) -> sCellV_Hiside );
         Temp2 = (((DATA*)buf) -> sCellV_Loside );
         Temp3 = (((DATA*)buf) -> sThottest );
         Temp4 = (((DATA*)buf) -> sTcoldest );
 
-        Serial.println(" High resolution mode values: ");
-        Serial.print(Temp1, 3); Serial.print(" VDC Hi Cell   ");
-        Serial.print(Temp2, 3); Serial.println(" VDC Lo Cell");
+        VERBOSE_PRINTLN(" High resolution mode values: ");
+        VERBOSE_PRINT_3(Temp1); VERBOSE_PRINT(" VDC Hi Cell   ");
+        VERBOSE_PRINT_3(Temp2); VERBOSE_PRINTLN(" VDC Lo Cell");
       }
       else {
-        Serial.println(" This is not a 'saved' block - DO NOT USE this BAD data");
+        VERBOSE_PRINTLN(" This is not a 'saved' block - DO NOT USE this BAD data");
         goto badcomm;
       }
-      // Serial.println((char*)buf);
+      // VERBOSE_PRINTLN((char*)buf);
       // Send a reply back to the originator client
       // if (!manager.sendtoWait(data, sizeof(data), from))
-      // Serial.println("sendtoWait failed");
+      // VERBOSE_PRINTLN("sendtoWait failed");
     }
     else {
-      Serial.println();
+      VERBOSE_PRINTLN();
       CommsFaults ++;
     }
   }
@@ -1151,10 +1173,10 @@ void loop() {
     if (CommsFaults > 100) {
       CommsFaults = 0;
       //Tim find way to reset RF24 if faults gets too high. Reaches 100 every 30 secs!
-      //if (!manager.init())  Serial.print("Comms init failed-"); // careful here this is a complete reboot
-      //else  Serial.print("Comms init success-");
+      //if (!manager.init())  VERBOSE_PRINT("Comms init failed-"); // careful here this is a complete reboot
+      //else  VERBOSE_PRINT("Comms init success-");
     }
-    Serial.print("Comms faults = "); Serial.print(CommsFaults);
+    VERBOSE_PRINT("Comms faults = "); VERBOSE_PRINT(CommsFaults);
     digitalWrite(LED2red, HIGH);
   }
   // nRF24 2.4Mhz packet comms 
@@ -1199,15 +1221,15 @@ void loop() {
       if (Temp2 > Highest_Vcell) Highest_Vcell = ((Highest_Vcell + Temp2) / 2) ;  // insure that one bad byte does not change the value much
       if (Temp1 < Lowest_Vcell) Lowest_Vcell = ((Lowest_Vcell + Temp1) / 2) ;
     }
-    Serial.print(" Highest Vcell: "); Serial.print(Highest_Vcell, 3);  Serial.print(" VDC");
-    Serial.print(" Lowest Vcell: ");  Serial.print(Lowest_Vcell, 3);  Serial.print(" VDC");  Serial.println();
+    VERBOSE_PRINT(" Highest Vcell: "); VERBOSE_PRINT_3(Highest_Vcell);  VERBOSE_PRINT(" VDC");
+    VERBOSE_PRINT(" Lowest Vcell: ");  VERBOSE_PRINT_3(Lowest_Vcell);  VERBOSE_PRINT(" VDC");  VERBOSE_PRINTLN();
 
     // find highest and lowest Tcell --- hotter is lower counts
     if ((Highest_Tcell > Temp3) || ( Highest_Tcell == 0)) Highest_Tcell = ((Highest_Tcell + Highest_Tcell + Highest_Tcell + Temp3) / 4 );      //hotter
     if (Lowest_Tcell < Temp4) Lowest_Tcell = ((Lowest_Tcell + Lowest_Tcell + Lowest_Tcell + Temp4) / 4);
     //    if (Lowest_Tcell < Temp4) Lowest_Tcell = Temp4;
-    Serial.print(" Hottest Tcell: ");     Serial.print(Highest_Tcell, 1);  Serial.print(" ADC counts");
-    Serial.print(" Coolest Tcell: ");     Serial.print(Lowest_Tcell, 1);  Serial.print(" ADC counts"); Serial.println ();
+    VERBOSE_PRINT(" Hottest Tcell: ");     VERBOSE_PRINT_1(Highest_Tcell);  VERBOSE_PRINT(" ADC counts");
+    VERBOSE_PRINT(" Coolest Tcell: ");     VERBOSE_PRINT_1(Lowest_Tcell);  VERBOSE_PRINT(" ADC counts"); VERBOSE_PRINTLN ();
 
     // Running average of cell parameters:
     if (HistoryTimer == 0) {
@@ -1233,10 +1255,10 @@ void loop() {
         if (Lowest_Tcell > NTC_AMBIENT) Lowest_Tcell --;        // coldest goes toward hotter
       }
     }
-    Serial.print(" Historical Avg Highest Vcell: ");  Serial.print(Hist_Highest_Vcell, 3);  Serial.print(" VDC ");
-    Serial.print(" Historical Avg Lowest Vcell: ");   Serial.print(Hist_Lowest_Vcell, 3);  Serial.println(" VDC");
-    Serial.print(" Historical Avg Hottest Tcell: ");  Serial.print(Hist_Highest_Tcell, 0);  Serial.print(" ADC counts ");
-    Serial.print(" Historical Avg Coolest Tcell: ");  Serial.print(Hist_Lowest_Tcell, 0);  Serial.println(" ADC counts");
+    VERBOSE_PRINT(" Historical Avg Highest Vcell: ");  VERBOSE_PRINT_3(Hist_Highest_Vcell);  VERBOSE_PRINT(" VDC ");
+    VERBOSE_PRINT(" Historical Avg Lowest Vcell: ");   VERBOSE_PRINT_3(Hist_Lowest_Vcell);  VERBOSE_PRINTLN(" VDC");
+    VERBOSE_PRINT(" Historical Avg Hottest Tcell: ");  VERBOSE_PRINT_3(Hist_Highest_Tcell);  VERBOSE_PRINT(" ADC counts ");
+    VERBOSE_PRINT(" Historical Avg Coolest Tcell: ");  VERBOSE_PRINT_0(Hist_Lowest_Tcell);  VERBOSE_PRINTLN(" ADC counts");
   }
 badcomm: ;                                            // bad comm bytes end up here...
 
