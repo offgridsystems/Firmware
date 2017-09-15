@@ -23,6 +23,7 @@
 // 9/11/2017  NHJ     3617    Switched to git for version control and collaboration
 //                            Cleaned up and added comments 
 //                            Added FlexCAN code with Extended support
+//                            Added verbose mode and debug mode for serial output
 
  const uint16_t VERSION = 3617;   // 2817 = 28th week of 2017
 
@@ -581,7 +582,7 @@ void loop() {
   VERBOSE_PRINT("EEprom location 6 =  "); VERBOSE_PRINT("Block Addr "); VERBOSE_PRINTLN(blockNum[6]);
   VERBOSE_PRINT("EEprom location 7 =  "); VERBOSE_PRINT("Block Addr "); VERBOSE_PRINTLN(blockNum[7]);
   VERBOSE_PRINT("EEprom location 8 =  "); VERBOSE_PRINT("Block Addr "); VERBOSE_PRINTLN(blockNum[8]);
-  VERBOSE_PRINT("EEprom location 9 =  "); VERBOSE_PRINT("Block Addr ");VERBOSE_PRINTLN(blockNum[9]);
+  VERBOSE_PRINT("EEprom location 9 =  "); VERBOSE_PRINT("Block Addr "); VERBOSE_PRINTLN(blockNum[9]);
   VERBOSE_PRINTLN();
 
   byte tempbl = 0  ;
