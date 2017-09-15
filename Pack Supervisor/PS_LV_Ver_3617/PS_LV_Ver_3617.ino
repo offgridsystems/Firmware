@@ -27,8 +27,8 @@
  const uint16_t VERSION = 3617;   // 2817 = 28th week of 2017
 
 //---------VERBOSE MODE? MAYBE YOU WANT DEBUG?--------------------------------------------
-#define VERBOSE                   // All the org serial output
-//#define DEBUG                     // debug data serial output 
+//#define VERBOSE                   // All the org serial output
+#define DEBUG                     // debug data serial output 
 
 // nRF24 2.4Mhz packet comms
 // nrf24_reliable_datagram_server.pde
@@ -581,7 +581,7 @@ void loop() {
   VERBOSE_PRINT("EEprom location 6 =  "); VERBOSE_PRINT("Block Addr "); VERBOSE_PRINTLN(blockNum[6]);
   VERBOSE_PRINT("EEprom location 7 =  "); VERBOSE_PRINT("Block Addr "); VERBOSE_PRINTLN(blockNum[7]);
   VERBOSE_PRINT("EEprom location 8 =  "); VERBOSE_PRINT("Block Addr "); VERBOSE_PRINTLN(blockNum[8]);
-  VERBOSE_PRINT("EEprom location 9 =  "); VERBOSE_PRINT("Block Addr ");VERBOSE_PRINTLN(blockNum[9]);
+  VERBOSE_PRINT("EEprom location 9 =  "); VERBOSE_PRINT("Block Addr "); VERBOSE_PRINTLN(blockNum[9]);
   VERBOSE_PRINTLN();
 
   byte tempbl = 0  ;
@@ -634,15 +634,18 @@ void loop() {
   // Write new learned block values to EEPROM
   // start writing and reading from the first byte (address 0) of the EEPROM
   int EE_address = 0;
+  #ifdef VERBOSE
   byte EE_value;
-
+  #endif
   //if ((LEARNBLOCKS == ON) && (blockNum[0]) )        // Make sure we are in learn mode and all blocks are written
   if ((LEARNBLOCKS == ON) && (seconds == 0))          // Write EE once/sec when we are in learn mode
   {
     for (EE_address = 0; EE_address < 10; EE_address++)
     {
       EEPROM.write(EE_address, blockNum[EE_address]);
+      #ifdef VERBOSE
       EE_value = EEPROM.read(EE_address);
+      #endif
       VERBOSE_PRINT("Once/min save Block#: "); VERBOSE_PRINT(EE_value); VERBOSE_PRINT("to this EEprom address:  "); VERBOSE_PRINTLN(EE_address);
       VERBOSE_PRINT("Once/min save Block#: "); VERBOSE_PRINT(EE_value); VERBOSE_PRINT("to this EEprom address:  "); VERBOSE_PRINTLN(EE_address);
 
@@ -684,8 +687,9 @@ void loop() {
   } //end ntc loop
 
   float datAvg = (datSum) / n;      // find the mean
+  #ifdef VERBOSE
   int Tambient = datAvg;            // save ambient
-
+  #endif
   VERBOSE_PRINT(NTCambient);  VERBOSE_PRINT(" :");
   VERBOSE_PRINT("  NTC ambient avg value: ");  VERBOSE_PRINT(Tambient);  VERBOSE_PRINTLN ();
   if (datAvg < 100){
@@ -1052,15 +1056,15 @@ void loop() {
     float tempa;                  // 4 bytes or 32 bits
     float tempb;
     if (manager.recvfromAck(buf, &len, &from)) {
-      VERBOSE_PRINT(F("DKBlock Client: "));
-      VERBOSE_PRINT_DEC(from);
-      VERBOSE_PRINT(F(" Length = "));  VERBOSE_PRINTLN(len);
+      DEBUG_PRINT(F("DKBlock Client: "));
+      DEBUG_PRINT_DEC(from);
+      DEBUG_PRINT(F(" Length = "));  DEBUG_PRINTLN(len);
 
-      VERBOSE_PRINT(((DATA*)buf) -> sCellV_Hiside );   VERBOSE_PRINT(F(" VDC Hi Cell   "));
-      VERBOSE_PRINT(((DATA*)buf) -> sThottest);        VERBOSE_PRINT(F(" Hot NTC counts   "));
-      VERBOSE_PRINT(((DATA*)buf) -> sTcoldest);        VERBOSE_PRINT(F(" Cold NTC counts   "));
-      VERBOSE_PRINT(((DATA*)buf) -> sCellV_Loside );   VERBOSE_PRINT(F(" VDC Lo Cell   "));
-      VERBOSE_PRINT(((DATA*)buf) -> schecksum );       VERBOSE_PRINTLN(F(" Checksum from BLOCK"));
+      DEBUG_PRINT(((DATA*)buf) -> sCellV_Hiside );   DEBUG_PRINT(F(" VDC Hi Cell   "));
+      DEBUG_PRINT(((DATA*)buf) -> sThottest);        DEBUG_PRINT(F(" Hot NTC counts   "));
+      DEBUG_PRINT(((DATA*)buf) -> sTcoldest);        DEBUG_PRINT(F(" Cold NTC counts   "));
+      DEBUG_PRINT(((DATA*)buf) -> sCellV_Loside );   DEBUG_PRINT(F(" VDC Lo Cell   "));
+      DEBUG_PRINT(((DATA*)buf) -> schecksum );       DEBUG_PRINTLN(F(" Checksum from BLOCK"));
 
       // filter for wrong payload length
       if (len != PAYLOAD) {
@@ -1140,10 +1144,10 @@ void loop() {
       if (This_Block_Saved) {             // if data is sent by a DKblock in this pack, read the data
         VERBOSE_PRINTLN(" USE this GOOD data");
         VERBOSE_PRINT(((DATA*)buf) -> sCellV_Hiside ); VERBOSE_PRINT(" VDC Hi Cell   ");
-        VERBOSE_PRINT(((DATA*)buf) -> sThottest); VERBOSE_PRINT(" Hot NTC counts   ");
-        VERBOSE_PRINT(((DATA*)buf) -> sTcoldest); VERBOSE_PRINT(" Cold NTC counts   ");
+        VERBOSE_PRINT(((DATA*)buf) -> sThottest);      VERBOSE_PRINT(" Hot NTC counts   ");
+        VERBOSE_PRINT(((DATA*)buf) -> sTcoldest);      VERBOSE_PRINT(" Cold NTC counts   ");
         VERBOSE_PRINT(((DATA*)buf) -> sCellV_Loside ); VERBOSE_PRINT(" VDC Lo Cell   ");
-        VERBOSE_PRINT(((DATA*)buf) -> schecksum ); VERBOSE_PRINTLN(" CHECKSUM");
+        VERBOSE_PRINT(((DATA*)buf) -> schecksum );     VERBOSE_PRINTLN(" CHECKSUM");
 
         Temp1 = (((DATA*)buf) -> sCellV_Hiside );
         Temp2 = (((DATA*)buf) -> sCellV_Loside );
@@ -1256,9 +1260,9 @@ void loop() {
       }
     }
     VERBOSE_PRINT(" Historical Avg Highest Vcell: ");  VERBOSE_PRINT_3(Hist_Highest_Vcell);  VERBOSE_PRINT(" VDC ");
-    VERBOSE_PRINT(" Historical Avg Lowest Vcell: ");   VERBOSE_PRINT_3(Hist_Lowest_Vcell);  VERBOSE_PRINTLN(" VDC");
+    VERBOSE_PRINT(" Historical Avg Lowest Vcell: ");   VERBOSE_PRINT_3(Hist_Lowest_Vcell);   VERBOSE_PRINTLN(" VDC");
     VERBOSE_PRINT(" Historical Avg Hottest Tcell: ");  VERBOSE_PRINT_3(Hist_Highest_Tcell);  VERBOSE_PRINT(" ADC counts ");
-    VERBOSE_PRINT(" Historical Avg Coolest Tcell: ");  VERBOSE_PRINT_0(Hist_Lowest_Tcell);  VERBOSE_PRINTLN(" ADC counts");
+    VERBOSE_PRINT(" Historical Avg Coolest Tcell: ");  VERBOSE_PRINT_0(Hist_Lowest_Tcell);   VERBOSE_PRINTLN(" ADC counts");
   }
 badcomm: ;                                            // bad comm bytes end up here...
 
