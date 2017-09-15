@@ -29,6 +29,7 @@
 //---------VERBOSE MODE? MAYBE YOU WANT DEBUG?--------------------------------------------
 //#define VERBOSE                   // All the org serial output
 #define DEBUG                     // debug data serial output 
+#define CANDEBUG                  // CAN specific data
 
 // nRF24 2.4Mhz packet comms
 // nrf24_reliable_datagram_server.pde
@@ -97,7 +98,6 @@ const byte FAULTMODE2 = 50;
 const byte FAULTMODE3 = 55;
 
 // ---------CAN BUS VARIABLES-------------------------------------------
-static CAN_message_t txmsg; //rxmsg   
 const uint16_t Tx_msg_interval = 1000;
 elapsedMillis Tx_counter;
 //static uint32_t BMS_ID = 0xF4;
@@ -148,8 +148,8 @@ int DAC_OUT = A14;                      //use A14 as Analog Out (DAC)
 const byte PWM1 = 20;
 const byte PWM2 = 21;
 const int PWMFREQ = 40000;
-//const byte FULLPWMRANGE = 144;
-//  const byte FULLPWMRANGE = 122;
+// const byte FULLPWMRANGE = 144;
+// const byte FULLPWMRANGE = 122;
 const int FULLPWMRANGE = 1000;
 
 // application specific assignments
@@ -181,27 +181,40 @@ const byte  CELLTYPE1 = 60;
 const byte  CELLTYPE2 = 80;
 
 //---------LITHIUM ION CELL SPEC VARIABLES--------------------------------------
-float Vcell_HVD_Spec = 4.4;	            // threshold where alarm is set and LED goes red.
-// load later when cell type is chosen
-float Vcell_Charge_Taper;               
-float Vcell_Balance;                    // voltage above where Cells will balance
+// all variables are set in setup() based on cell type selection above
+float Vcell_HVD_Spec = 4.4;	                // threshold where alarm is set and LED goes red.
 float Vcell_Nominal_Spec;
-float Vcell_Low_Spec;                   // threshold where fans and heaters are turned off to save power
-float Vcell_LVD_Spec;  	                // threshold where all electronics turns off......about 2VPC
-const float CELL_RECONNECT_V = 4.000;   // reconnect charger at this (lowest) cell voltage
+float Vcell_Low_Spec;                       // threshold where fans and heaters are turned off to save power
+float Vcell_LVD_Spec;  	                    // threshold where all electronics turns off......about 2VPC
+float Vcell_Balance;                        // voltage above where Cells will balance
+float Vcell_Trickle_Charge;                 // voltage under where trickle charge should happen
+float Vcell_Bulk_Charge;                    // voltage under where the bulk of the charge should happen
+float Vcell_Off_Charge;                     // voltage above where charger should turn off
+const float CELL_RECONNECT_V = 4.000;       // reconnect charger at this (lowest) cell voltage
 
-//---------CELL TEMP VARIABLES---------------------------------------------------
-//const int Tcell_SMOKE = 95;           // At 95C and above there may be smoke ...danger shut off all fans and electronics
-const int NTC_SMOKE = 111;              // ADC counts for 100C
-const int NTC_63C = 390;                // ADC counts for ~~63C
-const int NTC_60C = 416;                // ADC counts for 60C
-const int NTC_WARM = 987;               // ADC counts for 35C
-const int NTC_AMBIENT = 1365;           // ADC counts for 25C
-const int NTC_COLD = 3000;              // ADC counts for -10C
+//---------CELL TEMP VARIABLES--------------------------------------------------
+// const int Tcell_SMOKE = 95;              // At 95C and above there may be smoke ...danger shut off all fans and electronics
+const int NTC_SMOKE = 111;                  // ADC counts for 100C
+const int NTC_63C = 390;                    // ADC counts for ~~63C
+const int NTC_60C = 416;                    // ADC counts for 60C
+const int NTC_WARM = 987;                   // ADC counts for 35C
+const int NTC_AMBIENT = 1365;               // ADC counts for 25C
+const int NTC_COLD = 3000;                  // ADC counts for -10C
+
+//---------CHARGER VARIABLES-----------------------------------------------------
+const uint16_t Charge_Voltage = 830;        // max charge voltage 830 = 83.0V
+const uint16_t Charge_Trickle_Current = 10; // trickle current 10 = 1.0A
+const uint16_t Charge_Max_Current = 200;    // max charge current 200 = 20.0A
+const uint16_t Charge_End_Current = 1;      // end charge current 1 = 0.1A
+uint8_t Charge_status_flag = 0;             // flag for latching charger levels
+const uint8_t TRICKLE = 0;
+const uint8_t BULK = 1;
+const uint8_t TOPEND = 2;
+const uint8_t COMPLETE = 3;
 
 //---------USER INPUT PINS-------------------------------------------------------
-const byte CHARGE_INPUT = 22;           // charger presence or absence
-const byte KEYSWITCH_INPUT = 23;        // key switch on or off
+const byte CHARGE_INPUT = 22;               // charger presence or absence
+const byte KEYSWITCH_INPUT = 23;            // key switch on or off
 
 //---------RELAY SETTINGS AND VARS-----------------------------------------------
 bool ChargeRelay = 0;
@@ -337,12 +350,14 @@ void setup(){
 
   //CAN Bus Setup-------------------------------------------------------------------------------------
   Can0.begin(250000);                         // Join CAN at 250Kpbs
-  CAN_filter_t extFilter;                     // CAN_filter_t struct holds location of extended filter
-  extFilter.ext=1;                            // Set filter to receive extended CAN
+  /*CAN_filter_t Filter;                        // CAN_filter_t struct holds location of extended filter
+  Filter.id = 0;
+  Filter.ext = 1;                             // Set filter to receive extended CAN
+  Filter.rtr = 0;
   for(uint8_t MBnum=0; MBnum<16; MBnum++) {   // Set all Mailboxes to extended
-    Can0.setFilter(extFilter,MBnum);
+    Can0.setFilter(Filter,MBnum);
   } //CAN Bus Setup END--------------------------------------------------------------------------------
-  
+  */
   // Unused I/O make digital output for low impedance and EMI-resistant
   pinMode(A12, INPUT_PULLUP);       // weak pullup for now
   pinMode(A13, INPUT_PULLUP);   
@@ -370,14 +385,16 @@ void setup(){
   analogWriteFrequency(PWM1, PWMFREQ);    // Teensy PWM runs at 23kHz
   analogWriteResolution(DAC_RESOLUTION);  // DAC0 value 0 to 1023
 
-  // Lithium Cell specifications
+  //---------Lithium Cell specifications------------------------------------------------
   if (Cell_Type == LG_MH1) {          // cell parameters for LG MH1 3200mah
     Vcell_HVD_Spec = 4.21;            // High voltage disconnect, charger disconnected 4.25 max spec leave room for 0.1% acc.
     Vcell_Nominal_Spec = 3.67;
     Vcell_Low_Spec = 2.91;            // End voltage cutoff 2.5V is spec, but no energy there, plus lifetime is important
     Vcell_LVD_Spec = 2.91;            // low voltage disconnect, all off
-    Vcell_Balance = 4.11;             // start balancing
-    Vcell_Charge_Taper = 4.05;        // voltage where full current tapers off
+    Vcell_Balance = 4.11;             // voltage above where Cells will balance
+    Vcell_Trickle_Charge = 2.7;       // voltage under where trickle charge should happen
+    Vcell_Bulk_Charge = 4.05;         // voltage under where the bulk of the charge should happen
+    Vcell_Off_Charge  = 4.15;          // voltage above where charger should turn off
   } 
   if (Cell_Type == LG_MJ1) {          // cell parameters for LG MH1 3500mah
     Vcell_HVD_Spec = 4.21;            // High voltage disconnect, charger disconnected
@@ -385,14 +402,19 @@ void setup(){
     Vcell_Low_Spec = 2.91;            // End voltage cutoff 2.5V is spec, but no energy there, plus lifetime is important
     Vcell_LVD_Spec = 2.91;            // low voltage disconnect, all off
     Vcell_Balance = 4.10;             // start balancing
-    Vcell_Charge_Taper = 4.05;        // voltage where full current tapers off
+    Vcell_Trickle_Charge = 2.7;       // voltage under where trickle charge should happen
+    Vcell_Bulk_Charge = 4.05;         // voltage under where the bulk of the charge should happen
+    Vcell_Off_Charge  = 4.15;          // voltage above where charger should turn off
   }
-  if (Cell_Type == SANYO_NCR18650B) { // else choose Panasonic/Sanyo NCR18650B
+  if (Cell_Type == SANYO_NCR18650B) { // cell parameters for Panasonic/Sanyo NCR18650B
     Vcell_HVD_Spec = 4.3;
     Vcell_Nominal_Spec = 3.7;
     Vcell_Low_Spec = 2.9;
     Vcell_LVD_Spec = 2.9;
     Vcell_Balance = 3.9;
+    Vcell_Trickle_Charge = 2.7;       // voltage under where trickle charge should happen
+    Vcell_Bulk_Charge = 4.05;         // voltage under where the bulk of the charge should happen
+    Vcell_Off_Charge  = 4.2;          // voltage above where charger should turn off
   }
 
   // Relays setup
@@ -490,7 +512,7 @@ void setup(){
 } // Setup End
 
 //=================================================================================================================================//
-// Functions
+// Watchdog Function
 //=================================================================================================================================//
 void WatchdogReset (void) {      // reset COP watchdog timer to 1.1 sec 
   noInterrupts(); 
@@ -501,13 +523,40 @@ void WatchdogReset (void) {      // reset COP watchdog timer to 1.1 sec
 }
 
 //=================================================================================================================================//
+// CAN Send Charger Function
+// Sends data to charger, adjusts voltage and current output of charger as well as turns it on or off
+//=================================================================================================================================//
+void CANSendCharger(uint32_t id, uint16_t  cVoltage, uint16_t cCurrent, bool on_off){
+  CAN_message_t hold;
+  hold.id = id;                                                      // set id
+  hold.ext = 1;                                                      // set message as extended
+  hold.rtr = 0;                                                      // set remote off
+  hold.len = 5;                                                      // message length in bytes
+  hold.buf[0] = (uint8_t)((cVoltage & 0xFF00) >> 8);                 // split the two bytes of voltage                               
+  hold.buf[1] = (uint8_t)(cVoltage & 0x00FF);
+  hold.buf[2] = (uint8_t)((cCurrent & 0xFF00) >> 8);                 // split the two bytes of current
+  hold.buf[3] = (uint8_t)(cCurrent & 0x00FF);
+  if(on_off == 1) hold.buf[4] = 0x00;                                // 00 is on
+  else hold.buf[4] = 0x01;                                           // send to the bus
+  Can0.write(hold);
+  #ifdef CANDEBUG
+  DEBUG_PRINT_HEX(hold.id); DEBUG_PRINT(" ");
+  DEBUG_PRINT_HEX(hold.len); DEBUG_PRINT(" ");
+  for(int i = 0; i<hold.len; i++){
+    DEBUG_PRINT_HEX(hold.buf[i]); DEBUG_PRINT(" ");
+  }
+  DEBUG_PRINTLN();
+  #endif
+}
+
+//=================================================================================================================================//
 //  Main Loop
 //=================================================================================================================================//
 void loop() {
 
   VERBOSE_PRINTLN();
   VERBOSE_PRINTLN();
-  VERBOSE_PRINT(F("  Server Address: "));  VERBOSE_PRINT(SERVER_ADDRESS);
+  VERBOSE_PRINT(F("  Server Address: "));  VERBOSE_PRINT(SERVER_ADDRESS); 
   VERBOSE_PRINT(F("  PS Mode: "));         VERBOSE_PRINTLN(gMode);
 
   WatchdogReset();  // reset the watchdog timer (times out in 1 sec so make sure loop is under about 500-600msec)
@@ -826,44 +875,49 @@ void loop() {
   //---------CHARGE RELAY------------------------------------------------------------------------------------------------------------
   // pack check & cell check for charger relay
   ChargeRelay = OFF;                                                          // default to relay off
-  if ((Hist_Highest_Vcell < (Vcell_HVD_Spec )) && (Vpack < (Vpack_HVD))) {    // check cell and pack V before turning on relay (4.21 if LG)
+  if ((Hist_Highest_Vcell < (Vcell_HVD_Spec)) && (Vpack < (Vpack_HVD))) {    // check cell and pack V before turning on relay (4.21 if LG)
     if ((digitalRead(CHARGE_INPUT) == 0)) {                                   // check charger input for low side switch
       VERBOSE_PRINT(F(" Charge input ON / Timer = "));  VERBOSE_PRINT(gCharge_Timer);  VERBOSE_PRINTLN(F(" hrs"));
       if (gCharge_Timer == 0) ChargeRelay = ON;                               // if timer is 0 turn on charge relay for up to a day
+      
       if(Tx_counter >= Tx_msg_interval) {                                     // send message at set speed (1 per second)
         Tx_counter = 0;                                                       // update counter
-        if(Hist_Highest_Vcell < Vcell_Charge_Taper) {                         // if cells are lower than taper turn on full
-          txmsg.ext = 1;                                                      // set message as extended
-          txmsg.id = BMS_TO_CHARGER;                                          // set id
-          txmsg.len = 5;                                                      // message length in bytes
-          txmsg.buf[0] = 0x03;                                                // byte 0 & 1 are voltage 83.0v
-          txmsg.buf[1] = 0x3E;
-          txmsg.buf[2] = 0x00;                                                // byte 2 & 3 are current 11.0a
-          txmsg.buf[3] = 0x6E;
-          txmsg.buf[4] = 0x00;                                                // byte 4 is on 00 or off 01
-          Can0.write(txmsg);
-          DEBUG_PRINT_HEX(txmsg.id); DEBUG_PRINT(" ")
-          for(int i = 0; i<5; i++){
-            DEBUG_PRINT_HEX(txmsg.buf[i]); DEBUG_PRINT(" ")
-          }
-          DEBUG_PRINTLN();
+        if(Hist_Highest_Vcell < Vcell_Trickle_Charge){
+          CANSendCharger(BMS_TO_CHARGER, Charge_Voltage, Charge_Trickle_Current, ON);
+          Charge_status_flag = TRICKLE;
         }
-        if(Hist_Highest_Vcell > Vcell_Charge_Taper) {                         // if cells are lower than taper turn on low
-          txmsg.ext = 1;                                                      // set message as extended
-          txmsg.id = BMS_TO_CHARGER;                                          // set id
-          txmsg.len = 5;                                                      // message length in bytes
-          txmsg.buf[0] = 0x03;                                                // byte 0 & 1 are voltage 83.0v
-          txmsg.buf[1] = 0x3E;
-          txmsg.buf[2] = 0x00;                                                // byte 2 & 3 are current 0.1a
-          txmsg.buf[3] = 0x01;
-          txmsg.buf[4] = 0x00;                                                // byte 4 is on 00 or off 01
-          Can0.write(txmsg);
-          DEBUG_PRINT_HEX(txmsg.id); DEBUG_PRINT(" ")
-          for(int i = 0; i<5; i++){
-            DEBUG_PRINT_HEX(txmsg.buf[i]); DEBUG_PRINT(" ")
-          }
-          DEBUG_PRINTLN();
+        if(Hist_Highest_Vcell < Vcell_Bulk_Charge && Charge_status_flag <= BULK) {
+          CANSendCharger(BMS_TO_CHARGER, Charge_Voltage, Charge_Max_Current, ON);
+          Charge_status_flag = BULK;
         }
+        if(Hist_Highest_Vcell > Vcell_Bulk_Charge && Charge_status_flag <= TOPEND) {
+          CANSendCharger(BMS_TO_CHARGER, Charge_Voltage, Charge_End_Current, ON);
+          Charge_status_flag = TOPEND;
+        }
+        if(Hist_Highest_Vcell < Vcell_Bulk_Charge && Charge_status_flag == TOPEND) {
+          CANSendCharger(BMS_TO_CHARGER, Charge_Voltage, Charge_End_Current, ON);
+          Charge_status_flag = TOPEND;
+        }
+        if(Hist_Highest_Vcell >= Vcell_Off_Charge) {
+          CANSendCharger(BMS_TO_CHARGER, Charge_Voltage, Charge_End_Current, OFF);
+          Charge_status_flag = COMPLETE;
+        }
+        #ifdef DEBUG
+        switch (Charge_status_flag){
+          case TRICKLE:
+            DEBUG_PRINTLN("Charge Status = LOW TRICKLE")
+            break;
+          case BULK:
+            DEBUG_PRINTLN("Charge Status = HIGH CURRENT")
+            break;
+          case TOPEND:
+            DEBUG_PRINTLN("Charge Status = TOPPING UP")
+            break;
+          case COMPLETE:
+            DEBUG_PRINTLN("Charge Status = COMPLETE")
+            break;
+        }
+        #endif
       }
       if (Hist_Lowest_Vcell > Vcell_Balance) {                                // shut down relay, start 1 day timer (4.11 if LG)
         gCharge_Timer = 24;                                                   // 24 hours
@@ -1056,15 +1110,15 @@ void loop() {
     float tempa;                  // 4 bytes or 32 bits
     float tempb;
     if (manager.recvfromAck(buf, &len, &from)) {
-      DEBUG_PRINT(F("DKBlock Client: "));
-      DEBUG_PRINT_DEC(from);
-      DEBUG_PRINT(F(" Length = "));  DEBUG_PRINTLN(len);
+      VERBOSE_PRINT(F("DKBlock Client: "));
+      VERBOSE_PRINT_DEC(from);
+      VERBOSE_PRINT(F(" Length = "));  VERBOSE_PRINTLN(len);
 
-      DEBUG_PRINT(((DATA*)buf) -> sCellV_Hiside );   DEBUG_PRINT(F(" VDC Hi Cell   "));
-      DEBUG_PRINT(((DATA*)buf) -> sThottest);        DEBUG_PRINT(F(" Hot NTC counts   "));
-      DEBUG_PRINT(((DATA*)buf) -> sTcoldest);        DEBUG_PRINT(F(" Cold NTC counts   "));
-      DEBUG_PRINT(((DATA*)buf) -> sCellV_Loside );   DEBUG_PRINT(F(" VDC Lo Cell   "));
-      DEBUG_PRINT(((DATA*)buf) -> schecksum );       DEBUG_PRINTLN(F(" Checksum from BLOCK"));
+      VERBOSE_PRINT(((DATA*)buf) -> sCellV_Hiside );   VERBOSE_PRINT(F(" VDC Hi Cell   "));
+      VERBOSE_PRINT(((DATA*)buf) -> sThottest);        VERBOSE_PRINT(F(" Hot NTC counts   "));
+      VERBOSE_PRINT(((DATA*)buf) -> sTcoldest);        VERBOSE_PRINT(F(" Cold NTC counts   "));
+      VERBOSE_PRINT(((DATA*)buf) -> sCellV_Loside );   VERBOSE_PRINT(F(" VDC Lo Cell   "));
+      VERBOSE_PRINT(((DATA*)buf) -> schecksum );       VERBOSE_PRINTLN(F(" Checksum from BLOCK"));
 
       // filter for wrong payload length
       if (len != PAYLOAD) {
@@ -1082,7 +1136,7 @@ void loop() {
       //if (tempa != tempb)
       Temp1= tempb - floatmatch;
       Temp2 = tempb + floatmatch;
-      VERBOSE_PRINT(" Checksum window to allow var for FP math is:   "); VERBOSE_PRINT_6(Temp1);   VERBOSE_PRINT(" and high   ");     VERBOSE_PRINTLN_6(Temp2);
+      VERBOSE_PRINT(" Checksum window to allow var for FP math is:   "); VERBOSE_PRINT_6(Temp1);   VERBOSE_PRINT(" and high   ");  VERBOSE_PRINTLN_6(Temp2);
       if ((tempa < (tempb + floatmatch)) && (tempa > (tempb - floatmatch))) {    // allow data if checksum is within 250uV accuracy
         VERBOSE_PRINT(" Checksum does agree with client!!!!!!!!!!");  
       }
