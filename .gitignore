@@ -1,2 +1,4 @@
 .DS_Store
 *.hex
+*.sublime-project
+*.sublime-workspace
