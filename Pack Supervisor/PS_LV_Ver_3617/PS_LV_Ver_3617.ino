@@ -30,7 +30,7 @@
  const uint16_t VERSION = 3617;   // 2817 = 28th week of 2017
 
 //---------VERBOSE MODE? MAYBE YOU WANT DEBUG?-----------------------------------------------------
-#define VERBOSE                   // All the org serial output
+//#define VERBOSE                   // All the org serial output
 #define DEBUG                     // debug data serial output 
 #define CANDEBUG                  // CAN specific data
 
@@ -103,11 +103,11 @@ const byte FAULTMODE3 = 55;
 // ---------CAN BUS VARIABLES----------------------------------------------------------------------
 const uint16_t Tx_msg_interval = 1000;
 elapsedMillis Tx_counter;
-//static CAN_message_t rxMsg;
+static CAN_message_t rxMsg;
 //static uint32_t BMS_ID = 0xF4;
 const uint32_t BMS_TO_CHARGER = 0x1806E5F4;
 //static uint32_t CHG_ID = 0xE5;
-//const uint32_t CHG_BROADCAST = 0x18FF50E5;
+const uint32_t CHG_BROADCAST = 0x18FF50E5;
 
 //---------COMMS VARIABLES-------------------------------------------------------------------------
 uint16_t CommsFaults = 0;
@@ -198,12 +198,15 @@ const float CELL_RECONNECT_V = 4.000;       // reconnect charger at this (lowest
 
 //---------CELL TEMP VARIABLES---------------------------------------------------------------------
 // const int Tcell_SMOKE = 95;              // At 95C and above there may be smoke ...danger
-const int NTC_SMOKE = 111;                  // ADC counts for 100C
-const int NTC_63C = 390;                    // ADC counts for ~~63C
-const int NTC_60C = 416;                    // ADC counts for 60C
-const int NTC_WARM = 987;                   // ADC counts for 35C
+const int NTC_SMOKE = 107;                  // ADC counts for 100C
+const int NTC_63C = 369;                    // ADC counts for ~~63C
+const int NTC_60C = 410;                    // ADC counts for 60C
+const int NTC_43C = 742;                    // ADC counts for 45C
+const int NTC_40C = 828;                    // ADC counts for 43C
+const int NTC_WARM = 983;                   // ADC counts for 35C
 const int NTC_AMBIENT = 1365;               // ADC counts for 25C
-const int NTC_COLD = 3000;                  // ADC counts for -10C
+const int NTC_0C = 2625;                    // ADC counts for 0C
+const int NTC_COLD = 3108;                  // ADC counts for -10C
 
 //---------CHARGER VARIABLES-----------------------------------------------------------------------
 const uint16_t Charge_Voltage = 830;        // max charge voltage 830 = 83.0V
@@ -536,6 +539,7 @@ void setup(){
 
 
 
+
 //=================================================================================================
 // Watchdog Function
 // the smallest delay needed between each refresh is 1ms. anything faster and it will also reboot
@@ -583,20 +587,26 @@ void CANSendCharger(uint32_t id, uint16_t  cVoltage, uint16_t cCurrent, bool on_
 //=================================================================================================
 struct CAN_message_t CANReceive(){
   CAN_message_t hold;
-  if(Can0.available()) Can0.read(hold);
+
+  if(Can0.available()) {
+    Can0.read(hold);
   
-  #ifdef CANDEBUG
-  DEBUG_PRINT("Rx - ");
-  DEBUG_PRINT_HEX(hold.id); DEBUG_PRINT(" ");
-  DEBUG_PRINT_HEX(hold.len); DEBUG_PRINT(" ");
-  for(int i = 0; i<hold.len; i++){
-    DEBUG_PRINT_HEX(hold.buf[i]); DEBUG_PRINT(" ");
+    #ifdef CANDEBUG
+    DEBUG_PRINT("Rx - ");
+    DEBUG_PRINT_HEX(hold.id); DEBUG_PRINT(" ");
+    DEBUG_PRINT_HEX(hold.len); DEBUG_PRINT(" ");
+    for(int i = 0; i<hold.len; i++){
+      DEBUG_PRINT_HEX(hold.buf[i]); DEBUG_PRINT(" ");
+    }
+    DEBUG_PRINTLN();
+    #endif
   }
-  DEBUG_PRINTLN();
-  #endif
 
   return hold;
 }
+
+
+
 
 //=================================================================================================
 //  Main Loop
@@ -909,10 +919,11 @@ void loop() {
   ChargeRelay = OFF;                                                          
   if ((Hist_Highest_Vcell < (Vcell_HVD_Spec)) && (Vpack < (Vpack_HVD))) {    
     if ((digitalRead(CHARGE_INPUT) == 0)) {               // check charger input for low side switch
+      rxMsg = CANReceive();
       VERBOSE_PRINT(F(" Charge input ON / Timer = "));  
       VERBOSE_PRINT(gCharge_Timer);  VERBOSE_PRINTLN(F(" hrs"));
       if (gCharge_Timer == 0) ChargeRelay = ON;           // if timer is 0 turn on charge relay for up to a day
-      if(Tx_counter >= Tx_msg_interval) {                 // send message at set speed (1 per second)
+      if(Tx_counter >= Tx_msg_interval) {                 // send message at set speed (1 per sec default)
         Tx_counter = 0;
         if(Hist_Highest_Vcell < Vcell_Trickle_Charge){
           CANSendCharger(BMS_TO_CHARGER, Charge_Voltage, Charge_Trickle_Current, ON);
@@ -940,7 +951,7 @@ void loop() {
             DEBUG_PRINTLN(F("Charge Status = LOW TRICKLE"))
             break;
           case BULK:
-            DEBUG_PRINTLN(F("Charge Status = HIGH CURRENT"))
+            DEBUG_PRINTLN(F("Charge Status = BULK CHARGE"))
             break;
           case TOPEND:
             DEBUG_PRINTLN(F("Charge Status = TOPPING UP"))
