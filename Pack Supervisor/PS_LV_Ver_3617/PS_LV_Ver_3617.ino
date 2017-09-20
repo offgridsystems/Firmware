@@ -32,7 +32,7 @@
 //---------VERBOSE MODE? MAYBE YOU WANT DEBUG?-----------------------------------------------------
 //#define VERBOSE                   // All the org serial output
 #define DEBUG                     // debug data serial output 
-#define CANDEBUG                  // CAN specific data
+//#define CANDEBUG                  // CAN specific data
 
 // nRF24 2.4Mhz packet comms
 // nrf24_reliable_datagram_server.pde
@@ -107,7 +107,7 @@ static CAN_message_t rxMsg;
 //static uint32_t BMS_ID = 0xF4;
 const uint32_t BMS_TO_CHARGER = 0x1806E5F4;
 //static uint32_t CHG_ID = 0xE5;
-const uint32_t CHG_BROADCAST = 0x18FF50E5;
+const uint32_t CHARGER_BROADCAST = 0x18FF50E5;
 
 //---------COMMS VARIABLES-------------------------------------------------------------------------
 uint16_t CommsFaults = 0;
@@ -218,6 +218,7 @@ const uint8_t TRICKLE = 0;
 const uint8_t BULK = 1;
 const uint8_t TOPEND = 2;
 const uint8_t COMPLETE = 3;
+static float cVoltage = 0, cCurrent = 0;
 
 //---------USER INPUT PINS-------------------------------------------------------------------------
 const byte CHARGE_INPUT = 22;               // charger presence or absence
@@ -556,16 +557,16 @@ void WatchdogReset (void) {      // reset COP watchdog timer to 1.1 sec
 // CAN Send Charger Function
 // Sends data to charger, adjusts voltage, current, and on or off
 //=================================================================================================
-void CANSendCharger(uint32_t id, uint16_t  cVoltage, uint16_t cCurrent, bool on_off){
+void CANSendCharger(uint32_t id, uint16_t  cV, uint16_t cC, bool on_off){
   CAN_message_t hold;
   hold.id = id;                                                    // set id
   hold.ext = 1;                                                    // set message as extended
   hold.rtr = 0;                                                    // set remote off
   hold.len = 5;                                                    // message length in bytes
-  hold.buf[0] = (uint8_t)((cVoltage & 0xFF00) >> 8);               // split the two bytes of voltage                               
-  hold.buf[1] = (uint8_t)(cVoltage & 0x00FF);
-  hold.buf[2] = (uint8_t)((cCurrent & 0xFF00) >> 8);               // split the two bytes of current
-  hold.buf[3] = (uint8_t)(cCurrent & 0x00FF);
+  hold.buf[0] = (uint8_t)((cV & 0xFF00) >> 8);                     // split the two bytes of voltage                               
+  hold.buf[1] = (uint8_t)(cV & 0x00FF);
+  hold.buf[2] = (uint8_t)((cC & 0xFF00) >> 8);                     // split the two bytes of current
+  hold.buf[3] = (uint8_t)(cC & 0x00FF);
   if(on_off == 1) hold.buf[4] = 0x00;                              // 00 is on
   else hold.buf[4] = 0x01;                                         // send to the bus
   Can0.write(hold);
@@ -585,12 +586,10 @@ void CANSendCharger(uint32_t id, uint16_t  cVoltage, uint16_t cCurrent, bool on_
 // CAN Receive Function
 // Receives data from can bus, returns it in structure
 //=================================================================================================
-struct CAN_message_t CANReceive(){
-  CAN_message_t hold;
-
+bool CANReceive(struct CAN_message_t &hold){
   if(Can0.available()) {
     Can0.read(hold);
-  
+
     #ifdef CANDEBUG
     DEBUG_PRINT("Rx - ");
     DEBUG_PRINT_HEX(hold.id); DEBUG_PRINT(" ");
@@ -600,9 +599,11 @@ struct CAN_message_t CANReceive(){
     }
     DEBUG_PRINTLN();
     #endif
+
+    return 1;
   }
 
-  return hold;
+  return 0;
 }
 
 
@@ -918,13 +919,22 @@ void loop() {
   // check cell and pack V before turning on relay (4.21 if LG)
   ChargeRelay = OFF;                                                          
   if ((Hist_Highest_Vcell < (Vcell_HVD_Spec)) && (Vpack < (Vpack_HVD))) {    
-    if ((digitalRead(CHARGE_INPUT) == 0)) {               // check charger input for low side switch
-      rxMsg = CANReceive();
+    if ((digitalRead(CHARGE_INPUT) == 0)) {               // check charger input for low side switch  
       VERBOSE_PRINT(F(" Charge input ON / Timer = "));  
       VERBOSE_PRINT(gCharge_Timer);  VERBOSE_PRINTLN(F(" hrs"));
       if (gCharge_Timer == 0) ChargeRelay = ON;           // if timer is 0 turn on charge relay for up to a day
       if(Tx_counter >= Tx_msg_interval) {                 // send message at set speed (1 per sec default)
         Tx_counter = 0;
+        bool rxFlag = 0;
+        rxFlag = CANReceive(rxMsg);
+        if(rxFlag == 1 && rxMsg.id == CHARGER_BROADCAST){
+          cVoltage = ((uint8_t)(rxMsg.buf[0]) <<8 | (uint8_t)(rxMsg.buf[1]));
+          cVoltage = cVoltage/10;
+          cCurrent = ((uint8_t)(rxMsg.buf[2]) <<8 | (uint8_t)(rxMsg.buf[3]));
+          cCurrent = cCurrent/10;
+          DEBUG_PRINT(F("Charger Output: ")); DEBUG_PRINT_1(cVoltage); DEBUG_PRINT("V ");
+          DEBUG_PRINT_1(cCurrent); DEBUG_PRINT("A ")
+        }
         if(Hist_Highest_Vcell < Vcell_Trickle_Charge){
           CANSendCharger(BMS_TO_CHARGER, Charge_Voltage, Charge_Trickle_Current, ON);
           Charge_status_flag = TRICKLE;
@@ -948,16 +958,16 @@ void loop() {
         #ifdef DEBUG
         switch (Charge_status_flag){
           case TRICKLE:
-            DEBUG_PRINTLN(F("Charge Status = LOW TRICKLE"))
+            DEBUG_PRINTLN(F("LOW TRICKLE"))
             break;
           case BULK:
-            DEBUG_PRINTLN(F("Charge Status = BULK CHARGE"))
+            DEBUG_PRINTLN(F("BULK CHARGE"))
             break;
           case TOPEND:
-            DEBUG_PRINTLN(F("Charge Status = TOPPING UP"))
+            DEBUG_PRINTLN(F("TOPPING UP"))
             break;
           case COMPLETE:
-            DEBUG_PRINTLN(F("Charge Status = COMPLETE"))
+            DEBUG_PRINTLN(F("COMPLETE"))
             break;
         }
         #endif
