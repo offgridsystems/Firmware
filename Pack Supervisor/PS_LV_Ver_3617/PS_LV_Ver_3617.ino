@@ -185,29 +185,25 @@ const byte  CELLTYPE0 = 40;
 const byte  CELLTYPE1 = 60;
 const byte  CELLTYPE2 = 80;
 
-//---------LITHIUM ION CELL SPEC VARIABLES---------------------------------------------------------
+//-LITHIUM ION CELL SPEC VARIABLES-----------------------------------------------------------------
 // all variables are set in setup() based on cell type selection above
 float Vcell_HVD_Spec = 4.4;	                // threshold where alarm is set and LED goes red.
 float Vcell_Nominal_Spec;
 float Vcell_Low_Spec;                       // threshold where fans and heaters are turned off to save power
 float Vcell_LVD_Spec;  	                    // threshold where all electronics turns off......about 2VPC
 float Vcell_Balance;                        // voltage above where Cells will balance
-float Vcell_Trickle_Charge;                 // voltage under where trickle charge should happen
-float Vcell_Bulk_Charge;                    // voltage under where the bulk of the charge should happen
-float Vcell_Off_Charge;                     // voltage above where charger should turn off
 const float CELL_RECONNECT_V = 4.000;       // reconnect charger at this (lowest) cell voltage
 
-//---------CELL TEMP VARIABLES---------------------------------------------------------------------
-// const int Tcell_SMOKE = 95;              // At 95C and above there may be smoke ...danger
-//const int NTC_SMOKE = 107;                  // ADC counts for 100C
-//const int NTC_63C = 369;                    // ADC counts for ~~63C
-//const int NTC_60C = 410;                    // ADC counts for 60C
-//const int NTC_43C = 742;                    // ADC counts for 45C
-//const int NTC_40C = 828;                    // ADC counts for 43C
-//const int NTC_WARM = 983;                   // ADC counts for 35C
-//const int NTC_AMBIENT = 1365;               // ADC counts for 25C
-//const int NTC_0C = 2625;                    // ADC counts for 0C
-//const int NTC_COLD = 3108;                  // ADC counts for -10C
+float Vcell_Charge_Low_Cutoff;
+float Vcell_Charge_High_Cutoff;
+float Vcell_Charge_Trickle;                 // voltage under where trickle charge should happen
+float Vcell_Charge_Bulk;                    // voltage under where the bulk of the charge should happen
+float Vcell_Charge_Off;                     // voltage above where charger should turn off
+
+uint16_t Tcell_Charge_Low_Cutoff;
+uint16_t Tcell_Charge_High_Cutoff;
+uint16_t Tcell_Charge_Taper_1;              // temp at witch a lowering of current should happen
+uint16_t Tcell_Charge_Taper_2;              // higher temp where more lowering of current should happen
 
 //---------CHARGER VARIABLES-----------------------------------------------------------------------
 const uint16_t Charge_Voltage = 830;        // max charge voltage 830 = 83.0V
@@ -215,10 +211,13 @@ const uint16_t Charge_Trickle_Current = 10; // trickle current 10 = 1.0A
 const uint16_t Charge_Max_Current = 200;    // max charge current 200 = 20.0A
 const uint16_t Charge_End_Current = 1;      // end charge current 1 = 0.1A
 uint8_t Charge_status_flag = 0;             // flag for latching charger levels
+const uint8_t DO_NOT_CHARGE = 99;
 const uint8_t TRICKLE = 0;
-const uint8_t BULK = 1;
-const uint8_t TOPEND = 2;
-const uint8_t COMPLETE = 3;
+const uint8_t BULK_FULL = 1;
+const uint8_t BULK_HALF = 2;
+const uint8_t BULK_QUARTER = 3;
+const uint8_t TOP_UP = 4;
+const uint8_t COMPLETE = 5;
 static float cVoltage = 0, cCurrent = 0;
 
 //---------USER INPUT PINS-------------------------------------------------------------------------
@@ -408,19 +407,35 @@ void setup(){
     Vcell_Low_Spec = 2.91;            // end voltage cutoff 2.5V is spec
     Vcell_LVD_Spec = 2.91;            // low voltage disconnect, all off
     Vcell_Balance = 4.11;             // voltage above where Cells will balance
-    Vcell_Trickle_Charge = 2.7;       // voltage under where trickle charge should happen
-    Vcell_Bulk_Charge = 4.05;         // voltage under where the bulk of the charge should happen
-    Vcell_Off_Charge  = 4.15;         // voltage above where charger should turn off
+
+    Vcell_Charge_Low_Cutoff = 2.00;
+    Vcell_Charge_High_Cutoff = 4.20;
+    Vcell_Charge_Trickle = 2.8;       // voltage under where trickle charge should happen  
+    Vcell_Charge_Bulk = 4.05;         // voltage under where the bulk of the charge should happen
+    Vcell_Charge_Off  = 4.15;         // voltage above where charger should turn off
+
+    Tcell_Charge_Low_Cutoff = NTC_3C;
+    Tcell_Charge_High_Cutoff = NTC_43C;
+    Tcell_Charge_Taper_1 = NTC_35C;
+    Tcell_Charge_Taper_2 = NTC_40C;
   } 
   if (Cell_Type == LG_MJ1) {          // cell parameters for LG MH1 3500mah
     Vcell_HVD_Spec = 4.21;            // high voltage disconnect, charger disconnected
     Vcell_Nominal_Spec = 3.635;
     Vcell_Low_Spec = 2.91;            // end voltage cutoff 2.5V is spec
     Vcell_LVD_Spec = 2.91;            // low voltage disconnect, all off
-    Vcell_Balance = 4.10;             // start balancing
-    Vcell_Trickle_Charge = 2.7;       // voltage under where trickle charge should happen
-    Vcell_Bulk_Charge = 4.05;         // voltage under where the bulk of the charge should happen
-    Vcell_Off_Charge  = 4.15;         // voltage above where charger should turn off
+    Vcell_Balance = 4.11;             // start balancing
+
+    Vcell_Charge_Low_Cutoff = 2.00;
+    Vcell_Charge_High_Cutoff = 4.20;
+    Vcell_Charge_Trickle = 2.8;       // voltage under where trickle charge should happen
+    Vcell_Charge_Bulk = 4.05;         // voltage under where the bulk of the charge should happen
+    Vcell_Charge_Off  = 4.15;         // voltage above where charger should turn off
+
+    Tcell_Charge_Low_Cutoff = NTC_3C;
+    Tcell_Charge_High_Cutoff = NTC_43C;
+    Tcell_Charge_Taper_1 = NTC_35C;
+    Tcell_Charge_Taper_2 = NTC_40C;
   }
   if (Cell_Type == SANYO_NCR18650B) { // cell parameters for Panasonic/Sanyo NCR18650B
     Vcell_HVD_Spec = 4.3;
@@ -428,9 +443,17 @@ void setup(){
     Vcell_Low_Spec = 2.9;
     Vcell_LVD_Spec = 2.9;
     Vcell_Balance = 3.9;
-    Vcell_Trickle_Charge = 2.7;       // voltage under where trickle charge should happen
-    Vcell_Bulk_Charge = 4.05;         // voltage under where the bulk of the charge should happen
-    Vcell_Off_Charge  = 4.2;          // voltage above where charger should turn off
+
+    Vcell_Charge_Low_Cutoff = 2.00;
+    Vcell_Charge_High_Cutoff = 4.20;
+    Vcell_Charge_Trickle = 2.8;       // voltage under where trickle charge should happen  
+    Vcell_Charge_Bulk = 4.05;         // voltage under where the bulk of the charge should happen
+    Vcell_Charge_Off  = 4.15;         // voltage above where charger should turn off
+
+    Tcell_Charge_Low_Cutoff = NTC_3C;
+    Tcell_Charge_High_Cutoff = NTC_43C;
+    Tcell_Charge_Taper_1 = NTC_35C;
+    Tcell_Charge_Taper_2 = NTC_40C;
   }
 
   //-RELAYS SETUP--------------------------------------------------------------------------------
@@ -585,7 +608,8 @@ void CANSendCharger(uint32_t id, uint16_t  cV, uint16_t cC, bool on_off){
 
 //=================================================================================================
 // CAN Receive Function
-// Receives data from can bus, returns it in structure
+// Receives data from can bus, returns 1 for message received and 0 for no message
+// data is passed by struct reference
 //=================================================================================================
 bool CANReceive(struct CAN_message_t &hold){
   if(Can0.available()) {
@@ -917,27 +941,40 @@ void loop() {
   //-MY BLUE SKY - S2500 CHARGER-------------------------------------------------------------------
   // CAN Bus controlled charger with a min output of 1A and a Max of 20A
 
-  if ((digitalRead(CHARGE_INPUT) == 0)) {               // check charger input for low side switch  
-    if(Tx_counter >= Tx_msg_interval) {                 // send message at set speed (1 per sec default)
-      Tx_counter = 0;
+  // check charger input for low side switch  
+  if ((digitalRead(CHARGE_INPUT) == 0)) {
+    // send message at set speed (1 per sec default)
+    if(Tx_counter >= Tx_msg_interval) {
+      Tx_counter = 0;                                   // reset counter
       bool rxFlag = 0;
-      rxFlag = CANReceive(rxMsg);                       //returns 1 for msg and 0 for no msg
+      rxFlag = CANReceive(rxMsg);                       // check for messages
+      // convert hex bytes into float
       if(rxFlag == 1 && rxMsg.id == CHARGER_BROADCAST){
         cVoltage = ((uint8_t)(rxMsg.buf[0]) <<8 | (uint8_t)(rxMsg.buf[1]));
         cVoltage = cVoltage/10;
         cCurrent = ((uint8_t)(rxMsg.buf[2]) <<8 | (uint8_t)(rxMsg.buf[3]));
         cCurrent = cCurrent/10;
+        // charger data serial output for debug
         #ifdef DEBUG
           DEBUG_PRINT(F("Charger Output: ")); DEBUG_PRINT_1(cVoltage); DEBUG_PRINT("V ");
           DEBUG_PRINT_1(cCurrent); DEBUG_PRINT("A ")
           switch (Charge_status_flag){
+            case DO_NOT_CHARGE:
+              DEBUG_PRINTLN(F("DO NOT CHARGE"))
+              break;
             case TRICKLE:
-              DEBUG_PRINTLN(F("LOW TRICKLE"))
+              DEBUG_PRINTLN(F("TRICKLE"))
               break;
-            case BULK:
-              DEBUG_PRINTLN(F("BULK CHARGE"))
+            case BULK_FULL:
+              DEBUG_PRINTLN(F("BULK FULL"))
               break;
-            case TOPEND:
+            case BULK_HALF:
+              DEBUG_PRINTLN(F("BULK HALF"))
+              break;  
+            case BULK_QUARTER:
+              DEBUG_PRINTLN(F("BULK QUARTER"))
+              break;
+            case TOP_UP:
               DEBUG_PRINTLN(F("TOPPING UP"))
               break;
             case COMPLETE:
@@ -946,25 +983,48 @@ void loop() {
           }
         #endif
       }
-      if(Hist_Highest_Vcell < Vcell_Trickle_Charge){
-        CANSendCharger(BMS_TO_CHARGER, Charge_Voltage, Charge_Trickle_Current, ON);
-        Charge_status_flag = TRICKLE;
+      // outside of safe operating range? DO NOT CHARGE
+      if(Hist_Lowest_Tcell >= Tcell_Charge_Low_Cutoff || Hist_Highest_Tcell <= Tcell_Charge_High_Cutoff ||
+      Hist_Lowest_Vcell <= Vcell_Charge_Low_Cutoff || Hist_Highest_Vcell >= Vcell_Charge_High_Cutoff) {
+        CANSendCharger(BMS_TO_CHARGER, 0, 0, OFF);
+        Charge_status_flag = DO_NOT_CHARGE;
       }
-      if(Hist_Highest_Vcell < Vcell_Bulk_Charge && Charge_status_flag <= BULK) {
-        CANSendCharger(BMS_TO_CHARGER, Charge_Voltage, Charge_Max_Current, ON);
-        Charge_status_flag = BULK;
-      }
-      if(Hist_Highest_Vcell > Vcell_Bulk_Charge && Charge_status_flag <= TOPEND) {
-        CANSendCharger(BMS_TO_CHARGER, Charge_Voltage, Charge_End_Current, ON);
-        Charge_status_flag = TOPEND;
-      }
-      if(Hist_Highest_Vcell < Vcell_Bulk_Charge && Charge_status_flag == TOPEND) {
-        CANSendCharger(BMS_TO_CHARGER, Charge_Voltage, Charge_End_Current, ON);
-        Charge_status_flag = TOPEND;
-      }
-      if(Hist_Highest_Vcell >= Vcell_Off_Charge) {
-        CANSendCharger(BMS_TO_CHARGER, Charge_Voltage, Charge_End_Current, OFF);
-        Charge_status_flag = COMPLETE;
+      // inside of safe operating range? CHARGE
+      else{
+        if(Hist_Lowest_Vcell <= Vcell_Charge_Trickle) {
+          Charge_status_flag = TRICKLE;
+        }
+        if(Hist_Lowest_Vcell > Vcell_Charge_Trickle && Hist_Highest_Vcell < Vcell_Charge_Bulk) {
+          if(Hist_Highest_Tcell >  Tcell_Charge_Taper_1) Charge_status_flag = BULK_FULL;
+          if(Hist_Highest_Tcell <= Tcell_Charge_Taper_1) Charge_status_flag = BULK_HALF;
+          if(Hist_Highest_Tcell <= Tcell_Charge_Taper_2) Charge_status_flag = BULK_QUARTER;
+        }
+        if(Hist_Highest_Vcell > Vcell_Charge_Bulk && Hist_Highest_Vcell < Vcell_Charge_Off) {
+          Charge_status_flag = TOP_UP;
+        }
+        if(Hist_Lowest_Vcell > Vcell_Balance && Hist_Highest_Vcell < Vcell_Charge_Off) {
+          Charge_status_flag = COMPLETE;
+        }
+        switch (Charge_status_flag) {
+              case TRICKLE:
+                CANSendCharger(BMS_TO_CHARGER, Charge_Voltage, Charge_Trickle_Current, ON);
+                break;
+              case BULK_FULL:
+                CANSendCharger(BMS_TO_CHARGER, Charge_Voltage, Charge_Max_Current, ON);
+                break;
+              case BULK_HALF:
+                CANSendCharger(BMS_TO_CHARGER, Charge_Voltage, (Charge_Max_Current / 2), ON);
+                break;
+              case BULK_QUARTER:
+                CANSendCharger(BMS_TO_CHARGER, Charge_Voltage, (Charge_Max_Current / 4), ON);
+                break;
+              case TOP_UP:
+                CANSendCharger(BMS_TO_CHARGER, Charge_Voltage, Charge_End_Current, ON);
+                break;
+              case COMPLETE:
+                CANSendCharger(BMS_TO_CHARGER, Charge_Voltage, Charge_End_Current, OFF);
+                break;
+        }
       }
     }
   }
@@ -980,7 +1040,7 @@ void loop() {
       VERBOSE_PRINT(F(" Charge input ON / Timer = "));  
       VERBOSE_PRINT(gCharge_Timer);  VERBOSE_PRINTLN(F(" hrs"));
       if (gCharge_Timer == 0) ChargeRelay = ON;           // if timer is 0 turn on charge relay for up to a day
-      if(Tx_counter >= Tx_msg_interval) {                 // send message at set speed (1 per sec default)
+      /*if(Tx_counter >= Tx_msg_interval) {                 // send message at set speed (1 per sec default)
         Tx_counter = 0;
         bool rxFlag = 0;
         rxFlag = CANReceive(rxMsg);
@@ -996,19 +1056,19 @@ void loop() {
           CANSendCharger(BMS_TO_CHARGER, Charge_Voltage, Charge_Trickle_Current, ON);
           Charge_status_flag = TRICKLE;
         }
-        if(Hist_Highest_Vcell < Vcell_Bulk_Charge && Charge_status_flag <= BULK) {
+        if(Hist_Highest_Vcell < Vcell_Charge_Bulk && Charge_status_flag <= BULK) {
           CANSendCharger(BMS_TO_CHARGER, Charge_Voltage, Charge_Max_Current, ON);
           Charge_status_flag = BULK;
         }
-        if(Hist_Highest_Vcell > Vcell_Bulk_Charge && Charge_status_flag <= TOPEND) {
+        if(Hist_Highest_Vcell > Vcell_Charge_Bulk && Charge_status_flag <= TOPEND) {
           CANSendCharger(BMS_TO_CHARGER, Charge_Voltage, Charge_End_Current, ON);
           Charge_status_flag = TOPEND;
         }
-        if(Hist_Highest_Vcell < Vcell_Bulk_Charge && Charge_status_flag == TOPEND) {
+        if(Hist_Highest_Vcell < Vcell_Charge_Bulk && Charge_status_flag == TOPEND) {
           CANSendCharger(BMS_TO_CHARGER, Charge_Voltage, Charge_End_Current, ON);
           Charge_status_flag = TOPEND;
         }
-        if(Hist_Highest_Vcell >= Vcell_Off_Charge) {
+        if(Hist_Highest_Vcell >= Vcell_Charge_Off) {
           CANSendCharger(BMS_TO_CHARGER, Charge_Voltage, Charge_End_Current, OFF);
           Charge_status_flag = COMPLETE;
         }
@@ -1028,7 +1088,7 @@ void loop() {
             break;
         }
         #endif
-      }
+      }*/
       if (Hist_Lowest_Vcell > Vcell_Balance) {            // shut down relay, start 1 day timer (4.11 if LG)
         gCharge_Timer = 24;                               // 24 hours
         ChargeRelay = OFF;
