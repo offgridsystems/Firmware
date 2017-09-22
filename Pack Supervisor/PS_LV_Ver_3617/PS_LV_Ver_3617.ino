@@ -71,6 +71,9 @@ struct DATA {
 
 // nRF24 2.4Mhz packet comms
 
+//-DEFINE CHARGER----------------------------------------------------------------------------------
+#define __BMS_CHARGER_S2500__
+
 //---------GLOBAL VARAIBLES------------------------------------------------------------------------
 //declare gMode vars
 uint8_t   gMode = 0;                     // default to sleep at wakeup
@@ -219,6 +222,7 @@ const uint8_t BULK_QUARTER = 3;
 const uint8_t TOP_UP = 4;
 const uint8_t COMPLETE = 5;
 static float cVoltage = 0, cCurrent = 0;
+elapsedMillis TOP_UP_Counter;               // counter for top up cycle if necessary
 
 //---------USER INPUT PINS-------------------------------------------------------------------------
 const byte CHARGE_INPUT = 22;               // charger presence or absence
@@ -938,96 +942,107 @@ void loop() {
   int Vpack_HV_Run_Limit = Vpack_HVD * 1.2;               // Make high voltage run limit 10% higher than HVD
   int Vpack_Lo_Run_Limit = Vpack_LVD;
 
-  //-MY BLUE SKY - S2500 CHARGER-------------------------------------------------------------------
+  //-BLUE MY SKY - S2500 CHARGER-------------------------------------------------------------------
   // CAN Bus controlled charger with a min output of 1A and a Max of 20A
-
-  // check charger input for low side switch  
-  if ((digitalRead(CHARGE_INPUT) == 0)) {
-    // send message at set speed (1 per sec default)
-    if(Tx_counter >= Tx_msg_interval) {
-      Tx_counter = 0;                                   // reset counter
-      bool rxFlag = 0;
-      rxFlag = CANReceive(rxMsg);                       // check for messages
-      // convert hex bytes into float
-      if(rxFlag == 1 && rxMsg.id == CHARGER_BROADCAST){
-        cVoltage = ((uint8_t)(rxMsg.buf[0]) <<8 | (uint8_t)(rxMsg.buf[1]));
-        cVoltage = cVoltage/10;
-        cCurrent = ((uint8_t)(rxMsg.buf[2]) <<8 | (uint8_t)(rxMsg.buf[3]));
-        cCurrent = cCurrent/10;
-        // charger data serial output for debug
-        #ifdef DEBUG
-          DEBUG_PRINT(F("Charger Output: ")); DEBUG_PRINT_1(cVoltage); DEBUG_PRINT("V ");
-          DEBUG_PRINT_1(cCurrent); DEBUG_PRINT("A ")
-          switch (Charge_status_flag){
-            case DO_NOT_CHARGE:
-              DEBUG_PRINTLN(F("DO NOT CHARGE"))
-              break;
-            case TRICKLE:
-              DEBUG_PRINTLN(F("TRICKLE"))
-              break;
-            case BULK_FULL:
-              DEBUG_PRINTLN(F("BULK FULL"))
-              break;
-            case BULK_HALF:
-              DEBUG_PRINTLN(F("BULK HALF"))
-              break;  
-            case BULK_QUARTER:
-              DEBUG_PRINTLN(F("BULK QUARTER"))
-              break;
-            case TOP_UP:
-              DEBUG_PRINTLN(F("TOPPING UP"))
-              break;
-            case COMPLETE:
-              DEBUG_PRINTLN(F("COMPLETE"))
-              break;
-          }
-        #endif
-      }
-      // outside of safe operating range? DO NOT CHARGE
-      if(Hist_Lowest_Tcell >= Tcell_Charge_Low_Cutoff || Hist_Highest_Tcell <= Tcell_Charge_High_Cutoff ||
-      Hist_Lowest_Vcell <= Vcell_Charge_Low_Cutoff || Hist_Highest_Vcell >= Vcell_Charge_High_Cutoff) {
-        CANSendCharger(BMS_TO_CHARGER, 0, 0, OFF);
-        Charge_status_flag = DO_NOT_CHARGE;
-      }
-      // inside of safe operating range? CHARGE
-      else{
-        if(Hist_Lowest_Vcell <= Vcell_Charge_Trickle) {
-          Charge_status_flag = TRICKLE;
-        }
-        if(Hist_Lowest_Vcell > Vcell_Charge_Trickle && Hist_Highest_Vcell < Vcell_Charge_Bulk) {
-          if(Hist_Highest_Tcell >  Tcell_Charge_Taper_1) Charge_status_flag = BULK_FULL;
-          if(Hist_Highest_Tcell <= Tcell_Charge_Taper_1) Charge_status_flag = BULK_HALF;
-          if(Hist_Highest_Tcell <= Tcell_Charge_Taper_2) Charge_status_flag = BULK_QUARTER;
-        }
-        if(Hist_Highest_Vcell > Vcell_Charge_Bulk && Hist_Highest_Vcell < Vcell_Charge_Off) {
-          Charge_status_flag = TOP_UP;
-        }
-        if(Hist_Lowest_Vcell > Vcell_Balance && Hist_Highest_Vcell < Vcell_Charge_Off) {
-          Charge_status_flag = COMPLETE;
-        }
-        switch (Charge_status_flag) {
+  #ifdef __BMS_CHARGER_S2500__
+    // check charger input for low side switch  
+    if ((digitalRead(CHARGE_INPUT) == 0)) {
+      // send message at set speed (1 per sec default)
+      if(Tx_counter >= Tx_msg_interval) {
+        Tx_counter = 0;                                   // reset counter
+        bool rxFlag = 0;
+        rxFlag = CANReceive(rxMsg);                       // check for messages
+        // convert hex bytes into float
+        if(rxFlag == 1 && rxMsg.id == CHARGER_BROADCAST){
+          cVoltage = ((uint8_t)(rxMsg.buf[0]) <<8 | (uint8_t)(rxMsg.buf[1]));
+          cVoltage = cVoltage/10;
+          cCurrent = ((uint8_t)(rxMsg.buf[2]) <<8 | (uint8_t)(rxMsg.buf[3]));
+          cCurrent = cCurrent/10;
+          // charger data serial output for debug
+          #ifdef DEBUG
+            DEBUG_PRINT(F("Charger Output: ")); DEBUG_PRINT_1(cVoltage); DEBUG_PRINT("V ");
+            DEBUG_PRINT_1(cCurrent); DEBUG_PRINT("A ")
+            switch (Charge_status_flag){
+              case DO_NOT_CHARGE:
+                DEBUG_PRINTLN(F("DO NOT CHARGE"))
+                break;
               case TRICKLE:
-                CANSendCharger(BMS_TO_CHARGER, Charge_Voltage, Charge_Trickle_Current, ON);
+                DEBUG_PRINTLN(F("TRICKLE"))
                 break;
               case BULK_FULL:
-                CANSendCharger(BMS_TO_CHARGER, Charge_Voltage, Charge_Max_Current, ON);
+                DEBUG_PRINTLN(F("BULK FULL"))
                 break;
               case BULK_HALF:
-                CANSendCharger(BMS_TO_CHARGER, Charge_Voltage, (Charge_Max_Current / 2), ON);
-                break;
+                DEBUG_PRINTLN(F("BULK HALF"))
+                break;  
               case BULK_QUARTER:
-                CANSendCharger(BMS_TO_CHARGER, Charge_Voltage, (Charge_Max_Current / 4), ON);
+                DEBUG_PRINTLN(F("BULK QUARTER"))
                 break;
               case TOP_UP:
-                CANSendCharger(BMS_TO_CHARGER, Charge_Voltage, Charge_End_Current, ON);
+                DEBUG_PRINTLN(F("TOPPING UP"))
                 break;
               case COMPLETE:
-                CANSendCharger(BMS_TO_CHARGER, Charge_Voltage, Charge_End_Current, OFF);
+                DEBUG_PRINTLN(F("COMPLETE"))
                 break;
+            }
+          #endif
+        }
+        // outside of safe operating range? DO NOT CHARGE
+        DEBUG_PRINT(F("High Temp ADC: ")); DEBUG_PRINTLN(Hist_Highest_Tcell);
+        DEBUG_PRINT(F("Temp Temp ADC: ")); DEBUG_PRINTLN(Hist_Lowest_Tcell);
+        if(Hist_Lowest_Tcell >= Tcell_Charge_Low_Cutoff || Hist_Highest_Tcell <= Tcell_Charge_High_Cutoff ||
+        Hist_Lowest_Vcell <= Vcell_Charge_Low_Cutoff || Hist_Highest_Vcell >= Vcell_Charge_High_Cutoff) {
+          CANSendCharger(BMS_TO_CHARGER, 0, 0, OFF);
+          Charge_status_flag = DO_NOT_CHARGE;
+        }
+        // inside of safe operating range? CHARGE
+        else{
+          if(Hist_Lowest_Vcell <= Vcell_Charge_Trickle) {
+            Charge_status_flag = TRICKLE;
+          }
+          if(Hist_Lowest_Vcell > Vcell_Charge_Trickle && Hist_Highest_Vcell < Vcell_Charge_Bulk) {
+            if(Hist_Highest_Tcell >  Tcell_Charge_Taper_1) Charge_status_flag = BULK_FULL;
+            if(Hist_Highest_Tcell <= Tcell_Charge_Taper_1) Charge_status_flag = BULK_HALF;
+            if(Hist_Highest_Tcell <= Tcell_Charge_Taper_2) Charge_status_flag = BULK_QUARTER;
+          }
+          if(Hist_Highest_Vcell > Vcell_Charge_Bulk && Hist_Highest_Vcell < Vcell_Charge_Off) {
+            Charge_status_flag = TOP_UP;
+          }
+          if(Hist_Lowest_Vcell > Vcell_Balance && Hist_Highest_Vcell < Vcell_Charge_Off) {
+            Charge_status_flag = COMPLETE;
+          }
+          switch (Charge_status_flag) {
+                case TRICKLE:
+                  CANSendCharger(BMS_TO_CHARGER, Charge_Voltage, Charge_Trickle_Current, ON);
+                  break;
+                case BULK_FULL:
+                  CANSendCharger(BMS_TO_CHARGER, Charge_Voltage, Charge_Max_Current, ON);
+                  break;
+                case BULK_HALF:
+                  CANSendCharger(BMS_TO_CHARGER, Charge_Voltage, (Charge_Max_Current / 2), ON);
+                  break;
+                case BULK_QUARTER:
+                  CANSendCharger(BMS_TO_CHARGER, Charge_Voltage, (Charge_Max_Current / 4), ON);
+                  break;
+                case TOP_UP:
+                  if(TOP_UP_Counter < 20000){
+                    CANSendCharger(BMS_TO_CHARGER, Charge_Voltage, Charge_End_Current, ON);
+                  }
+                  else{
+                    CANSendCharger(BMS_TO_CHARGER, Charge_Voltage, Charge_End_Current, OFF);
+                  }
+                  if(TOP_UP_Counter > 40000){
+                    TOP_UP_Counter = 0;
+                  }
+                  break;
+                case COMPLETE:
+                  CANSendCharger(BMS_TO_CHARGER, Charge_Voltage, Charge_End_Current, OFF);
+                  break;
+          }
         }
       }
     }
-  }
+  #endif //__BMS_CHARGER_S2500__
 
   //-CHARGE RELAY----------------------------------------------------------------------------------
   // Charger independent, will override and cutoff charger if necessary.
@@ -1040,55 +1055,6 @@ void loop() {
       VERBOSE_PRINT(F(" Charge input ON / Timer = "));  
       VERBOSE_PRINT(gCharge_Timer);  VERBOSE_PRINTLN(F(" hrs"));
       if (gCharge_Timer == 0) ChargeRelay = ON;           // if timer is 0 turn on charge relay for up to a day
-      /*if(Tx_counter >= Tx_msg_interval) {                 // send message at set speed (1 per sec default)
-        Tx_counter = 0;
-        bool rxFlag = 0;
-        rxFlag = CANReceive(rxMsg);
-        if(rxFlag == 1 && rxMsg.id == CHARGER_BROADCAST){
-          cVoltage = ((uint8_t)(rxMsg.buf[0]) <<8 | (uint8_t)(rxMsg.buf[1]));
-          cVoltage = cVoltage/10;
-          cCurrent = ((uint8_t)(rxMsg.buf[2]) <<8 | (uint8_t)(rxMsg.buf[3]));
-          cCurrent = cCurrent/10;
-          DEBUG_PRINT(F("Charger Output: ")); DEBUG_PRINT_1(cVoltage); DEBUG_PRINT("V ");
-          DEBUG_PRINT_1(cCurrent); DEBUG_PRINT("A ")
-        }
-        if(Hist_Highest_Vcell < Vcell_Trickle_Charge){
-          CANSendCharger(BMS_TO_CHARGER, Charge_Voltage, Charge_Trickle_Current, ON);
-          Charge_status_flag = TRICKLE;
-        }
-        if(Hist_Highest_Vcell < Vcell_Charge_Bulk && Charge_status_flag <= BULK) {
-          CANSendCharger(BMS_TO_CHARGER, Charge_Voltage, Charge_Max_Current, ON);
-          Charge_status_flag = BULK;
-        }
-        if(Hist_Highest_Vcell > Vcell_Charge_Bulk && Charge_status_flag <= TOPEND) {
-          CANSendCharger(BMS_TO_CHARGER, Charge_Voltage, Charge_End_Current, ON);
-          Charge_status_flag = TOPEND;
-        }
-        if(Hist_Highest_Vcell < Vcell_Charge_Bulk && Charge_status_flag == TOPEND) {
-          CANSendCharger(BMS_TO_CHARGER, Charge_Voltage, Charge_End_Current, ON);
-          Charge_status_flag = TOPEND;
-        }
-        if(Hist_Highest_Vcell >= Vcell_Charge_Off) {
-          CANSendCharger(BMS_TO_CHARGER, Charge_Voltage, Charge_End_Current, OFF);
-          Charge_status_flag = COMPLETE;
-        }
-        #ifdef DEBUG
-        switch (Charge_status_flag){
-          case TRICKLE:
-            DEBUG_PRINTLN(F("LOW TRICKLE"))
-            break;
-          case BULK:
-            DEBUG_PRINTLN(F("BULK CHARGE"))
-            break;
-          case TOPEND:
-            DEBUG_PRINTLN(F("TOPPING UP"))
-            break;
-          case COMPLETE:
-            DEBUG_PRINTLN(F("COMPLETE"))
-            break;
-        }
-        #endif
-      }*/
       if (Hist_Lowest_Vcell > Vcell_Balance) {            // shut down relay, start 1 day timer (4.11 if LG)
         gCharge_Timer = 24;                               // 24 hours
         ChargeRelay = OFF;
