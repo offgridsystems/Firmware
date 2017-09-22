@@ -47,6 +47,7 @@
 #include <EEPROM.h>                 // use EEPROM to store Blocks connected to pack
 #include <FlexCAN.h>                // CAN Bus connection
 #include <VERBOSE.h> 
+#include <NCP18.h>
 
 //---------SERVER ADDRESS--------------------------------------------------------------------------
 // DO NOT! use 0 or 255! ---does not work!
@@ -198,15 +199,15 @@ const float CELL_RECONNECT_V = 4.000;       // reconnect charger at this (lowest
 
 //---------CELL TEMP VARIABLES---------------------------------------------------------------------
 // const int Tcell_SMOKE = 95;              // At 95C and above there may be smoke ...danger
-const int NTC_SMOKE = 107;                  // ADC counts for 100C
-const int NTC_63C = 369;                    // ADC counts for ~~63C
-const int NTC_60C = 410;                    // ADC counts for 60C
-const int NTC_43C = 742;                    // ADC counts for 45C
-const int NTC_40C = 828;                    // ADC counts for 43C
-const int NTC_WARM = 983;                   // ADC counts for 35C
-const int NTC_AMBIENT = 1365;               // ADC counts for 25C
-const int NTC_0C = 2625;                    // ADC counts for 0C
-const int NTC_COLD = 3108;                  // ADC counts for -10C
+//const int NTC_SMOKE = 107;                  // ADC counts for 100C
+//const int NTC_63C = 369;                    // ADC counts for ~~63C
+//const int NTC_60C = 410;                    // ADC counts for 60C
+//const int NTC_43C = 742;                    // ADC counts for 45C
+//const int NTC_40C = 828;                    // ADC counts for 43C
+//const int NTC_WARM = 983;                   // ADC counts for 35C
+//const int NTC_AMBIENT = 1365;               // ADC counts for 25C
+//const int NTC_0C = 2625;                    // ADC counts for 0C
+//const int NTC_COLD = 3108;                  // ADC counts for -10C
 
 //---------CHARGER VARIABLES-----------------------------------------------------------------------
 const uint16_t Charge_Voltage = 830;        // max charge voltage 830 = 83.0V
@@ -913,7 +914,63 @@ void loop() {
   int Vpack_HV_Run_Limit = Vpack_HVD * 1.2;               // Make high voltage run limit 10% higher than HVD
   int Vpack_Lo_Run_Limit = Vpack_LVD;
 
-  //---------CHARGE RELAY--------------------------------------------------------------------------
+  //-MY BLUE SKY - S2500 CHARGER-------------------------------------------------------------------
+  // CAN Bus controlled charger with a min output of 1A and a Max of 20A
+
+  if ((digitalRead(CHARGE_INPUT) == 0)) {               // check charger input for low side switch  
+    if(Tx_counter >= Tx_msg_interval) {                 // send message at set speed (1 per sec default)
+      Tx_counter = 0;
+      bool rxFlag = 0;
+      rxFlag = CANReceive(rxMsg);                       //returns 1 for msg and 0 for no msg
+      if(rxFlag == 1 && rxMsg.id == CHARGER_BROADCAST){
+        cVoltage = ((uint8_t)(rxMsg.buf[0]) <<8 | (uint8_t)(rxMsg.buf[1]));
+        cVoltage = cVoltage/10;
+        cCurrent = ((uint8_t)(rxMsg.buf[2]) <<8 | (uint8_t)(rxMsg.buf[3]));
+        cCurrent = cCurrent/10;
+        #ifdef DEBUG
+          DEBUG_PRINT(F("Charger Output: ")); DEBUG_PRINT_1(cVoltage); DEBUG_PRINT("V ");
+          DEBUG_PRINT_1(cCurrent); DEBUG_PRINT("A ")
+          switch (Charge_status_flag){
+            case TRICKLE:
+              DEBUG_PRINTLN(F("LOW TRICKLE"))
+              break;
+            case BULK:
+              DEBUG_PRINTLN(F("BULK CHARGE"))
+              break;
+            case TOPEND:
+              DEBUG_PRINTLN(F("TOPPING UP"))
+              break;
+            case COMPLETE:
+              DEBUG_PRINTLN(F("COMPLETE"))
+              break;
+          }
+        #endif
+      }
+      if(Hist_Highest_Vcell < Vcell_Trickle_Charge){
+        CANSendCharger(BMS_TO_CHARGER, Charge_Voltage, Charge_Trickle_Current, ON);
+        Charge_status_flag = TRICKLE;
+      }
+      if(Hist_Highest_Vcell < Vcell_Bulk_Charge && Charge_status_flag <= BULK) {
+        CANSendCharger(BMS_TO_CHARGER, Charge_Voltage, Charge_Max_Current, ON);
+        Charge_status_flag = BULK;
+      }
+      if(Hist_Highest_Vcell > Vcell_Bulk_Charge && Charge_status_flag <= TOPEND) {
+        CANSendCharger(BMS_TO_CHARGER, Charge_Voltage, Charge_End_Current, ON);
+        Charge_status_flag = TOPEND;
+      }
+      if(Hist_Highest_Vcell < Vcell_Bulk_Charge && Charge_status_flag == TOPEND) {
+        CANSendCharger(BMS_TO_CHARGER, Charge_Voltage, Charge_End_Current, ON);
+        Charge_status_flag = TOPEND;
+      }
+      if(Hist_Highest_Vcell >= Vcell_Off_Charge) {
+        CANSendCharger(BMS_TO_CHARGER, Charge_Voltage, Charge_End_Current, OFF);
+        Charge_status_flag = COMPLETE;
+      }
+    }
+  }
+
+  //-CHARGE RELAY----------------------------------------------------------------------------------
+  // Charger independent, will override and cutoff charger if necessary.
   // pack check & cell check for charger relay
   // default to relay off
   // check cell and pack V before turning on relay (4.21 if LG)
