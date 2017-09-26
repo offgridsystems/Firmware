@@ -74,6 +74,7 @@ struct DATA {
 
 //-DEFINE CHARGER----------------------------------------------------------------------------------
 #define __BMS_CHARGER_S2500__
+//#define __ELCON_PCF3000__              // working status unknown
 
 //---------GLOBAL VARAIBLES------------------------------------------------------------------------
 //declare gMode vars
@@ -968,7 +969,9 @@ void loop() {
           // charger data serial output for debug
           #ifdef DEBUG
             DEBUG_PRINT(F("Charger Output: ")); DEBUG_PRINT_1(cVoltage); DEBUG_PRINT("V ");
-            DEBUG_PRINT_1(cCurrent); DEBUG_PRINT("A ");
+            DEBUG_PRINT_1(cCurrent); DEBUG_PRINTLN("A ");
+            DEBUG_PRINT(F("DK_PS Readings: ")); DEBUG_PRINT_1(Vpack); DEBUG_PRINT("V ");
+            DEBUG_PRINT_1(gAmps); DEBUG_PRINT("A ");
             switch (Charge_status_flag){
               case DO_NOT_CHARGE:
                 DEBUG_PRINTLN(F("DO NOT CHARGE"))
@@ -1183,43 +1186,46 @@ void loop() {
   //VERBOSE_PRINT("CRelay cycles: ");    VERBOSE_PRINT(Crelay_Cycles);  
   //VERBOSE_PRINT("  MRelay cycles: ");  VERBOSE_PRINT(Mrelay_Cycles);
 
-  //-ANALOG CHARGER CONTROL (DAC2)-----------------------------------------------------------------
-  float TargetI;                              //Amps
-  //uint16_t gTempPot;                        // current potentiomenter
-  const int FULL_CHARGE_RATE = 1060 / 2;      // full charge rate = 5V out for Elcon charger control
-  uint16_t FullChargeCurrent = 30;            // 30 amps full chg for FIDO
-  const int STARTING_CHARGE_RATE = 1023 / 5;  // zero charge rate to start (below 2V is zero charge rate for Elcon PFC charger
-  //const float BEGIN_BALANCEV = 4.0;
-  float BalanceChargeCurrent = 0.20;          // 200ma charge currrent for balance, cell balancers are running at 250ma
-  //Vcell_Balance
+  //-ELCON PFC 3000 (DAC2)-----------------------------------------------------------------
+  // did not work last time I tried it -NHJ
+  #ifdef __ELCON_PCF3000__
+    float TargetI;                              //Amps
+    //uint16_t gTempPot;                        // current potentiomenter
+    const int FULL_CHARGE_RATE = 1060 / 2;      // full charge rate = 5V out for Elcon charger control
+    uint16_t FullChargeCurrent = 30;            // 30 amps full chg for FIDO
+    const int STARTING_CHARGE_RATE = 1023 / 5;  // zero charge rate to start (below 2V is zero charge rate for Elcon PFC charger
+    //const float BEGIN_BALANCEV = 4.0;
+    float BalanceChargeCurrent = 0.20;          // 200ma charge currrent for balance, cell balancers are running at 250ma
+    //Vcell_Balance
 
-  // 100% charge rate to 4VPC, 100ma from there on,  default to 50% charge rate
-  // if ((Hist_Highest_Vcell < Vcell_Balance) && (Vpack < Vpack_HVD )) TargetI = FullChargeCurrent; 
-  // Full charge rate to 90% or 4.000V
-  if ((Hist_Highest_Vcell < Vcell_Balance) && (Vpack < (Vcell_Balance * No_Of_Cells))) TargetI = FullChargeCurrent; 
-  // Full charge rate to 90% or 4.000V
-  else {
-    TargetI = BalanceChargeCurrent;           // 200ma charge rate from there up to keep cells balanced
-  }
-  VERBOSE_PRINT(" Target Charge amps: ");  VERBOSE_PRINTLN_2(TargetI);
-  VERBOSE_PRINT(" Actual Charge amps: ");  VERBOSE_PRINTLN_2(gAmps);
+    // 100% charge rate to 4VPC, 100ma from there on,  default to 50% charge rate
+    // if ((Hist_Highest_Vcell < Vcell_Balance) && (Vpack < Vpack_HVD )) TargetI = FullChargeCurrent; 
+    // Full charge rate to 90% or 4.000V
+    if ((Hist_Highest_Vcell < Vcell_Balance) && (Vpack < (Vcell_Balance * No_Of_Cells))) TargetI = FullChargeCurrent; 
+    // Full charge rate to 90% or 4.000V
+    else {
+      TargetI = BalanceChargeCurrent;           // 200ma charge rate from there up to keep cells balanced
+    }
+    VERBOSE_PRINT(" Target Charge amps: ");  VERBOSE_PRINTLN_2(TargetI);
+    VERBOSE_PRINT(" Actual Charge amps: ");  VERBOSE_PRINTLN_2(gAmps);
 
-  // init current pot
-  if (gMode != CHARGEMODE) gTempPot = STARTING_CHARGE_RATE;
-  //charge control fix Apr 2017
-  //  if (seconds == 0) // every second check current and current control
-  else {
-  //charge control fix Apr 2017
+    // init current pot
+    if (gMode != CHARGEMODE) gTempPot = STARTING_CHARGE_RATE;
+    //charge control fix Apr 2017
+    //  if (seconds == 0) // every second check current and current control
+    else {
+    //charge control fix Apr 2017
     if ((gAmps > TargetI) && (gTempPot > 0)) gTempPot--;
     if ((gAmps < TargetI) && (gTempPot < FULL_CHARGE_RATE)) gTempPot++;
     // do nothing if they are equal
-  //charge control fix Apr 2017
-  //  analogWrite(CHARGER_CONTROL, gTempPot);     // PWM2 = DAC2 == CHG control 2-5V = 0-100%
-  }
-  //charge control fix Apr 2017
-    analogWrite(CHARGER_CONTROL, gTempPot);       // PWM2 = DAC2 == CHG control 2-5V = 0-100%
-  //charge control fix Apr 2017
-  VERBOSE_PRINT(" Charger control setting: ");  VERBOSE_PRINT(gTempPot);  VERBOSE_PRINTLN(" out of 1024: ");
+    //charge control fix Apr 2017
+    //  analogWrite(CHARGER_CONTROL, gTempPot);     // PWM2 = DAC2 == CHG control 2-5V = 0-100%
+    }
+    //charge control fix Apr 2017
+      analogWrite(CHARGER_CONTROL, gTempPot);       // PWM2 = DAC2 == CHG control 2-5V = 0-100%
+    //charge control fix Apr 2017
+    VERBOSE_PRINT(" Charger control setting: ");  VERBOSE_PRINT(gTempPot);  VERBOSE_PRINTLN(" out of 1024: ");
+  #endif // __ELCON_PCF3000__
 
   //-VOLTAGE DRIVEN FUEL GAUGE---------------------------------------------------------------------
   // output SOC signal from op amp PWM - digital DAC outputs
