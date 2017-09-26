@@ -1520,5 +1520,3 @@ const uint16_t FOUR_BARS = 707 ;                      // 26% PWM = (5 / 3.3) * 0
 } // Main Loop End
 
 
-
-
