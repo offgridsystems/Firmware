@@ -27,10 +27,7 @@
 //                            Cleaned up and added comments 
 //                            Added FlexCAN code with Extended support
 //                            Blue My Sky Charger broken out, NCP18 table broken out, 
-<<<<<<< HEAD
-=======
 //                            Added verbose mode and debug mode for serial output
->>>>>>> dafc673dfd03f823b968421f9e6716bd1a2ef24e
 
 const uint16_t VERSION = 3617;      // 2817 = 28th week of 2017
 #include <RHReliableDatagram.h>     // comm routines
