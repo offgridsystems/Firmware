@@ -28,8 +28,16 @@
 //                            Added FlexCAN code with Extended support
 //                            Blue My Sky Charger broken out, NCP18 table broken out, 
 //                            Added verbose mode and debug mode for serial output
-
 const uint16_t VERSION = 3617;      // 2817 = 28th week of 2017
+
+//-VERBOSE MODE? MAYBE YOU WANT DEBUG?-------------------------------------------------------------
+#define VERBOSE                     // All the org serial output
+//#define DEBUG                       // debug data serial output 
+//#define CAN_DEBUG                   // CAN specific data
+//#define CHARGER_DEBUG               // charger specific data
+
+//-INCLUDES----------------------------------------------------------------------------------------
+#define VERBOSE                     // All the org serial output
 #include <RHReliableDatagram.h>     // comm routines
 #include <RH_NRF24.h>               // Nordic nRF24L01+
 #include <SPI.h>                    // use SPI bus to comm with RF24 radio
@@ -37,12 +45,6 @@ const uint16_t VERSION = 3617;      // 2817 = 28th week of 2017
 #include <FlexCAN.h>                // CAN Bus connection
 #include <VERBOSE.h> 
 #include <NCP18.h>
-
-//-VERBOSE MODE? MAYBE YOU WANT DEBUG?-------------------------------------------------------------
-//#define VERBOSE                   // All the org serial output
-#define DEBUG                       // debug data serial output 
-//#define CAN_DEBUG                 // CAN specific data
-//#define CHARGER_DEBUG             // charger specific data
 
 //-SERVER ADDRESS RF24-----------------------------------------------------------------------------
 // DO NOT! use 0 or 255! ---does not work!
