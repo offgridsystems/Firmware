@@ -42,7 +42,7 @@ const uint16_t VERSION = 4217;      // 2817 = 28th week of 2017
 #include <SPI.h>                    // use SPI bus to comm with RF24 radio
 #include <EEPROM.h>                 // use EEPROM to store Blocks connected to pack
 #include <FlexCAN.h>                // CAN Bus connection
-#include <VERBOSE.h> 
+#include <VERBOSE.h>
 #include <NCP18.h>
 
 //-SERVER ADDRESS RF24-----------------------------------------------------------------------------
@@ -362,7 +362,7 @@ void startup_early_hook() {
 // Setup
 //=================================================================================================
 void setup(){
-  //-SERIAL SETUP---------------------------------------------------------------------------------
+  //-SERIAL SETUP----------------------------------------------------------------------------------
   Serial.begin(115200);                       // serial output @ 115200bps
   // delay(2000);                             // delay for comm window open
 
