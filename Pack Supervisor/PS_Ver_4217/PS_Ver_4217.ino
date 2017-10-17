@@ -2,7 +2,7 @@
 // Used Arduino 1.6.6 for first Fido pilot run 5 packs or 50 pcs 
 // Fido using Arduino IDE 1.8.4 with Teensyduino 1.39 (Switching to Sublime Text 3 and Stino Dev Plugin)
 //
-// Date       Who     Ver Date code   WAS/IS changes
+// Date       Who     Ver     WAS/IS changes
 //-------------------------------------------------------------------------------------------------
 //
 // 6/16/2016  TBE             Activate CONNECT input  to be a "LEARN BLOCKS" function
