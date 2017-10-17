@@ -1,18 +1,31 @@
-
 // Block Manager PCB Rev D production code for Teensy LC  -    10/26/2015  T Economu
 
-// Date       Who     New Ver   WAS/IS changes
-// 1Nov2015   TBE               Added software RTC from Chateau Economu code for secs, mins, and hours, and DO NOT roll at with 4 billion in
-//                              UNSIGNED LONG integers, we get over 127 years!
-// Jun 2016   TBE               WAS: >1% accuracy at best/ IS: 0.1% average accuracy, by simply calibrating output and adding 1uf cap to Vcell inputs.
-// 1JUL2016   TBE               WAS: Only wake from sleep was charge/discharge cell voltage delta Is: added comm wake, so when good ACK from server come, wake up
-// 5Jul       TBE      V2816    WAS: Found blocks locking up w/both GRN LED's on  IS: a) reverted to older good tested software and b) added COP watchdog timer = 1 sec timeout,
-// 7JUL2016   TE       same     Added checksum to sending packet to enable higher quality comm. Bogus bytes were 'leaking' through                    
-//  7/8/2016  TE        same    Changed checksum from unsigned 16 bit to float for better checksum accuracy
-//  7/13/2016 TBE     no chg    Idea - not acted on. Change Vbalance from 4.11 to 4.00 or 4.05 to allow more room for balancing
-//  11/4/2016 TBE     V4416     No changes except Server address shipped was 5,6,7,8 (4 ea 10 block servers), so next new number will be 9, unless maybe new customer gets 1 again?
-/*
+// Date         Who   Ver       WAS/IS changes
+//-------------------------------------------------------------------------------------------------
+// 11/01/2015   TBE             Added software RTC from Chateau Economu code for secs, mins, and 
+//                              hours, and DO NOT roll at with 4 billion in UNSIGNED LONG integers,
+//                              we get over 127 years!
+// 03/00/2016   TBE             WAS: >1% accuracy at best/ IS: 0.1% average accuracy, by simply
+//                              calibrating output and adding 1uf cap to Vcell inputs.
+// 04/01/2016   TBE             WAS: Only wake from sleep was charge/discharge cell voltage delta 
+//                              Is: added comm wake, so when good ACK from server come, wake up
+// 04/05/2016   TBE   2816      WAS: Found blocks locking up w/both GRN LED's on  IS: a) reverted
+//                              to older good tested software and b) added COP watchdog timer = 1 
+//                              sec timeout,
+// 04/07/2016   TBE             Added checksum to sending packet to enable higher quality comm. 
+//                              Bogus bytes were 'leaking' through                    
+// 07/08/2016   TBE             Changed checksum from unsigned 16 bit to float for better checksum 
+//                              accuracy
+// 07/13/2016   TBE             Idea - not acted on. Change Vbalance from 4.11 to 4.00 or 4.05 to 
+//                              allow more room for balancing
+// 11/04/2016   TBE   4416      No changes except Server address shipped was 5,6,7,8 (4 ea 10 block
+//                              servers), so next new number will be 9, unless maybe new customer 
+//                              gets 1 again?
+// 10/16/2017   NHJ   4217      Cleaned up comments and and formatting. Main goal is to improve RF24
+//                              communication.
+const uint16_t VERSION = 2816;      // 5215 = 52th week of 2015
 
+/*
   Modules needed:
   1. Fan(s)
   2. Heaters-shunts
@@ -25,35 +38,31 @@
   Loop time: 50 msecs
 */
 
-const uint16_t VERSION = 2816;   // 5215 = 52th week of 2015
-
+//-INCLUDES----------------------------------------------------------------------------------------
 #include "Arduino.h"
-
-/*     Comms library from Radio Head ver 1.5.1 at http://www.airspayce.com/mikem/arduino/RadioHead/examples.html
-  nrf24_reliable_datagram_client.pde
-  Example sketch showing how to create a simple addressed, reliable messaging client
-  with the RHReliableDatagram class, using the RH_NRF24 driver to control a NRF24 radio.
-  It is designed to work with the other example nrf24_reliable_datagram_server
-  Tested wirh Addicore nRF24L01+ module */
-
-
 #include <RHReliableDatagram.h>
 #include <RH_NRF24.h>
 #include <SPI.h>
 
+/*
+  Comms library from Radio Head ver 1.5.1 at http://www.airspayce.com/mikem/arduino/RadioHead/
+  examples.html nrf24_reliable_datagram_client.pde
+  Example sketch showing how to create a simple addressed, reliable messaging client
+  with the RHReliableDatagram class, using the RH_NRF24 driver to control a NRF24 radio.
+  It is designed to work with the other example nrf24_reliable_datagram_server
+  Tested wirh Addicore nRF24L01+ module */
 #define CLIENT_ADDRESS 9      // BLOCK number ALWAYS start from 1 (NOT 0) 255 MAX!!
 //#define CLIENT_ADDRESS 1
 #define SERVER_ADDRESS   1     // PACK SUPERVISOR CHANNEL
-//#define SERVER_ADDRESS RH_BROADCAST_ADDRESS // If the destination address is the broadcast address RH_BROADCAST_ADDRESS (255), the message will
-/// be sent as a broadcast, but receiving nodes do not acknowledge, and sendtoWait() returns true immediately
+//#define SERVER_ADDRESS RH_BROADCAST_ADDRESS // If the destination address is the broadcast address 
+//RH_BROADCAST_ADDRESS (255), the message will
+/// be sent as a broadcast, but receiving nodes do not acknowledge, and sendtoWait() returns 
+//true immediately
 /// without waiting for any acknowledgements.
 // Singleton instance of the radio driver
 RH_NRF24 driver(9, 10); // define SPI pins for Teensy LC/ 3.1
 // Class to manage message delivery and receipt, using the driver declared above
 RHReliableDatagram manager(driver, CLIENT_ADDRESS);
-
-
-
 
 // use Duffs latest snooze library version 5.5.0 https://github.com/duff2013/Snooze
 #include <Snooze.h>   // used for deep sleep mode for IDD of around 150uA for (Teensy LC).
@@ -117,9 +126,6 @@ bool debugg = NO;
 bool debugsleep = NO;
 //bool debugsleep = YES;
 
-
-
-
 //#define VREF (3.266)         // ADC reference voltage
 //#define VINPUT (2.171)       // ADC input voltage from resistive divider to VREF
 //#define ADCMAX (65535)       // maximum possible reading from ADC
@@ -134,7 +140,6 @@ const byte  CELLTYPE0 = 10;        //
 const byte  CELLTYPE1 = 15;        //
 const byte  CELLTYPE2 = 20;        //
 
-
 // Declare output pins
 const byte LFANCNTL = 3;
 const byte HFANCNTL = 4 ;
@@ -144,7 +149,8 @@ const byte HSHUNTCNTL = 6;
 const byte LED2red = 7;
 const byte LED2green = 8;
 const byte LED1red = 2;
-const byte LED1green = 13;      // do not use this in a program ...needs to be dedicated to SPI port after power up
+const byte LED1green = 13;      // do not use this in a program ...needs to 
+//be dedicated to SPI port after power up
 
 //const byte led = 13; //temp use of led on teensy
 
@@ -173,14 +179,17 @@ float Highest_CellV;      // value of highest cell of 2s block
 float Vcell_HVDO_Spec = 4.4;	// threshold where alarm is set and LED goes red.
 float Vcell_Balance = 4.10;      // voltage above where Cells will balance
 float Vcell_Nominal_Spec = 3.7;
-float Vcell_Low_DK;       // close to threshold where fans and heaters are turned off to save power except bottom balance shunt
+float Vcell_Low_DK;       // close to threshold where fans and heaters are turned 
+//off to save power except bottom balance shunt
 float Vcell_Low_Spec;    // threshold where sleep modes and software LVD happens
 float Vcell_LVDO_Spec = 2.25;  	// threshold where all electronics turns off......about 2VPC
 // cell temperature vars
-//const int Tcell_SMOKE = 95;  // At 95C and above there may be smoke ...danger shut off all fans and electronics
+//const int Tcell_SMOKE = 95;  // At 95C and above there may be smoke ...
+//danger shut off all fans and electronics
 const int NTC_SMOKE = 111;  // ADC counts for 100C
 const int NTC_HOT = 416;  // ADC counts for 60C
-const int NTC_PHOENIX = 590;   // ADC counts for 50C, reasoning is that at 117F in Phoenix we do not want fan coming on (50 = 120F)
+const int NTC_PHOENIX = 590;   // ADC counts for 50C, reasoning is that at 
+//117F in Phoenix we do not want fan coming on (50 = 120F)
 const int NTC_WARM = 987;  // ADC counts for 35C
 const int NTC_AMBIENT = 1365;  // ADC counts for 25C
 const int NTC_COLD = 3000;  // ADC counts for -10C
@@ -231,7 +240,8 @@ byte FaultMode = 0;    // default to no faults
 byte WarningMode = 0;  // default no warnings
 
 // temperature params
-//short Tcells = 25;         // Fan(s) turn on when Tcells above 38C, AND below 100C if charging or discharging (2 byte unsigned)
+//short Tcells = 25;         // Fan(s) turn on when Tcells above 38C, AND below 100C 
+//if charging or discharging (2 byte unsigned)
 short Tcells = 25;      // temporarily set all temps to 25C
 short Thottest;
 short  Tcoldest;
@@ -248,12 +258,14 @@ byte HiShunt = OFF;
 /********************************************************
   Set Low Power Timer for deepsleep mode wake up vars and config below
 ********************************************************/
-const int TIMEBETWEENSLEEP = 4;    // n seconds between deepsleep events (4 sec between hibernate session if sleepmode, or 80 sec if chg/disch
+const int TIMEBETWEENSLEEP = 4;    // n seconds between deepsleep events (4 sec between 
+//hibernate session if sleepmode, or 80 sec if chg/disch
 //const int TIMEBETWEENSLEEP = 1;    // n seconds between deepsleep events
 int DpSleep_timer = TIMEBETWEENSLEEP;
 
 /***********************************************************
-     Set one second (longest and default time with lib) watchdog enable  by redefining the startup_early_hook which by default
+     Set one second (longest and default time with lib) watchdog enable  by redefining 
+     the startup_early_hook which by default
      disables the COP (TURN OFF WHEN DEBUGGING). Must be before void setup();
  *************************************************************/
 #ifdef __cplusplus
@@ -275,11 +287,13 @@ void setup() {    // ===========================================================
   // Deep sleep time setup
   config.setTimer(64000);// number of milliseconds, = 64 seconds of deep sleep
   /********************************************************
-       Define digital pins for waking the teensy up. This combines pinMode and attachInterrupt in one function.
+       Define digital pins for waking the teensy up. This combines pinMode and 
+       attachInterrupt in one function.
        Teensy 3.x =  Digtal pins: 2,4,6,7,9,10,11,13,16,21,22,26,30,33
 
        Teensy LC = Digtal pins: 2,6,7,9,10,11,16,21,22
-       Configure the pin like the normal pinMode and append the interrupt type for the third parameter.
+       Configure the pin like the normal pinMode and append the interrupt type for 
+       the third parameter.
      ********************************************************/
 
 
@@ -296,9 +310,11 @@ void setup() {    // ===========================================================
   if (!manager.init()) Serial.println("init failed");
   // Defaults after init are 2.402 GHz (channel 2), 2Mbps, 0dBm
   //if (!manager.setChannel(1)) Serial.println("setChannel failed");
-  //if (!manager.setRF(RH_NRF24::DataRate2Mbps, RH_NRF24::TransmitPower0dBm)) Serial.println("setRF failed");
+  //if (!manager.setRF(RH_NRF24::DataRate2Mbps, RH_NRF24::TransmitPower0dBm)) 
+  //Serial.println("setRF failed");
 
-  CellV_Hiside = CellV_Loside = Hist_Hiside_CellV = Hist_Loside_CellV = 3.70;  // make all Vcell vars = nominal cell voltage
+  CellV_Hiside = CellV_Loside = Hist_Hiside_CellV = Hist_Loside_CellV = 3.70;  
+  // make all Vcell vars = nominal cell voltage
 
   WatchdogReset();  // reset the watchdog timer
 
@@ -374,8 +390,10 @@ void setup() {    // ===========================================================
   Serial.println("4:Now test NTCs");
   WatchdogReset();  // reset the watchdog timer
 
-  // default RF24 manager settings are 2000ms timeout and 3 retries. Timeout can be 2x to avoid collisions. These are too long for COP, and we don't want
-  // COP reset in comm routine in case the program hangs in that code... (*just* barely works at 110ms/3 retries, and 50ms/9)
+  // default RF24 manager settings are 2000ms timeout and 3 retries. 
+  //Timeout can be 2x to avoid collisions. These are too long for COP, and we don't want
+  // COP reset in comm routine in case the program hangs in that code... 
+  //(*just* barely works at 110ms/3 retries, and 50ms/9)
   //manager.setTimeout(60);
   //manager.setRetries(4);
   manager.setTimeout(100);      // can be about 200msec
@@ -421,7 +439,8 @@ void loop() {  // ==============================================================
       if (hours == 24) hours = 0;
     }
     Serial.println();
-    Serial.print("Secs = ");  Serial.println(seconds);          // debug printout to pc (open serial monitor window)
+    Serial.print("Secs = ");  Serial.println(seconds);          // debug printout to pc 
+    //(open serial monitor window)
     Serial.print("Mins = ");  Serial.println(minutes);
     Serial.print("Hrs = ");  Serial.println(hours);
     Serial.print("ModeTimer = ");  Serial.println(ModeTimer);
@@ -466,7 +485,8 @@ throwaway_v:       ;
       // Volts = ((datAvg*3.3)/4096) * 2.015;    // 3.7V low side input - calibrate 3.7V low side first
       // Volts = ((datAvg*3.3)/4096) * 2.037;    // 3.7V low side input - calibrate 3.7V low side first
       // Volts = ((datAvg*3.3)/4096) * 2.018;    // 3.7V low side input - calibrate 3.7V low side first
-      Volts = ((datAvg * 3.3) / 4096) * 2.006; // JUL 2016 3.7V low side input - calibrate 3.7V low side first - after 1uf cap added
+      Volts = ((datAvg * 3.3) / 4096) * 2.006; // JUL 2016 3.7V low side input - 
+      //calibrate 3.7V low side first - after 1uf cap added
 
 
       Volts_LosideRaw = Volts;   // save raw unaveraged signal for 7.4V math later...
@@ -627,8 +647,11 @@ throwaway_t:      ;
   if (HistoryTimer == 0) {
     HistoryTimer = T_HISTORYCHECK;    // set timer for next check
     //take a voltage sample every minute and have running average over last 10 min
-    Hist_Hiside_CellV = (CellV_Hiside + Hist_Hiside_CellV + Hist_Hiside_CellV + Hist_Hiside_CellV + Hist_Hiside_CellV + Hist_Hiside_CellV + Hist_Hiside_CellV + Hist_Hiside_CellV + Hist_Hiside_CellV + Hist_Hiside_CellV + Hist_Hiside_CellV) / 11;        // load historical vars with current values
-    Hist_Loside_CellV = (CellV_Loside + Hist_Loside_CellV + Hist_Loside_CellV + Hist_Loside_CellV + Hist_Loside_CellV + Hist_Loside_CellV + Hist_Loside_CellV + Hist_Loside_CellV + Hist_Loside_CellV + Hist_Loside_CellV + Hist_Loside_CellV) / 11;
+    Hist_Hiside_CellV = (CellV_Hiside + Hist_Hiside_CellV + Hist_Hiside_CellV + Hist_Hiside_CellV + Hist_Hiside_CellV + Hist_Hiside_CellV
+     + Hist_Hiside_CellV + Hist_Hiside_CellV + Hist_Hiside_CellV + Hist_Hiside_CellV + Hist_Hiside_CellV) / 11;        
+     // load historical vars with current values
+    Hist_Loside_CellV = (CellV_Loside + Hist_Loside_CellV + Hist_Loside_CellV + Hist_Loside_CellV + Hist_Loside_CellV 
+      + Hist_Loside_CellV + Hist_Loside_CellV + Hist_Loside_CellV + Hist_Loside_CellV + Hist_Loside_CellV + Hist_Loside_CellV) / 11;
   }
 
   // reset historical vars at first power up for first 30 seconds
@@ -712,7 +735,8 @@ throwaway_t:      ;
     digitalWrite(LED2red, DARK);
   }
 
-  // another reason for operating the shunts is bottom balance, so if one cell is at 3.2 and the other at 1.8 they willtry  be balanced
+  // another reason for operating the shunts is bottom balance, so 
+  //if one cell is at 3.2 and the other at 1.8 they willtry  be balanced
   if ((CellV_Loside < CellV_Hiside) && (CellV_Loside < Vcell_Low_DK))
   {
     if (CellV_Hiside > Vcell_Low_Spec)  HiShunt = ON;     // bott balance till Low V spec
@@ -935,11 +959,11 @@ endoftest:
 // 207ma both shunts
 // 14-16ma normal run mode with Leds, etc nRF24 installed but no comm,
 // 16ma average (28ma pk) with limited TX only com, once per second
-// Possible improvements = add MOSFET switches to REF and Vdividers, REF3033 = 50ua, AP2202 = 160ua, dividers = 80ua, where is the rest coming from?
+// Possible improvements = add MOSFET switches to REF and Vdividers, REF3033 = 50ua, AP2202 = 160ua
+//, dividers = 80ua, where is the rest coming from?
 
 
 //void soft_reboot() // Restarts program from beginning but does not reset the peripherals and registers
 //{
 //void(* soft_reboot) (void) = 0; //declare reset function @ address 0
 //}
-
