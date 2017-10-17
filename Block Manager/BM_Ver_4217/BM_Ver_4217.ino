@@ -38,11 +38,16 @@ const uint16_t VERSION = 2816;      // 5215 = 52th week of 2015
   Loop time: 50 msecs
 */
 
+//-VERBOSE MODE? MAYBE YOU WANT DEBUG?-------------------------------------------------------------
+#define VERBOSE                     // All the org serial output
+//#define DEBUG                       // debug data serial output 
+
 //-INCLUDES----------------------------------------------------------------------------------------
 #include "Arduino.h"
 #include <RHReliableDatagram.h>
 #include <RH_NRF24.h>
 #include <SPI.h>
+#include <VERBOSE.h>
 
 /*
   Comms library from Radio Head ver 1.5.1 at http://www.airspayce.com/mikem/arduino/RadioHead/
@@ -52,13 +57,13 @@ const uint16_t VERSION = 2816;      // 5215 = 52th week of 2015
   It is designed to work with the other example nrf24_reliable_datagram_server
   Tested wirh Addicore nRF24L01+ module */
 #define CLIENT_ADDRESS 9      // BLOCK number ALWAYS start from 1 (NOT 0) 255 MAX!!
-//#define CLIENT_ADDRESS 1
+// #define CLIENT_ADDRESS 1
 #define SERVER_ADDRESS   1     // PACK SUPERVISOR CHANNEL
-//#define SERVER_ADDRESS RH_BROADCAST_ADDRESS // If the destination address is the broadcast address 
-//RH_BROADCAST_ADDRESS (255), the message will
-/// be sent as a broadcast, but receiving nodes do not acknowledge, and sendtoWait() returns 
-//true immediately
-/// without waiting for any acknowledgements.
+// #define SERVER_ADDRESS RH_BROADCAST_ADDRESS // If the destination address is the broadcast address 
+// RH_BROADCAST_ADDRESS (255), the message will
+// be sent as a broadcast, but receiving nodes do not acknowledge, and sendtoWait() returns 
+// true immediately
+// without waiting for any acknowledgements.
 // Singleton instance of the radio driver
 RH_NRF24 driver(9, 10); // define SPI pins for Teensy LC/ 3.1
 // Class to manage message delivery and receipt, using the driver declared above
@@ -69,17 +74,17 @@ RHReliableDatagram manager(driver, CLIENT_ADDRESS);
 // must be global
 SnoozeBlock config;
 
-//#include "fans.c"
-//#include "Heaters-Shunts"
-//#include "Radio_Comms"
-//#include "Mode_Tracking"
-//#include "DAQ_&_Storage"
-//#include "LEDs"
-//#include "POTs"
-//#include "Switches"
+// #include "fans.c"
+// #include "Heaters-Shunts"
+// #include "Radio_Comms"
+// #include "Mode_Tracking"
+// #include "DAQ_&_Storage"
+// #include "LEDs"
+// #include "POTs"
+// #include "Switches"
 
-#define GLOW (LOW)      // define ON for miswired common anode LED's
-#define DARK (HIGH)      // define OFF for miswired common anode LED's
+#define GLOW (LOW)          // define ON for miswired common anode LED's
+#define DARK (HIGH)         // define OFF for miswired common anode LED's
 
 
 // declare BlockMode types
@@ -88,14 +93,14 @@ const byte PAUSING = 5;
 const byte CHARGING = 10;
 const byte DISCHARGING = 15;
 const byte FAULTSHUTDOWN = 20;
-const byte MODE0 = 25;     // temporary rename when have english names
+const byte MODE0 = 25;      // temporary rename when have english names
 const byte MODE1 = 30;
 const byte MODE2 = 35;
 const byte MODE3 = 40;
 const byte MODE4 = 45;
 
 
-//declare FaultMode types    // faults that may cause shutdown or current limit reduction
+//declare FaultMode types   // faults that may cause shutdown or current limit reduction
 const byte NOFAULT = 0;     // fault is cleared
 const byte OVERTEMP = 1;
 const byte UNDERTEMP = 5;
@@ -126,19 +131,19 @@ bool debugg = NO;
 bool debugsleep = NO;
 //bool debugsleep = YES;
 
-//#define VREF (3.266)         // ADC reference voltage
-//#define VINPUT (2.171)       // ADC input voltage from resistive divider to VREF
-//#define ADCMAX (65535)       // maximum possible reading from ADC
+//#define VREF (3.266)          // ADC reference voltage
+//#define VINPUT (2.171)        // ADC input voltage from resistive divider to VREF
+//#define ADCMAX (65535)        // maximum possible reading from ADC
 //#define EXPECTED (ADCMAX*(VINPUT/VREF))     // expected ADC reading
-#define SAMPLES (200)      // how many samples to use for ADC read - 200 seemed to work best
-#define ADC_RESOLUTION (12)  // ADC resolution in bits, usable from 10-16 on this chip
+#define SAMPLES (200)           // how many samples to use for ADC read - 200 seemed to work best
+#define ADC_RESOLUTION (12)     // ADC resolution in bits, usable from 10-16 on this chip
 
 // cell types
-const byte  LG_MH1 = 0;          // 3200mah
+const byte  LG_MH1 = 0;           // 3200mah
 const byte  SANYO_NCR18650B = 5;  // 3400mah
-const byte  CELLTYPE0 = 10;        //
-const byte  CELLTYPE1 = 15;        //
-const byte  CELLTYPE2 = 20;        //
+const byte  CELLTYPE0 = 10;
+const byte  CELLTYPE1 = 15;
+const byte  CELLTYPE2 = 20;
 
 // Declare output pins
 const byte LFANCNTL = 3;
@@ -155,62 +160,62 @@ const byte LED1green = 13;      // do not use this in a program ...needs to
 //const byte led = 13; //temp use of led on teensy
 
 // Declare input pins
-const byte LNTC4 = A0;      // port 14= low side (3.7V) NTC4
-const byte LNTC3 = A2;      // port 16
-const byte LNTC2 = A7;      // port 21
-const byte LNTC1 = A5;      //port 19
+const byte LNTC4 = A0;          // port 14 = low side (3.7V) NTC4
+const byte LNTC3 = A2;          // port 16
+const byte LNTC2 = A7;          // port 21
+const byte LNTC1 = A5;          // port 19
 
 // new thermistors added Nov 2015
-const byte HNTC3 = A1;      // port 15    = high side (7.4V) NTC3
-const byte HNTC2 = A6;      // port 20
-const byte HNTC1 = A4;        // port 18
+const byte HNTC3 = A1;          // port 15 = high side (7.4V) NTC3
+const byte HNTC2 = A6;          // port 20
+const byte HNTC1 = A4;          // port 18
 
-const byte NTCambient = A3;      // port 17
+const byte NTCambient = A3;     // port 17
 
-const byte SCALED3pt7V = A8;      // port 22
-const byte SCALED7pt4V = A9;      // port 23
+const byte SCALED3pt7V = A8;    // port 22
+const byte SCALED7pt4V = A9;    // port 23
 const byte VBALANCE = A10;      // port 24 = POT
-const byte SCALEDAMPS = A11;      // port 25
+const byte SCALEDAMPS = A11;    // port 25
 
 // declare default cell vars:
-float Lowest_CellV;      // value of lowest cell of 2s block
-float Highest_CellV;      // value of highest cell of 2s block
+float Lowest_CellV;             // value of lowest cell of 2s block
+float Highest_CellV;            // value of highest cell of 2s block
 
-float Vcell_HVDO_Spec = 4.4;	// threshold where alarm is set and LED goes red.
-float Vcell_Balance = 4.10;      // voltage above where Cells will balance
+float Vcell_HVDO_Spec = 4.4;	  // threshold where alarm is set and LED goes red.
+float Vcell_Balance = 4.10;     // voltage above where Cells will balance
 float Vcell_Nominal_Spec = 3.7;
-float Vcell_Low_DK;       // close to threshold where fans and heaters are turned 
-//off to save power except bottom balance shunt
-float Vcell_Low_Spec;    // threshold where sleep modes and software LVD happens
+float Vcell_Low_DK;             // close to threshold where fans and heaters are turned 
+                                //off to save power except bottom balance shunt
+float Vcell_Low_Spec;           // threshold where sleep modes and software LVD happens
 float Vcell_LVDO_Spec = 2.25;  	// threshold where all electronics turns off......about 2VPC
 // cell temperature vars
-//const int Tcell_SMOKE = 95;  // At 95C and above there may be smoke ...
+//const int Tcell_SMOKE = 95;   // At 95C and above there may be smoke ...
 //danger shut off all fans and electronics
-const int NTC_SMOKE = 111;  // ADC counts for 100C
-const int NTC_HOT = 416;  // ADC counts for 60C
-const int NTC_PHOENIX = 590;   // ADC counts for 50C, reasoning is that at 
+const int NTC_SMOKE = 111;      // ADC counts for 100C
+const int NTC_HOT = 416;        // ADC counts for 60C
+const int NTC_PHOENIX = 590;    // ADC counts for 50C, reasoning is that at 
 //117F in Phoenix we do not want fan coming on (50 = 120F)
-const int NTC_WARM = 987;  // ADC counts for 35C
-const int NTC_AMBIENT = 1365;  // ADC counts for 25C
-const int NTC_COLD = 3000;  // ADC counts for -10C
-const int NTC_SHORTED = 20; // ADC counts for 140C
+const int NTC_WARM = 987;       // ADC counts for 35C
+const int NTC_AMBIENT = 1365;   // ADC counts for 25C
+const int NTC_COLD = 3000;      // ADC counts for -10C
+const int NTC_SHORTED = 20;     // ADC counts for 140C
 
 
-//const int Tcell_hot = 60;  // Data sheet says 60C max temperature
-//const int Tcell_warm = 38;  // Warm cells at 38C and up
-//const int Tcell_cold = -10;  // Coldest cell spec = use heaters t50o warm
-const int OPEN_NTC = 4000;  // open NTC (or colder than -40C which 3910 counts
+//const int Tcell_hot = 60;     // Data sheet says 60C max temperature
+//const int Tcell_warm = 38;    // Warm cells at 38C and up
+//const int Tcell_cold = -10;   // Coldest cell spec = use heaters t50o warm
+const int OPEN_NTC = 4000;      // open NTC (or colder than -40C which 3910 counts
 
 // declare default cell vars:
 
-//float Vblock  ; // block voltage
-float CellV_Hiside ;  //hi side cell voltage
-float CellV_Loside  ;  //low side cell voltage
-float    Vbal ;    // balance pot voltage
-float  Vcellamps  ;
-float Hist_Hiside_CellV ;  // T_MODECHECK secs historical high cell voltage
-float Hist_Loside_CellV  ;    // T_MODECHECK secs historical low cell voltage
-int Temp ;     // used for temporary storage
+//float Vblock  ;               // block voltage
+float CellV_Hiside;             // hi side cell voltage
+float CellV_Loside;             // low side cell voltage
+float Vbal;                     // balance pot voltage
+float Vcellamps;
+float Hist_Hiside_CellV;        // T_MODECHECK secs historical high cell voltage
+float Hist_Loside_CellV;        // T_MODECHECK secs historical low cell voltage
+int Temp ;                      // used for temporary storage
 int Temp1;
 int Temp2;
 
@@ -219,39 +224,39 @@ int Temp2;
 unsigned long currentmicros = 0;
 unsigned long nextmicros = 0;
 unsigned long interval = 1000278UL; // about 1000000 uS (increase constant to slow clock)
-int seconds = 0;    // at reset, set clock to 0:00:00
+int seconds = 0;                // at reset, set clock to 0:00:00
 int minutes = 0;
-int hours = 0;    // at reset, set clock to 0:00:00
-int ModeTimer = 0;    // use for off timer = 10 mins get set later
-//byte T_MODECHECK = 10;    // update historical vars every minute for a 10 min running average
-byte T_MODECHECK = 10;    // update historical vars every minute for a 10 min running average
-const int T_HISTORYCHECK = 60;    // update historical vars every n secs
+int hours = 0;                  // at reset, set clock to 0:00:00
+int ModeTimer = 0;              // use for off timer = 10 mins get set later
+//byte T_MODECHECK = 10;        // update historical vars every minute for a 10 min running average
+byte T_MODECHECK = 10;          // update historical vars every minute for a 10 min running average
+const int T_HISTORYCHECK = 60;  // update historical vars every n secs
 int HistoryTimer = T_HISTORYCHECK;
 
 
 // declare global var
-uint8_t  BADFLAG = 0;     // debug testing send data
-int NTCchosen;            // choose which NTC input to test
-int sensorValue = 0;        // value read from the ADC input
+uint8_t  BADFLAG = 0;           // debug testing send data
+int NTCchosen;                  // choose which NTC input to test
+int sensorValue = 0;            // value read from the ADC input
 
-byte Cell_Type = 0;      // default to LG MH1 - change this if compliling for Sanyo or other cells
-byte BlockMode = 0;     // default mode is sleeping
-byte FaultMode = 0;    // default to no faults
-byte WarningMode = 0;  // default no warnings
+byte Cell_Type = 0;             // default to LG MH1 - change this if compliling for Sanyo or other cells
+byte BlockMode = 0;             // default mode is sleeping
+byte FaultMode = 0;             // default to no faults
+byte WarningMode = 0;           // default no warnings
 
 // temperature params
-//short Tcells = 25;         // Fan(s) turn on when Tcells above 38C, AND below 100C 
+//short Tcells = 25;            // Fan(s) turn on when Tcells above 38C, AND below 100C 
 //if charging or discharging (2 byte unsigned)
-short Tcells = 25;      // temporarily set all temps to 25C
+short Tcells = 25;              // temporarily set all temps to 25C
 short Thottest;
 short  Tcoldest;
 short Tambient = 25;
 
 // fan params
-byte LoFan = OFF;    // default to both fans off
+byte LoFan = OFF;               // default to both fans off
 byte HiFan = OFF;
 
-// heater params      default to heater/balance resistors off
+// heater params                default to heater/balance resistors off
 byte LoShunt = OFF;
 byte HiShunt = OFF;
 
@@ -281,8 +286,10 @@ void startup_early_hook() {
 
 
 
-
-void setup() {    // ==============================================================
+//=================================================================================================
+// Setup
+//=================================================================================================
+void setup() {
 
   // Deep sleep time setup
   config.setTimer(64000);// number of milliseconds, = 64 seconds of deep sleep
@@ -307,11 +314,11 @@ void setup() {    // ===========================================================
   WatchdogReset();  // reset the watchdog timer
 
   // initialize Rf24 chip for 2.4Mhz comms
-  if (!manager.init()) Serial.println("init failed");
+  if (!manager.init()) VERBOSE_PRINTLN("init failed");
   // Defaults after init are 2.402 GHz (channel 2), 2Mbps, 0dBm
-  //if (!manager.setChannel(1)) Serial.println("setChannel failed");
+  //if (!manager.setChannel(1)) VERBOSE_PRINTLN("setChannel failed");
   //if (!manager.setRF(RH_NRF24::DataRate2Mbps, RH_NRF24::TransmitPower0dBm)) 
-  //Serial.println("setRF failed");
+  //VERBOSE_PRINTLN("setRF failed");
 
   CellV_Hiside = CellV_Loside = Hist_Hiside_CellV = Hist_Loside_CellV = 3.70;  
   // make all Vcell vars = nominal cell voltage
@@ -362,21 +369,21 @@ void setup() {    // ===========================================================
   pinMode(LED2red, OUTPUT);      // enable digital output for turning on LED indicator
 
 
-  Serial.println("1: Green LED1 ");
+  VERBOSE_PRINTLN("1: Green LED1 ");
 
   WatchdogReset();  // reset the watchdog timer
 
   // digitalWrite(LED1green, GLOW);   delay(1000);  // LED on for 1 second
-  Serial.println("1: then go RED ");
+  VERBOSE_PRINTLN("1: then go RED ");
   //digitalWrite(LED1green, DARK);
   digitalWrite(LED1red, GLOW);   delay(800);  // LED on for 1 second
   WatchdogReset();  // reset the watchdog timer
 
-  Serial.println("2: Green LED2");
+  VERBOSE_PRINTLN("2: Green LED2");
   digitalWrite(LED2green, GLOW);   delay(800);  // LED on for 1 second
   WatchdogReset();  // reset the watchdog timer
 
-  Serial.println("3: Now go RED ");
+  VERBOSE_PRINTLN("3: Now go RED ");
   digitalWrite(LED2red, GLOW);   delay(800);  // LED on for 1 second
   WatchdogReset();  // reset the watchdog timer
 
@@ -387,7 +394,7 @@ void setup() {    // ===========================================================
   digitalWrite(LED1red, DARK);
   digitalWrite(LED2green, DARK);
   digitalWrite(LED2red, DARK);
-  Serial.println("4:Now test NTCs");
+  VERBOSE_PRINTLN("4:Now test NTCs");
   WatchdogReset();  // reset the watchdog timer
 
   // default RF24 manager settings are 2000ms timeout and 3 retries. 
@@ -400,7 +407,7 @@ void setup() {    // ===========================================================
   manager.setRetries(2);        // 200msec x 2 - 400msec max seems to work well,660msec is too much.
 
 
-  Serial.println("Main Loop Start: ");
+  VERBOSE_PRINTLN("Main Loop Start: ");
 } // ==== end setup() ===========
 
 
@@ -410,13 +417,16 @@ void WatchdogReset (void) {     // use COP registers on the Teensy LC
 }
 
 
-void loop() {  // ================================================================
 
-  //startup:
-  WatchdogReset();  // reset the watchdog timer
+
+//=================================================================================================
+//  Main Loop
+//=================================================================================================
+void loop() {
+  WatchdogReset();              // reset the watchdog timer
 
   // make clock tick tock
-  currentmicros = micros(); // read the time.
+  currentmicros = micros();     // read the time.
 
   // when 1000 millisecond clock ticks, run real time clock
   if ((currentmicros - nextmicros) >= interval)  // if 1000000 microseconds have gone by...
@@ -438,18 +448,17 @@ void loop() {  // ==============================================================
       }
       if (hours == 24) hours = 0;
     }
-    Serial.println();
-    Serial.print("Secs = ");  Serial.println(seconds);          // debug printout to pc 
-    //(open serial monitor window)
-    Serial.print("Mins = ");  Serial.println(minutes);
-    Serial.print("Hrs = ");  Serial.println(hours);
-    Serial.print("ModeTimer = ");  Serial.println(ModeTimer);
-    Serial.print("DpSleep_timer = ");  Serial.println(DpSleep_timer);
-    Serial.print("HistoryTimer = ");  Serial.println(HistoryTimer);
+    VERBOSE_PRINTLN();
+    VERBOSE_PRINT("Secs          = ");  VERBOSE_PRINTLN(seconds); 
+    VERBOSE_PRINT("Mins          = ");  VERBOSE_PRINTLN(minutes);
+    VERBOSE_PRINT("Hrs           = ");  VERBOSE_PRINTLN(hours);
+    VERBOSE_PRINT("ModeTimer     = ");  VERBOSE_PRINTLN(ModeTimer);
+    VERBOSE_PRINT("DpSleep_timer = ");  VERBOSE_PRINTLN(DpSleep_timer);
+    VERBOSE_PRINT("HistoryTimer  = ");  VERBOSE_PRINTLN(HistoryTimer);
   }
 
-  Serial.print("Firmware Ver: ");  Serial.println(VERSION);
-  Serial.print("Client Address: ");  Serial.println(CLIENT_ADDRESS);
+  VERBOSE_PRINT("Firmware Ver: ");      VERBOSE_PRINTLN(VERSION);
+  VERBOSE_PRINT("Client Address: ");    VERBOSE_PRINTLN(CLIENT_ADDRESS);
 
 
   digitalWrite(LED2green, GLOW); // led blink for adc sample
@@ -497,7 +506,7 @@ throwaway_v:       ;
       CellV_Loside = Volts / 3.00;    // Use running average
 
       Volts = CellV_Loside;
-      Serial.print("  3.7V lo side cell VDC  ");
+      VERBOSE_PRINT("  3.7V lo side cell VDC  ");
     }
 
 
@@ -508,7 +517,7 @@ throwaway_v:       ;
       //Volts = ((datAvg*3.3)/4096) * 3.602;    // calibrate 7.4V high side input after low side input
       Volts = ((datAvg * 3.3) / 4096) * 3.564; // calibrate 7.4V high side input after low side input - after 1uf cap added
 
-      Serial.print("  7.4VDC block  ");     Serial.println(Volts, 3);  // Show block voltage before cell math
+      VERBOSE_PRINT("  7.4VDC block  ");     VERBOSE_PRINTLN(Volts, 3);  // Show block voltage before cell math
 
       // problem here is you have 7.4V but you need top cell voltage which is 3.7V nom, so top cell VDC = block -lo side cell
       Volts = Volts - Volts_LosideRaw;        // Do math to get high side cell voltage of 3.7V nom
@@ -519,7 +528,7 @@ throwaway_v:       ;
       // Volts = Volts - 0.010;    // add offset to signal
 
       CellV_Hiside =  Volts;
-      Serial.print("  3.7V hi side cell VDC  ");
+      VERBOSE_PRINT("  3.7V hi side cell VDC  ");
     }
 
     digitalWrite(LED2green, DARK); // end of led blink
@@ -529,23 +538,23 @@ throwaway_v:       ;
     if (vinsnum == VBALANCE) {
       Volts = ((datAvg * 3.3) / 4096); // this works for no scaling like with the pot
       Vbal = Volts;
-      Serial.print("  Balance pot  ");
+      VERBOSE_PRINT("  Balance pot  ");
     }
     if (vinsnum == SCALEDAMPS) {
       Volts = ((datAvg * 3.3) / 4096); // this works for no scaling like with the pot
       Vcellamps = Volts;
-      Serial.print("  Block amps  ");
+      VERBOSE_PRINT("  Block amps  ");
     }
 
 
-    Serial.print("(") ;
-    Serial.print(vinsnum);
-    Serial.print(") Avg value: ");  Serial.print(Volts, 3);
-    Serial.println ();
+    VERBOSE_PRINT("(") ;
+    VERBOSE_PRINT(vinsnum);
+    VERBOSE_PRINT(") Avg value: ");  VERBOSE_PRINT(Volts, 3);
+    VERBOSE_PRINTLN ();
 
 
   }
-  Serial.println ();
+  VERBOSE_PRINTLN ();
 
 
   WatchdogReset();  // reset the watchdog timer
@@ -573,8 +582,8 @@ throwaway_t:      ;
     //float datAvg = (1.0 * datSum) / n;  // find the mean
     int datAvg = (datSum) / n;  // find the mean
 
-    Serial.print(ntcnum);
-    Serial.print("NTC avg value: ");  Serial.print(datAvg); if (datAvg < NTC_SHORTED)Serial.print("---->>> NTC shorted ");
+    VERBOSE_PRINT(ntcnum);
+    VERBOSE_PRINT("NTC avg value: ");  VERBOSE_PRINT(datAvg); if (datAvg < NTC_SHORTED)VERBOSE_PRINT("---->>> NTC shorted ");
 
 
 
@@ -591,17 +600,15 @@ throwaway_t:      ;
     // save ambient temp
     if (ntcnum == NTCambient) {
       Tambient = datAvg;
-      Serial.print("  Tambient");
+      VERBOSE_PRINT("  Tambient");
     }
-    Serial.println ();
+    VERBOSE_PRINTLN ();
 
   } // end all ntc tested loop
 
-  Serial.print("NTC coldest: ");     Serial.print(Tcoldest);
-  Serial.print("     NTC hottest: ");     Serial.print(Thottest);
-  Serial.println ();
-  Serial.println ();
-
+  VERBOSE_PRINT("NTC coldest: ");  VERBOSE_PRINTLN(Tcoldest);
+  VERBOSE_PRINT("NTC hottest: ");  VERBOSE_PRINTLN(Thottest);
+  VERBOSE_PRINTLN ();              VERBOSE_PRINTLN ();
 
   WatchdogReset();  // reset the watchdog timer
 
@@ -628,11 +635,11 @@ throwaway_t:      ;
 
     BlockMode = Temp;
 
-    Serial.print("...... Historical high side voltage = ");  Serial.print(Hist_Hiside_CellV, 3); Serial.print("    ");
-    Serial.print(CellV_Hiside, 3); Serial.print(" = Hiside cell voltage  ");    Serial.println ();
+    VERBOSE_PRINT("...... Historical high side voltage = ");  VERBOSE_PRINT(Hist_Hiside_CellV, 3); VERBOSE_PRINT("    ");
+    VERBOSE_PRINT(CellV_Hiside, 3); VERBOSE_PRINT(" = Hiside cell voltage  ");    VERBOSE_PRINTLN ();
 
-    Serial.print("...... Historical low side voltage = ");  Serial.print(Hist_Loside_CellV, 3); Serial.print("    ");
-    Serial.print(CellV_Loside, 3);  Serial.print(" = Loside cell voltage  ");    Serial.println ();
+    VERBOSE_PRINT("...... Historical low side voltage = ");  VERBOSE_PRINT(Hist_Loside_CellV, 3); VERBOSE_PRINT("    ");
+    VERBOSE_PRINT(CellV_Loside, 3);  VERBOSE_PRINT(" = Loside cell voltage  ");    VERBOSE_PRINTLN ();
 
 
 
@@ -640,8 +647,8 @@ throwaway_t:      ;
       ModeTimer = T_MODECHECK;  // set timer for next check
     }
 
-    Serial.println(); Serial.print("........... Block Mode is = ");  Serial.print(BlockMode); Serial.println();
-    //Serial.println(); Serial.print("----------------------------------------"); Serial.println();
+    VERBOSE_PRINTLN(); VERBOSE_PRINT("........... Block Mode is = ");  VERBOSE_PRINT(BlockMode); VERBOSE_PRINTLN();
+    //VERBOSE_PRINTLN(); VERBOSE_PRINT("----------------------------------------"); VERBOSE_PRINTLN();
   }
 
   if (HistoryTimer == 0) {
@@ -740,12 +747,12 @@ throwaway_t:      ;
   if ((CellV_Loside < CellV_Hiside) && (CellV_Loside < Vcell_Low_DK))
   {
     if (CellV_Hiside > Vcell_Low_Spec)  HiShunt = ON;     // bott balance till Low V spec
-    Serial.print("High side bottom balance");
+    VERBOSE_PRINT("High side bottom balance");
   }
   if ((CellV_Hiside < CellV_Loside) && (CellV_Hiside < Vcell_Low_DK))
   {
     if (CellV_Loside > Vcell_Low_Spec) LoShunt = ON;
-    Serial.print("Low side bottom balance");
+    VERBOSE_PRINT("Low side bottom balance");
   }
 
 
@@ -767,20 +774,20 @@ endoftest:
 
 
 
-  Serial.println ();
+  VERBOSE_PRINTLN ();
 
-  Serial.print("........... High side fan is: "); Serial.print(HiFan);
-  Serial.println ();
-  Serial.print("........... Low side fan is: "); Serial.print(LoFan);
-  Serial.println ();
-  Serial.print("........... High side heater is: "); Serial.print(HiShunt);
-  Serial.println ();
-  Serial.print("........... Low side heater is: "); Serial.print(LoShunt);
-  Serial.println ();
+  VERBOSE_PRINT("........... High side fan is: "); VERBOSE_PRINT(HiFan);
+  VERBOSE_PRINTLN ();
+  VERBOSE_PRINT("........... Low side fan is: "); VERBOSE_PRINT(LoFan);
+  VERBOSE_PRINTLN ();
+  VERBOSE_PRINT("........... High side heater is: "); VERBOSE_PRINT(HiShunt);
+  VERBOSE_PRINTLN ();
+  VERBOSE_PRINT("........... Low side heater is: "); VERBOSE_PRINT(LoShunt);
+  VERBOSE_PRINTLN ();
 
 
-  Serial.println(); Serial.print("----------------------------------------"); Serial.println();
-  Serial.println(); Serial.print("----------------------------------------"); Serial.println();
+  VERBOSE_PRINTLN(); VERBOSE_PRINT("----------------------------------------"); VERBOSE_PRINTLN();
+  VERBOSE_PRINTLN(); VERBOSE_PRINT("----------------------------------------"); VERBOSE_PRINTLN();
 
 
   WatchdogReset();  // reset the watchdog timer
@@ -835,21 +842,21 @@ endoftest:
       pinMode(LED2green, OUTPUT);
       pinMode(NTCambient, INPUT); // now coming out of sleep...
 
-      Serial.println(); Serial.print("----------------------------------------"); Serial.println();
-      Serial.println(); Serial.print("----------------------------------------"); Serial.println();
-      Serial.println(); Serial.print("----------------------------------------"); Serial.println();
-      Serial.println(); Serial.print("----------------------------------------"); Serial.println();
-      Serial.println(); Serial.print("----------------------------------------"); Serial.println();
-      Serial.println(); Serial.print("----------------------------------------"); Serial.println();
-      Serial.println(); Serial.print("----------------------------------------"); Serial.println();
-      Serial.println(); Serial.print("----------------------------------------"); Serial.println();
+      VERBOSE_PRINTLN(); VERBOSE_PRINT("----------------------------------------"); VERBOSE_PRINTLN();
+      VERBOSE_PRINTLN(); VERBOSE_PRINT("----------------------------------------"); VERBOSE_PRINTLN();
+      VERBOSE_PRINTLN(); VERBOSE_PRINT("----------------------------------------"); VERBOSE_PRINTLN();
+      VERBOSE_PRINTLN(); VERBOSE_PRINT("----------------------------------------"); VERBOSE_PRINTLN();
+      VERBOSE_PRINTLN(); VERBOSE_PRINT("----------------------------------------"); VERBOSE_PRINTLN();
+      VERBOSE_PRINTLN(); VERBOSE_PRINT("----------------------------------------"); VERBOSE_PRINTLN();
+      VERBOSE_PRINTLN(); VERBOSE_PRINT("----------------------------------------"); VERBOSE_PRINTLN();
+      VERBOSE_PRINTLN(); VERBOSE_PRINT("----------------------------------------"); VERBOSE_PRINTLN();
 
 
       if (What_INT == 36)   {
-        Serial.print("..WAKE UP is from Low Power Timer : "); Serial.print(What_INT);
+        VERBOSE_PRINT("..WAKE UP is from Low Power Timer : "); VERBOSE_PRINT(What_INT);
       }
       else   {  //input from pin wakeup (22)
-        Serial.print("..WAKE UP is from 3.7V interrupt input pin at 3.2V : "); Serial.print(What_INT);
+        VERBOSE_PRINT("..WAKE UP is from 3.7V interrupt input pin at 3.2V : "); VERBOSE_PRINT(What_INT);
       }
 
     }
@@ -875,14 +882,14 @@ endoftest:
   DATA data;      // 14 byte struct (float is 4 bytes)
 
 
-  Serial.print("Sending to nrf24_reliable_datagram_server:  ");
-  Serial.print(data.sCellV_Hiside); Serial.print("   ");
-  Serial.print(data.sThottest); Serial.print("   ");
-  Serial.print(data.sTcoldest); Serial.print("   ");
-  Serial.print(data.sCellV_Loside); Serial.print("   ");
+  VERBOSE_PRINT("Sending to nrf24_reliable_datagram_server:  ");
+  VERBOSE_PRINT(data.sCellV_Hiside); VERBOSE_PRINT("   ");
+  VERBOSE_PRINT(data.sThottest); VERBOSE_PRINT("   ");
+  VERBOSE_PRINT(data.sTcoldest); VERBOSE_PRINT("   ");
+  VERBOSE_PRINT(data.sCellV_Loside); VERBOSE_PRINT("   ");
   
-  Serial.print(data.schecksum,3); Serial.print("   ");
-  Serial.println(BADFLAG);
+  VERBOSE_PRINT(data.schecksum,3); VERBOSE_PRINT("   ");
+  VERBOSE_PRINTLN(BADFLAG);
 
  // if (CLIENT_ADDRESS != 4) BADFLAG = 1;
   if ((data.sCellV_Hiside > 4.10) || (data.sCellV_Hiside < 3.9))BADFLAG = 1;
@@ -914,19 +921,19 @@ endoftest:
     //  uint8_t from;
     // if (manager.recvfromAckTimeout(buf, &len, 2000, &from))
     // {
-    //   Serial.print("got reply from : 0x");
-    //   Serial.print(from, HEX);
-    //   Serial.print(": ");
-    //   Serial.println((char*)buf);
+    //   VERBOSE_PRINT("got reply from : 0x");
+    //   VERBOSE_PRINT(from, HEX);
+    //   VERBOSE_PRINT(": ");
+    //   VERBOSE_PRINTLN((char*)buf);
     // }
     // else
     // {
-    //   Serial.println("No reply, is nrf24_reliable_datagram_server running?");
+    //   VERBOSE_PRINTLN("No reply, is nrf24_reliable_datagram_server running?");
     // }
   }
   else {
     //goto startup;
-    Serial.println("sendtoWait failed");    // its' possible there was tx but no ACK
+    VERBOSE_PRINTLN("sendtoWait failed");    // its' possible there was tx but no ACK
     // turn on red LED if no ACK from server
     digitalWrite(LED1red, GLOW);
     Commdelay = 0;
