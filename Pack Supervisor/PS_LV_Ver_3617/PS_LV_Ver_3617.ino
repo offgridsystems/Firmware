@@ -31,7 +31,7 @@
 const uint16_t VERSION = 3617;      // 2817 = 28th week of 2017
 
 //-VERBOSE MODE? MAYBE YOU WANT DEBUG?-------------------------------------------------------------
-#define VERBOSE                     // All the org serial output
+//#define VERBOSE                     // All the org serial output
 //#define DEBUG                       // debug data serial output 
 //#define CAN_DEBUG                   // CAN specific data
 //#define CHARGER_DEBUG               // charger specific data
@@ -42,8 +42,8 @@ const uint16_t VERSION = 3617;      // 2817 = 28th week of 2017
 #include <SPI.h>                    // use SPI bus to comm with RF24 radio
 #include <EEPROM.h>                 // use EEPROM to store Blocks connected to pack
 #include <FlexCAN.h>                // CAN Bus connection
-#include <VERBOSE.h> 
-#include <NCP18.h>
+#include <../VERBOSE.h> 
+#include <../NCP18.h>
 
 //-SERVER ADDRESS RF24-----------------------------------------------------------------------------
 // DO NOT! use 0 or 255! ---does not work!
@@ -708,7 +708,7 @@ void loop() {
           blockNum[b] = 0;                // first time, 0 all the block locations, for learning
         }
         LearnBlockSwitch = OFF ;
-        VERBOSE_PRINT(F("***************** ZERO Blocks *****************"));
+        Serial.print(F("***************** ZERO Blocks *****************"));
       }
     }
     else if (seconds > 55)  tempx = 0;    // if switch is not pressed, 0 out var after 5 seconds
@@ -716,30 +716,30 @@ void loop() {
   else {
     LEARNBLOCKS = OFF;
   }
-  VERBOSE_PRINTLN();
-  VERBOSE_PRINT("    Learn Blocks is ON/OFF: ");  VERBOSE_PRINTLN(LEARNBLOCKS);
-  VERBOSE_PRINTLN("  These Block numbers populate these memory locations: ");
-  VERBOSE_PRINT("EEprom location 0 =  "); VERBOSE_PRINT("Block Addr "); VERBOSE_PRINTLN(blockNum[0]);
-  VERBOSE_PRINT("EEprom location 1 =  "); VERBOSE_PRINT("Block Addr "); VERBOSE_PRINTLN(blockNum[1]);
-  VERBOSE_PRINT("EEprom location 2 =  "); VERBOSE_PRINT("Block Addr "); VERBOSE_PRINTLN(blockNum[2]);
-  VERBOSE_PRINT("EEprom location 3 =  "); VERBOSE_PRINT("Block Addr "); VERBOSE_PRINTLN(blockNum[3]);
-  VERBOSE_PRINT("EEprom location 4 =  "); VERBOSE_PRINT("Block Addr "); VERBOSE_PRINTLN(blockNum[4]);
-  VERBOSE_PRINT("EEprom location 5 =  "); VERBOSE_PRINT("Block Addr "); VERBOSE_PRINTLN(blockNum[5]);
-  VERBOSE_PRINT("EEprom location 6 =  "); VERBOSE_PRINT("Block Addr "); VERBOSE_PRINTLN(blockNum[6]);
-  VERBOSE_PRINT("EEprom location 7 =  "); VERBOSE_PRINT("Block Addr "); VERBOSE_PRINTLN(blockNum[7]);
-  VERBOSE_PRINT("EEprom location 8 =  "); VERBOSE_PRINT("Block Addr "); VERBOSE_PRINTLN(blockNum[8]);
-  VERBOSE_PRINT("EEprom location 9 =  "); VERBOSE_PRINT("Block Addr "); VERBOSE_PRINTLN(blockNum[9]);
-  VERBOSE_PRINTLN();
+  Serial.println();
+  Serial.print("    Learn Blocks is ON/OFF: ");  Serial.println(LEARNBLOCKS);
+  Serial.println("  These Block numbers populate these memory locations: ");
+  Serial.print("EEprom location 0 =  "); Serial.print("Block Addr "); Serial.println(blockNum[0]);
+  Serial.print("EEprom location 1 =  "); Serial.print("Block Addr "); Serial.println(blockNum[1]);
+  Serial.print("EEprom location 2 =  "); Serial.print("Block Addr "); Serial.println(blockNum[2]);
+  Serial.print("EEprom location 3 =  "); Serial.print("Block Addr "); Serial.println(blockNum[3]);
+  Serial.print("EEprom location 4 =  "); Serial.print("Block Addr "); Serial.println(blockNum[4]);
+  Serial.print("EEprom location 5 =  "); Serial.print("Block Addr "); Serial.println(blockNum[5]);
+  Serial.print("EEprom location 6 =  "); Serial.print("Block Addr "); Serial.println(blockNum[6]);
+  Serial.print("EEprom location 7 =  "); Serial.print("Block Addr "); Serial.println(blockNum[7]);
+  Serial.print("EEprom location 8 =  "); Serial.print("Block Addr "); Serial.println(blockNum[8]);
+  Serial.print("EEprom location 9 =  "); Serial.print("Block Addr "); Serial.println(blockNum[9]);
+  Serial.println();
 
   byte tempbl = 0  ;
   //byte TWO_MINUTES = 30;      // 240 seconds (4 min)
   byte TWO_MINUTES = 120;       // 120 seconds (2 min)
   //bool Disconnected_Block;    // start with no fault
   
-  VERBOSE_PRINTLN("  These Block numbers contain these timeout values: ");
+  Serial.println("  These Block numbers contain these timeout values: ");
   while ( tempbl < NUMBER_OF_BLOCKS ) {
-    VERBOSE_PRINT("Block: ");  VERBOSE_PRINT(blockNum[tempbl]); 
-    VERBOSE_PRINT(" = ");      VERBOSE_PRINTLN(Block_Comm_Timer[tempbl]);
+    Serial.print("Block: ");  Serial.print(blockNum[tempbl]); 
+    Serial.print(" = ");      Serial.println(Block_Comm_Timer[tempbl]);
     //tempbl++;
     // run comm disconnect timer on all blocks here - count to 4 min and stop
     if (Comm_Flag) {                                      // run timer here, gets zero'd in comm routine
@@ -751,45 +751,41 @@ void loop() {
     }
     tempbl++;
   }
-  VERBOSE_PRINTLN();
+  Serial.println();
   if (Disconnected_Block) {
-    VERBOSE_PRINT("Block: "); VERBOSE_PRINT(Disconnected_BlockNum); 
-    VERBOSE_PRINT(" = ");     VERBOSE_PRINTLN("DISCONNECTED");
+    Serial.print("Block: "); Serial.print(Disconnected_BlockNum); 
+    Serial.print(" = ");     Serial.println("DISCONNECTED");
   }
-  VERBOSE_PRINTLN();
+  Serial.println();
   bool Tempdisc = NO;
   tempbl = 0  ;
   // Now check all blocks for comms in 4 min, when timers are reset, clear Disconnect switches
   while ( tempbl < NUMBER_OF_BLOCKS ) {
     if (Block_Comm_Timer[tempbl] > TWO_MINUTES) {
       Tempdisc = YES;                              //  yes at least one block is disconnected
-      VERBOSE_PRINT("Block DISCONNECT.... "); VERBOSE_PRINTLN("Block DISCONNECT");
+      Serial.print("Block DISCONNECT.... "); Serial.println("Block DISCONNECT");
     }
     tempbl++;
   } 
   if (Tempdisc == NO) {
     Disconnected_Block = NO;                    //  no block is disconnected
     Disconnected_BlockNum = 0;
-    VERBOSE_PRINT("All Blocks connected...."); VERBOSE_PRINTLN("All Blocks connected");
+    Serial.print("All Blocks connected...."); Serial.println("All Blocks connected");
   }
-  VERBOSE_PRINTLN();
+  Serial.println();
   // Write new learned block values to EEPROM
   // start writing and reading from the first byte (address 0) of the EEPROM
   int EE_address = 0;
-  #ifdef VERBOSE
   byte EE_value;
-  #endif
   //if ((LEARNBLOCKS == ON) && (blockNum[0]))   // Make sure we are in learn mode and all blocks are written
   if ((LEARNBLOCKS == ON) && (seconds == 0)) {  // Write EE once/sec when we are in learn mode
     for (EE_address = 0; EE_address < 10; EE_address++) {
       EEPROM.write(EE_address, blockNum[EE_address]);
-      #ifdef VERBOSE
       EE_value = EEPROM.read(EE_address);
-      #endif
-      VERBOSE_PRINT("Once/min save Block#: ");    VERBOSE_PRINT(EE_value); 
-      VERBOSE_PRINT("to this EEprom address:  "); VERBOSE_PRINTLN(EE_address);
-      VERBOSE_PRINT("Once/min save Block#: ");    VERBOSE_PRINT(EE_value); 
-      VERBOSE_PRINT("to this EEprom address:  "); VERBOSE_PRINTLN(EE_address);
+      Serial.print("Once/min save Block#: ");    Serial.print(EE_value); 
+      Serial.print("to this EEprom address:  "); Serial.println(EE_address);
+      Serial.print("Once/min save Block#: ");    Serial.print(EE_value); 
+      Serial.print("to this EEprom address:  "); Serial.println(EE_address);
     }
     if (blockNum[0]) LEARNBLOCKS = OFF;         // if last block is saved to EE, turn off Learn blocks
   }
