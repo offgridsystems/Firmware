@@ -23,19 +23,10 @@
 //                              gets 1 again?
 // 10/16/2017   NHJ   4217      Cleaned up comments and and formatting. Main goal is to improve RF24
 //                              communication.
-const uint16_t VERSION = 2816;      // 5215 = 52th week of 2015
+const uint16_t VERSION = 4217;      // 5215 = 52th week of 2015
 
 /*
-  Modules needed:
-  1. Fan(s)
-  2. Heaters-shunts
-  3. radio comms
-  4. Mode tracking and switching - note that switch to sleep mode is here
-  4.5 Low power mode when in sleep mode
   6. Data acquistion and storage
-  5. LEDS-Pots-switches
-
-  Loop time: 50 msecs
 */
 
 //-VERBOSE MODE? MAYBE YOU WANT DEBUG?-------------------------------------------------------------
