@@ -497,24 +497,26 @@ void setup(){
   analogWrite(CHARGER_CONTROL, 0);    // prog CHG current to 0
 
   //-STARTUP PHYSICAL INDICATION-------------------------------------------------------------------
-  VERBOSE_PRINTLN("1: Green LED1 ");
   WatchdogReset();                             // reset the watchdog timer
-  digitalWrite(LED1green, HIGH);  delay(100);  // LED on for .1 second
-  VERBOSE_PRINTLN("1: then go RED ");
-  digitalWrite(LED1green, LOW);
-  WatchdogReset();                             // reset the watchdog timer
-  digitalWrite(LED1red, HIGH);    delay(100);  // LED on for .1 second
-  VERBOSE_PRINTLN("2: Green LED2");
-  WatchdogReset();                             // reset the watchdog timer
-  digitalWrite(LED2green, HIGH);  delay(100);  // LED on for .1 second
-  VERBOSE_PRINTLN("3: Now go RED ");
-  digitalWrite(LED2green, LOW);
-  WatchdogReset();                             // reset the watchdog timer
-  digitalWrite(LED2red, HIGH);    delay(100);  // LED on for .1 second
-  digitalWrite(LED1green, LOW);                //leds all off
-  digitalWrite(LED1red, LOW);
-  digitalWrite(LED2green, LOW);
-  digitalWrite(LED2red, LOW);
+  #ifdef VERBOSE
+    VERBOSE_PRINTLN("1: Green LED1 ");
+    digitalWrite(LED1green, HIGH);  delay(100);  // LED on for .1 second
+    VERBOSE_PRINTLN("1: then go RED ");
+    digitalWrite(LED1green, LOW);
+    WatchdogReset();                             // reset the watchdog timer
+    digitalWrite(LED1red, HIGH);    delay(100);  // LED on for .1 second
+    VERBOSE_PRINTLN("2: Green LED2");
+    WatchdogReset();                             // reset the watchdog timer
+    digitalWrite(LED2green, HIGH);  delay(100);  // LED on for .1 second
+    VERBOSE_PRINTLN("3: Now go RED ");
+    digitalWrite(LED2green, LOW);
+    WatchdogReset();                             // reset the watchdog timer
+    digitalWrite(LED2red, HIGH);    delay(100);  // LED on for .1 second
+    digitalWrite(LED1green, LOW);                //leds all off
+    digitalWrite(LED1red, LOW);
+    digitalWrite(LED2green, LOW);
+    digitalWrite(LED2red, LOW);
+  #endif
 
   //-SAVE ALL VARS UNTIL BLOCKS ARE AWAKE AND COMMS ARE ESTABLISHED--------------------------------
   Highest_Vcell = Vcell_Nominal_Spec;  // load  vars with nominal values
