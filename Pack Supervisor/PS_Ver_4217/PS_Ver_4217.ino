@@ -42,8 +42,8 @@ const uint16_t VERSION = 4217;      // 2817 = 28th week of 2017
 #include <SPI.h>                    // use SPI bus to comm with RF24 radio
 #include <EEPROM.h>                 // use EEPROM to store Blocks connected to pack
 #include <FlexCAN.h>                // CAN Bus connection
-#include <VERBOSE.h>
-#include <NCP18.h>
+#include <../VERBOSE.h>
+#include <../NCP18.h>
 
 //-SERVER ADDRESS RF24-----------------------------------------------------------------------------
 // DO NOT! use 0 or 255! ---does not work!
