@@ -234,10 +234,12 @@ void adcSetup(void)
  ******************************************************************************/
 void ldmaSetup(void)
 {
-  LDMA_Init_t init = LDMA_INIT_DEFAULT;
+	//LDMA Struct set to default
+	LDMA_Init_t init = LDMA_INIT_DEFAULT;
 
-  LDMA_Init(&init);
-  CMU_ClockEnable(cmuClock_LDMA, false);
+	LDMA_Init(&init);
+	//turn off CMU clock turned on in the LDMA_Init call
+	CMU_ClockEnable(cmuClock_LDMA, false);
 }
 
 /***************************************************************************//**
@@ -245,7 +247,7 @@ void ldmaSetup(void)
  * @param[in] scanMode
  *   False for single mode ADC, True for scan mode ADC.
  ******************************************************************************/
-void adcLdmaSetup(bool scanMode)
+void adcLdmaSetup(void)
 {
   /* Macro for scan mode ADC */
   LDMA_TransferCfg_t adcScanTx = LDMA_TRANSFER_CFG_PERIPHERAL(ldmaPeripheralSignal_ADC0_SCAN);
@@ -258,22 +260,14 @@ void adcLdmaSetup(bool scanMode)
   /* Initialize descriptor for ADC LDMA transfer */
   descLink0 = xfer;
   descLink0.xfer.doneIfs = 0;
-  descLink0.xfer.blockSize = ldmaCtrlBlockSizeUnit4;
+  descLink0.xfer.blockSize = ldmaCtrlBlockSizeUnit8;
   descLink0.xfer.ignoreSrec = 1;
   descLink0.xfer.size = ldmaCtrlSizeWord; 
 
   /* Start ADC LMDA transfer */
-  if (!scanMode)
-  {
-    LDMA_StartTransfer(ADC_DMA_CHANNEL, (void*)&adcSingleTx, (void*)&descLink0);
-  }
-  else
-  {
-    descLink0.xfer.srcAddr = (uint32_t)&ADC0->SCANDATAX;
-    LDMA_StartTransfer(ADC_DMA_CHANNEL, (void*)&adcScanTx, (void*)&descLink0);
-  }
+  descLink0.xfer.srcAddr = (uint32_t)&ADC0->SCANDATAX;
+  LDMA_StartTransfer(ADC_DMA_CHANNEL, (void*)&adcScanTx, (void*)&descLink0);
 }
-
 
 
 /**************************************************************************//**
@@ -359,8 +353,8 @@ void adcScanLdma(void)
   ADC_ScanSingleEndedInputAdd(&scanInit, adcScanInputGroup1, ADC_INPUT3);
   ADC_ScanSingleEndedInputAdd(&scanInit, adcScanInputGroup1, ADC_INPUT4);
   ADC_ScanSingleEndedInputAdd(&scanInit, adcScanInputGroup1, ADC_INPUT5);
-  //ADC_ScanSingleEndedInputAdd(&scanInit, adcScanInputGroup3, ADC_INPUT6);
-  //ADC_ScanSingleEndedInputAdd(&scanInit, adcScanInputGroup3, ADC_INPUT7);
+  ADC_ScanSingleEndedInputAdd(&scanInit, adcScanInputGroup3, ADC_INPUT6);
+  ADC_ScanSingleEndedInputAdd(&scanInit, adcScanInputGroup3, ADC_INPUT7);
   
   /* Initialize for scan conversion */
   scanInit.prsSel = ADC_PRS_CH_SELECT;
@@ -394,7 +388,7 @@ void adcScanLdma(void)
   NVIC_EnableIRQ(ADC0_IRQn);
 
   /* Setup LDMA and start PRS from RTCC */
-  adcLdmaSetup(true);
+  adcLdmaSetup();
   RTCC_Enable(true);
   
   /* Wait DMA data fetch finish */
