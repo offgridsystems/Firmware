@@ -97,7 +97,11 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
+<<<<<<< HEAD
 						<entry excluding="src/example.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+=======
+						<entry excluding="src/main_ADC_code.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+>>>>>>> 940b2dbe9435d5cdb35b806b9bceef8ad542984f
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -198,7 +202,11 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
+<<<<<<< HEAD
 						<entry excluding="src/example.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+=======
+						<entry excluding="src/main_ADC_code.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+>>>>>>> 940b2dbe9435d5cdb35b806b9bceef8ad542984f
 					</sourceEntries>
 				</configuration>
 			</storageModule>
