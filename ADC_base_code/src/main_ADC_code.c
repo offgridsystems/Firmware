@@ -37,6 +37,7 @@
 #define ADC_INPUT1              adcPosSelAPORT3YCH9     // PA1	Radio Board P11
 #define ADC_INPUT2              adcPosSelAPORT3XCH12    // PA4 	Radio Board P14
 #define ADC_INPUT3              adcPosSelAPORT3XCH2     // PD10 Radio Board P4
+
 #define ADC_INPUT4              adcPosSelAPORT3YCH3     // PD11	Radio Board P6
 #define ADC_INPUT5              adcPosSelAPORT3XCH4     // PD12	Radio Board P8
 #define ADC_INPUT6              adcPosSelAPORT1XCH10    // PC10	Radio Board	P12
@@ -244,8 +245,8 @@ void ldmaSetup(void)
 
 /***************************************************************************//**
  * @brief Setup the LDMA controller for ADC.
- * @param[in] scanMode
- *   False for single mode ADC, True for scan mode ADC.
+ * @param[in] none
+ *
  ******************************************************************************/
 void adcLdmaSetup(void)
 {
@@ -253,16 +254,16 @@ void adcLdmaSetup(void)
   LDMA_TransferCfg_t adcScanTx = LDMA_TRANSFER_CFG_PERIPHERAL(ldmaPeripheralSignal_ADC0_SCAN);
   
   /* Macro for ADC data transfer, common for single and scan mode */
-  LDMA_Descriptor_t xfer = LDMA_DESCRIPTOR_SINGLE_P2M_BYTE(&ADC0->SINGLEDATA, &adcBuffer, ADC_BUFFER_SIZE);
-    
+  LDMA_Descriptor_t xfer = LDMA_DESCRIPTOR_SINGLE_P2M_BYTE(&ADC0->SCANDATA, &adcBuffer, ADC_BUFFER_SIZE);
+
   CMU_ClockEnable(cmuClock_LDMA, true);
   
   /* Initialize descriptor for ADC LDMA transfer */
   descLink0 = xfer;
   descLink0.xfer.doneIfs = 0;
-  descLink0.xfer.blockSize = ldmaCtrlBlockSizeUnit8;
+  descLink0.xfer.blockSize = ldmaCtrlBlockSizeUnit4;
   descLink0.xfer.ignoreSrec = 1;
-  descLink0.xfer.size = ldmaCtrlSizeWord; 
+  descLink0.xfer.size = ldmaCtrlSizeWord;
 
   /* Start ADC LMDA transfer */
   descLink0.xfer.srcAddr = (uint32_t)&ADC0->SCANDATAX;
@@ -347,20 +348,22 @@ void adcScanLdma(void)
   ADC_InitScan_TypeDef scanInit = ADC_INITSCAN_DEFAULT;
 
   /* Setup scan channels, define DEBUG_EFM in debug build to identify invalid channel range */
+
   ADC_ScanSingleEndedInputAdd(&scanInit, adcScanInputGroup0, ADC_INPUT0);
   ADC_ScanSingleEndedInputAdd(&scanInit, adcScanInputGroup0, ADC_INPUT1);
   ADC_ScanSingleEndedInputAdd(&scanInit, adcScanInputGroup0, ADC_INPUT2);
   ADC_ScanSingleEndedInputAdd(&scanInit, adcScanInputGroup1, ADC_INPUT3);
+
   ADC_ScanSingleEndedInputAdd(&scanInit, adcScanInputGroup1, ADC_INPUT4);
   ADC_ScanSingleEndedInputAdd(&scanInit, adcScanInputGroup1, ADC_INPUT5);
-  ADC_ScanSingleEndedInputAdd(&scanInit, adcScanInputGroup3, ADC_INPUT6);
-  ADC_ScanSingleEndedInputAdd(&scanInit, adcScanInputGroup3, ADC_INPUT7);
-  
+  ADC_ScanSingleEndedInputAdd(&scanInit, adcScanInputGroup2, ADC_INPUT6);
+  ADC_ScanSingleEndedInputAdd(&scanInit, adcScanInputGroup2, ADC_INPUT7);
+
   /* Initialize for scan conversion */
   scanInit.prsSel = ADC_PRS_CH_SELECT;
   scanInit.reference = adcRefVDD;
   scanInit.prsEnable = true;
-  scanInit.fifoOverwrite = false;
+  scanInit.fifoOverwrite = true;
   ADC_InitScan(ADC0, &scanInit);
 
   /* Enable scan window compare */
@@ -370,14 +373,12 @@ void adcScanLdma(void)
   ADC0->SCANCTRLX |= (ADC_SCAN_DVL - 1) << _ADC_SCANCTRLX_DVL_SHIFT;
   
   /* Enable window compare interrupt only */
-  ADC_IntEnable(ADC0, ADC_IEN_SCANCMP);
-
-  /* Use HFPERCLK frequency to setup ADC if run on EM1 */
-  init.timebase = ADC_TimebaseCalc(0);
-  init.prescale = ADC_PrescaleCalc(ADC_CLOCK, 0);
-  init.ovsRateSel = adcOvsRateSel2;
+  //ADC_IntEnable(ADC0, ADC_IEN_SCANCMP);
 
   /* Init common issues for both single conversion and scan mode */
+  init.timebase = ADC_TimebaseCalc(0);
+  init.prescale = ADC_PrescaleCalc(ADC_CLOCK, 0);
+  //init.ovsRateSel = adcOvsRateSel2;
   ADC_Init(ADC0, &init);
 
   /* Clears FIFO Registers */
@@ -411,7 +412,7 @@ void adcScanLdma(void)
   }
 
   /* Print ADC value after SINGLECMP interrrupt */
-  for (adcIntFlag=0; adcIntFlag<4; adcIntFlag++)
+  for (adcIntFlag=0; adcIntFlag<8; adcIntFlag++)
   {
     chId = (adcBuffer[i] & _ADC_SCANDATAX_SCANINPUTID_MASK) >> _ADC_SCANDATAX_SCANINPUTID_SHIFT;
     chSample = adcBuffer[i++] & _ADC_SCANDATAX_DATA_MASK;
@@ -503,7 +504,6 @@ int main(void)
     {
       runKey = false;
       printf("\f");
-      printf("Example %d\n", menuLevel+1);
       
       /* Disable key interrupt during run */
       NVIC_DisableIRQ(GPIO_EVEN_IRQn);
