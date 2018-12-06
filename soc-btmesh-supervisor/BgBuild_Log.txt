@@ -1,0 +1,12 @@
+// Copyright 2018 Silicon Laboratories, Inc.
+//
+//
+
+Executing: bgbuild.exe (C:\SiliconLabs\SimplicityStudio\v4\developer\sdks\blemesh\v1.3\protocol\bluetooth\bin\bgbuild.exe)
+Standard output
+ALL OK
+
+Error/Warning output
+WARNING: 9b9a647fe0794c70a3a525e95833f16e max length attribute is 5 but actual value length is 1. 5 will be used.
+
+
