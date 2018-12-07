@@ -1,8 +1,7 @@
 /***********************************************************************************************//**
  * \file   main.c
- * \brief  Silicon Labs BT Mesh Empty Example Project
+ * \brief  Supervisor Main code
  *
- * Block Manger Code
  * 11/27/18 Make it do something
  *
  *

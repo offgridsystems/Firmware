@@ -1,6 +1,8 @@
 /***********************************************************************************************//**
  * \file   main.c
- * \brief  Silicon Labs BT Mesh Empty Example Project
+ * \brief  Block Manager Main Code
+ *
+ * 11/27/18 Make it do something
  *
  * This example demonstrates the bare minimum needed for a Blue Gecko BT Mesh C application.
  * The application starts unprovisioned Beaconing after boot
@@ -12,18 +14,25 @@
  * any purpose, you must agree to the terms of that agreement.
  **************************************************************************************************/
 
+/* C Standard Library headers */
+#include <stdlib.h>
+#include <stdio.h>
+
 /* Board headers */
 #include "init_mcu.h"
 #include "init_board.h"
 #include "init_app.h"
 #include "ble-configuration.h"
 #include "board_features.h"
+#include "retargetserial.h"
 
 /* Bluetooth stack headers */
 #include "bg_types.h"
 #include "native_gecko.h"
 #include "gatt_db.h"
 #include <gecko_configuration.h>
+#include "mesh_generic_model_capi_types.h"
+#include "mesh_lib.h"
 #include <mesh_sizes.h>
 
 /* Libraries containing default Gecko configuration values */
@@ -33,6 +42,9 @@
 
 /* Device initialization header */
 #include "hal-config.h"
+
+/* Display Interface header */
+#include "display_interface.h"
 
 #if defined(HAL_CONFIG)
 #include "bsphalconfig.h"
@@ -122,7 +134,11 @@ int main()
   gecko_bgapi_class_test_init();
   gecko_bgapi_class_sm_init();
   mesh_native_bgapi_init();
+
   gecko_initCoexHAL();
+  RETARGET_SerialInit();
+
+  DI_Init();
 
   while (1) {
     struct gecko_cmd_packet *evt = gecko_wait_event();
