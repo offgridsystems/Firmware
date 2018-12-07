@@ -29,6 +29,7 @@
 #include "init_app.h"
 #include "ble-configuration.h"
 #include "board_features.h"
+#include "retargetserial.h"
 
 /* Bluetooth stack headers */
 #include "bg_types.h"
@@ -174,6 +175,9 @@ int main()
   mesh_native_bgapi_init();
 
   gecko_initCoexHAL();
+  RETARGET_SerialInit();
+
+  DI_Init();
 
   while (1) {
     struct gecko_cmd_packet *evt = gecko_wait_event();
