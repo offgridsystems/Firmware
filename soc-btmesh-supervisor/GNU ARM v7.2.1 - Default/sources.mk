@@ -23,6 +23,8 @@ platform/Device/SiliconLabs/EFR32BG13P/Source/GCC \
 platform/Device/SiliconLabs/EFR32BG13P/Source \
 platform/emdrv/sleep/src \
 platform/emlib/src \
+platform/middleware/glib/dmd/display \
+platform/middleware/glib/glib \
 protocol/bluetooth/bt_mesh/src \
 protocol/bluetooth/lib/EFR32XG13X/GCC \
 

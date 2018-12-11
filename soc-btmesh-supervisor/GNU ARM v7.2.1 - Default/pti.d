@@ -67,7 +67,6 @@ pti.o: ../pti.c ../pti.h \
  C:\Users\nick\SimplicityStudio\v4_workspace\dkblock\soc-btmesh-supervisor/ble-configuration.h \
  C:\Users\nick\SimplicityStudio\v4_workspace\dkblock\soc-btmesh-supervisor\hardware\kit\EFR32BG13_BRD4104A\config/hal-config-board.h \
  C:\Users\nick\SimplicityStudio\v4_workspace\dkblock\soc-btmesh-supervisor\platform\halconfig\inc\hal-config/hal-config-types.h \
- C:\Users\nick\SimplicityStudio\v4_workspace\dkblock\soc-btmesh-supervisor/hal-config-app-common.h \
  C:\Users\nick\SimplicityStudio\v4_workspace\dkblock\soc-btmesh-supervisor\hardware\kit\common\bsp/bsp_bcp.h
 
 ../pti.h:
@@ -207,7 +206,5 @@ C:\Users\nick\SimplicityStudio\v4_workspace\dkblock\soc-btmesh-supervisor/ble-co
 C:\Users\nick\SimplicityStudio\v4_workspace\dkblock\soc-btmesh-supervisor\hardware\kit\EFR32BG13_BRD4104A\config/hal-config-board.h:
 
 C:\Users\nick\SimplicityStudio\v4_workspace\dkblock\soc-btmesh-supervisor\platform\halconfig\inc\hal-config/hal-config-types.h:
-
-C:\Users\nick\SimplicityStudio\v4_workspace\dkblock\soc-btmesh-supervisor/hal-config-app-common.h:
 
 C:\Users\nick\SimplicityStudio\v4_workspace\dkblock\soc-btmesh-supervisor\hardware\kit\common\bsp/bsp_bcp.h:

@@ -62,7 +62,6 @@ init_mcu.o: ../init_mcu.c \
  C:\Users\nick\SimplicityStudio\v4_workspace\dkblock\soc-btmesh-supervisor\platform\emlib\inc/em_gpio.h \
  C:\Users\nick\SimplicityStudio\v4_workspace\dkblock\soc-btmesh-supervisor\platform\emlib\inc/em_bus.h \
  C:\Users\nick\SimplicityStudio\v4_workspace\dkblock\soc-btmesh-supervisor\platform\emlib\inc/em_assert.h \
- C:\Users\nick\SimplicityStudio\v4_workspace\dkblock\soc-btmesh-supervisor/hal-config-app-common.h \
  C:\Users\nick\SimplicityStudio\v4_workspace\dkblock\soc-btmesh-supervisor\hardware\kit\common\bsp/bsp_bcp.h \
  ../hal-config.h ../board_features.h \
  C:\Users\nick\SimplicityStudio\v4_workspace\dkblock\soc-btmesh-supervisor\platform\emlib\inc/em_chip.h \
@@ -199,8 +198,6 @@ C:\Users\nick\SimplicityStudio\v4_workspace\dkblock\soc-btmesh-supervisor\platfo
 C:\Users\nick\SimplicityStudio\v4_workspace\dkblock\soc-btmesh-supervisor\platform\emlib\inc/em_bus.h:
 
 C:\Users\nick\SimplicityStudio\v4_workspace\dkblock\soc-btmesh-supervisor\platform\emlib\inc/em_assert.h:
-
-C:\Users\nick\SimplicityStudio\v4_workspace\dkblock\soc-btmesh-supervisor/hal-config-app-common.h:
 
 C:\Users\nick\SimplicityStudio\v4_workspace\dkblock\soc-btmesh-supervisor\hardware\kit\common\bsp/bsp_bcp.h:
 

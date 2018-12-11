@@ -63,7 +63,6 @@ main.o: ../main.c ../init_mcu.h ../init_board.h ../init_app.h \
  C:\Users\nick\SimplicityStudio\v4_workspace\dkblock\soc-btmesh-supervisor\platform\emlib\inc/em_gpio.h \
  C:\Users\nick\SimplicityStudio\v4_workspace\dkblock\soc-btmesh-supervisor\platform\emlib\inc/em_bus.h \
  C:\Users\nick\SimplicityStudio\v4_workspace\dkblock\soc-btmesh-supervisor\platform\emlib\inc/em_assert.h \
- C:\Users\nick\SimplicityStudio\v4_workspace\dkblock\soc-btmesh-supervisor/hal-config-app-common.h \
  C:\Users\nick\SimplicityStudio\v4_workspace\dkblock\soc-btmesh-supervisor\protocol\bluetooth\bt_mesh\inc\common/bg_types.h \
  C:\Users\nick\SimplicityStudio\v4_workspace\dkblock\soc-btmesh-supervisor\protocol\bluetooth\bt_mesh\inc\soc/native_gecko.h \
  C:\Users\nick\SimplicityStudio\v4_workspace\dkblock\soc-btmesh-supervisor\protocol\bluetooth\bt_mesh\inc\common/gecko_configuration.h \
@@ -217,8 +216,6 @@ C:\Users\nick\SimplicityStudio\v4_workspace\dkblock\soc-btmesh-supervisor\platfo
 C:\Users\nick\SimplicityStudio\v4_workspace\dkblock\soc-btmesh-supervisor\platform\emlib\inc/em_bus.h:
 
 C:\Users\nick\SimplicityStudio\v4_workspace\dkblock\soc-btmesh-supervisor\platform\emlib\inc/em_assert.h:
-
-C:\Users\nick\SimplicityStudio\v4_workspace\dkblock\soc-btmesh-supervisor/hal-config-app-common.h:
 
 C:\Users\nick\SimplicityStudio\v4_workspace\dkblock\soc-btmesh-supervisor\protocol\bluetooth\bt_mesh\inc\common/bg_types.h:
 
