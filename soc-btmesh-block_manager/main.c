@@ -39,6 +39,7 @@
 #include "em_emu.h"
 #include "em_cmu.h"
 #include <em_gpio.h>
+#include <gpiointerrupt.h>
 
 /* Device initialization header */
 #include "hal-config.h"
@@ -64,6 +65,9 @@
 
 // bluetooth stack heap
 #define MAX_CONNECTIONS 2
+
+uint16_t sample_data = 2305;
+static uint8 trid = 0;        	/* transaction identifier */
 
 uint8_t bluetooth_stack_heap[DEFAULT_BLUETOOTH_HEAP(MAX_CONNECTIONS) + BTMESH_HEAP_SIZE + 1760];
 
@@ -108,6 +112,85 @@ static void handle_gecko_event(uint32_t evt_id, struct gecko_cmd_packet *evt);
 void mesh_native_bgapi_init(void);
 bool mesh_bgapi_listener(struct gecko_cmd_packet *evt);
 
+/**
+ * This is a callback function that is invoked each time a GPIO interrupt in one of the pushbutton
+ * inputs occurs. Pin number is passed as parameter.
+ *
+ * Note: this function is called from ISR context and therefore it is not possible to call any BGAPI
+ * functions directly. The button state change is signaled to the application using gecko_external_signal()
+ * that will generate an event gecko_evt_system_external_signal_id which is then handled in the main loop.
+ */
+void gpioint(uint8_t pin)
+{
+
+  if (pin == BSP_BUTTON0_PIN) {
+    if (GPIO_PinInGet(BSP_BUTTON0_PORT, BSP_BUTTON0_PIN) == 0) {
+    	gecko_external_signal(0x01);
+    }
+
+  } else if (pin == BSP_BUTTON1_PIN) {
+    if (GPIO_PinInGet(BSP_BUTTON1_PORT, BSP_BUTTON1_PIN) == 0) {
+    	gecko_external_signal(0x01);
+    }
+  }
+}
+
+/**
+ * Enable button interrupts for PB0, PB1. Both GPIOs are configured to trigger an interrupt on the
+ * rising edge (button released).
+ */
+void enable_button_interrupts(void)
+{
+  GPIOINT_Init();
+
+  /* configure interrupt for PB0 and PB1, both falling and rising edges */
+  GPIO_ExtIntConfig(BSP_BUTTON0_PORT, BSP_BUTTON0_PIN, BSP_BUTTON0_PIN, true, true, true);
+  GPIO_ExtIntConfig(BSP_BUTTON1_PORT, BSP_BUTTON1_PIN, BSP_BUTTON1_PIN, true, true, true);
+
+  /* register the callback function that is invoked when interrupt occurs */
+  GPIOINT_CallbackRegister(BSP_BUTTON0_PIN, gpioint);
+  GPIOINT_CallbackRegister(BSP_BUTTON1_PIN, gpioint);
+}
+
+void send_block_status_update()
+{
+  uint16 resp;
+  struct mesh_generic_request req;
+
+  req.kind = mesh_DK_request_block_temperature;
+  req.block_temp.temp_ob_ntc1 = sample_data;
+  trid++;
+
+  resp = gecko_cmd_mesh_generic_client_publish(
+	MESH_DK_BLOCK_STATUS_CLIENT_MODEL_ID,
+	0xffff,								// element index
+    trid,								// transition identifier
+    0,   								// transition time in ms
+    0,									// delay
+    0,      							// flags
+	mesh_DK_request_block_temperature,	// type
+    2,     								// param len in bytes
+    &req.block_temp.temp_ob_ntc1     	// parameters data
+    )->result;
+
+  if (resp) {
+    printf("failed,code %x\r\n", resp);
+  } else {
+    printf("request sent");
+  }
+}
+
+static void button_init()
+{
+  // configure pushbutton PB0 and PB1 as inputs, with pull-up enabled
+  GPIO_PinModeSet(BSP_BUTTON0_PORT, BSP_BUTTON0_PIN, gpioModeInputPull, 1);
+  GPIO_PinModeSet(BSP_BUTTON1_PORT, BSP_BUTTON1_PIN, gpioModeInputPull, 1);
+}
+
+/*
+ *  MAIN MAIN MAIN MAIN MAIN MAIN MAIN MAIN
+ */
+
 int main()
 {
   // Initialize device
@@ -138,7 +221,10 @@ int main()
   gecko_initCoexHAL();
   RETARGET_SerialInit();
 
+  button_init();
+  enable_button_interrupts();
   DI_Init();
+
 
   while (1) {
     struct gecko_cmd_packet *evt = gecko_wait_event();
@@ -183,6 +269,11 @@ static void handle_gecko_event(uint32_t evt_id, struct gecko_cmd_packet *evt)
 
         /* Close connection to enter to DFU OTA mode */
         gecko_cmd_le_connection_close(evt->data.evt_gatt_server_user_write_request.connection);
+      }
+      break;
+    case gecko_evt_system_external_signal_id:
+      if (evt->data.evt_system_external_signal.extsignals & 0x01) {
+    	send_block_status_update();
       }
       break;
     default:
