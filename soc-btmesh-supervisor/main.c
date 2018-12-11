@@ -125,6 +125,12 @@ static void block_status_request(uint16_t model_id,
 								 uint16_t delay_ms,
 								 uint8_t request_flags)
 {
+	char buf[30];
+	sprintf(buf, "%x", client_addr);
+	DI_Print(buf, 1);
+	sprintf(buf, "ob_ntc1: %x", request->block_temp.temp_ob_ntc1);
+	DI_Print(buf, 2);
+
 
 }
 
