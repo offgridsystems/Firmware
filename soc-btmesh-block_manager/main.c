@@ -170,7 +170,7 @@ void send_block_status_update()
     0,      							// flags
 	mesh_DK_request_block_temperature,	// type
     2,     								// param len in bytes
-    &req.block_temp.temp_ob_ntc1     	// parameters data
+	(uint8*)&req.block_temp.temp_ob_ntc1     	// parameters data
     )->result;
 
   if (resp) {
