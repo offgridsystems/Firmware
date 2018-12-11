@@ -62,8 +62,7 @@ typedef enum {
 #define MESH_DK_BLOCK_STATUS_CLIENT_MODEL_ID 		0x1302
 
 #define MESH_DK_SLEEP_SERVER_MODEL_ID 				0x1303
-#define MESH_DK_SLEEP_SERVER_MODEL_ID 				0x1304
-#define MESH_DK_SLEEP_CLIENT_MODEL_ID 				0x1305
+#define MESH_DK_SLEEP_CLIENT_MODEL_ID 				0x1304
 
 /*
  * Generic model states
