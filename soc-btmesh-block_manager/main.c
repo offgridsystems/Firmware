@@ -1,18 +1,10 @@
-/***********************************************************************************************//**
+/*************************************************************************************************
  * \file   main.c
  * \brief  Block Manager Main Code
  *
  * 11/27/18 Make it do something
  *
- * This example demonstrates the bare minimum needed for a Blue Gecko BT Mesh C application.
- * The application starts unprovisioned Beaconing after boot
- ***************************************************************************************************
- * <b> (C) Copyright 2017 Silicon Labs, http://www.silabs.com</b>
- ***************************************************************************************************
- * This file is licensed under the Silabs License Agreement. See the file
- * "Silabs_License_Agreement.txt" for details. Before using this software for
- * any purpose, you must agree to the terms of that agreement.
- **************************************************************************************************/
+ ************************************************************************************************/
 
 /* C Standard Library headers */
 #include <stdlib.h>
@@ -39,6 +31,7 @@
 #include "em_emu.h"
 #include "em_cmu.h"
 #include <em_gpio.h>
+#include <em_rtcc.h>
 #include <gpiointerrupt.h>
 
 /* Device initialization header */
@@ -53,22 +46,12 @@
 #include "bspconfig.h"
 #endif
 
-/***********************************************************************************************//**
- * @addtogroup Application
- * @{
- **************************************************************************************************/
+/*************************************** BT SETUP ***************************************/
 
-/***********************************************************************************************//**
- * @addtogroup app
- * @{
- **************************************************************************************************/
-
-// bluetooth stack heap
+// Maximum number of simultaneous Bluetooth connections
 #define MAX_CONNECTIONS 2
 
-uint16_t sample_data = 2305;
-static uint8 trid = 0;        	/* transaction identifier */
-
+// heap for Bluetooth stack
 uint8_t bluetooth_stack_heap[DEFAULT_BLUETOOTH_HEAP(MAX_CONNECTIONS) + BTMESH_HEAP_SIZE + 1760];
 
 // Bluetooth advertisement set configuration
@@ -83,16 +66,17 @@ uint8_t bluetooth_stack_heap[DEFAULT_BLUETOOTH_HEAP(MAX_CONNECTIONS) + BTMESH_HE
 //
 #define MAX_ADVERTISERS (4 + MESH_CFG_MAX_NETKEYS)
 
+// set link layer priorities to  default
 static gecko_bluetooth_ll_priorities linklayer_priorities = GECKO_BLUETOOTH_PRIORITIES_DEFAULT;
 
 // bluetooth stack configuration
 extern const struct bg_gattdb_def bg_gattdb_data;
 
-// Flag for indicating DFU Reset must be performed
+// Flag for indicating DFU (device firmware upgrade) Reset must be performed
 uint8_t boot_to_dfu = 0;
 
-const gecko_configuration_t config =
-{
+// Bluetooth stack configuration
+const gecko_configuration_t config = {
   .bluetooth.max_connections = MAX_CONNECTIONS,
   .bluetooth.max_advertisers = MAX_ADVERTISERS,
   .bluetooth.heap = bluetooth_stack_heap,
@@ -102,15 +86,25 @@ const gecko_configuration_t config =
   .gattdb = &bg_gattdb_data,
   .btmesh_heap_size = BTMESH_HEAP_SIZE,
 #if (HAL_PA_ENABLE) && defined(FEATURE_PA_HIGH_POWER)
-  .pa.config_enable = 1, // Enable high power PA
-  .pa.input = GECKO_RADIO_PA_INPUT_VBAT, // Configure PA input to VBAT
-#endif // (HAL_PA_ENABLE) && defined(FEATURE_PA_HIGH_POWER)
+  .pa.config_enable = 1, 					// Enable high power PA
+  .pa.input = GECKO_RADIO_PA_INPUT_VBAT, 	// Configure PA input to VBAT
+#endif 										// (HAL_PA_ENABLE) && defined(FEATURE_PA_HIGH_POWER)
   .max_timers = 16,
 };
+
+/*************************************** GLOBAL VAR ***************************************/
+
+static uint16 _elem_index = 0xffff; // for indexing elements of the node
+uint16_t sample_data = 2305;		// test data
+static uint8 trid = 0;        		// transaction identifier
+
+/*************************************** PROTOTYPES ******************************************/
 
 static void handle_gecko_event(uint32_t evt_id, struct gecko_cmd_packet *evt);
 void mesh_native_bgapi_init(void);
 bool mesh_bgapi_listener(struct gecko_cmd_packet *evt);
+
+/*************************************** FUNCTIONS ***************************************/
 
 /**
  * This is a callback function that is invoked each time a GPIO interrupt in one of the pushbutton
@@ -163,13 +157,13 @@ void send_block_status_update()
 
   resp = gecko_cmd_mesh_generic_client_publish(
 	MESH_DK_BLOCK_STATUS_CLIENT_MODEL_ID,
-	0xffff,								// element index
-    trid,								// transition identifier
-    0,   								// transition time in ms
-    0,									// delay
-    0,      							// flags
-	mesh_DK_request_block_temperature,	// type
-    2,     								// param len in bytes
+	_elem_index,								// element index
+    trid,										// transition identifier
+    0,   										// transition time in ms
+    0,											// delay
+    0,      									// flags
+	mesh_DK_request_block_temperature,			// type
+    2,     										// param len in bytes
 	(uint8*)&req.block_temp.temp_ob_ntc1     	// parameters data
     )->result;
 

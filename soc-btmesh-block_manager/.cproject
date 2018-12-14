@@ -77,6 +77,7 @@
 									<listOptionValue builtIn="false" value="MESH_LIB_NATIVE=1"/>
 									<listOptionValue builtIn="false" value="__STACK_SIZE=0x1000"/>
 									<listOptionValue builtIn="false" value="HAL_CONFIG=1"/>
+									<listOptionValue builtIn="false" value="RETARGET_VCOM"/>
 								</option>
 								<inputType id="com.silabs.ide.si32.gcc.cdt.managedbuild.tool.gnu.c.compiler.input.37850528" superClass="com.silabs.ide.si32.gcc.cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
