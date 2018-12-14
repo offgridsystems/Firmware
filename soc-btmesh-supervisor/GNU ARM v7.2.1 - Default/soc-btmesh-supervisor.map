@@ -503,11 +503,11 @@ c:/siliconlabs/simplicitystudio/v4/developer/toolchains/gnu_arm/7.2_2017q4/bin/.
 c:/siliconlabs/simplicitystudio/v4/developer/toolchains/gnu_arm/7.2_2017q4/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m/fpv4-sp/softfp\libc_nano.a(lib_a-nano-msizer.o)
                               c:/siliconlabs/simplicitystudio/v4/developer/toolchains/gnu_arm/7.2_2017q4/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m/fpv4-sp/softfp\libc_nano.a(lib_a-nano-reallocr.o) (_malloc_usable_size_r)
 c:/siliconlabs/simplicitystudio/v4/developer/toolchains/gnu_arm/7.2_2017q4/bin/../lib/gcc/arm-none-eabi/7.2.1/thumb/v7e-m/fpv4-sp/softfp\libgcc.a(_aeabi_ldivmod.o)
-                              C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans0.ltrans.o (__aeabi_ldivmod)
+                              C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans0.ltrans.o (__aeabi_ldivmod)
 c:/siliconlabs/simplicitystudio/v4/developer/toolchains/gnu_arm/7.2_2017q4/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m/fpv4-sp/softfp\libc_nano.a(lib_a-memcmp.o)
-                              C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans0.ltrans.o (memcmp)
+                              C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans0.ltrans.o (memcmp)
 c:/siliconlabs/simplicitystudio/v4/developer/toolchains/gnu_arm/7.2_2017q4/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m/fpv4-sp/softfp\libc_nano.a(lib_a-strlen.o)
-                              C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans0.ltrans.o (strlen)
+                              C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans0.ltrans.o (strlen)
 
 Allocating common symbols
 Common symbol       size              file
@@ -773,14 +773,14 @@ LOAD c:/siliconlabs/simplicitystudio/v4/developer/toolchains/gnu_arm/7.2_2017q4/
 LOAD c:/siliconlabs/simplicitystudio/v4/developer/toolchains/gnu_arm/7.2_2017q4/bin/../lib/gcc/arm-none-eabi/7.2.1/thumb/v7e-m/fpv4-sp/softfp/crtbegin.o
 LOAD c:/siliconlabs/simplicitystudio/v4/developer/toolchains/gnu_arm/7.2_2017q4/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m/fpv4-sp/softfp/crt0.o
 START GROUP
-LOAD C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans0.ltrans.o
-LOAD C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans1.ltrans.o
-LOAD C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans2.ltrans.o
-LOAD C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans3.ltrans.o
-LOAD C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans4.ltrans.o
-LOAD C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans5.ltrans.o
-LOAD C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans6.ltrans.o
-LOAD C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans7.ltrans.o
+LOAD C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans0.ltrans.o
+LOAD C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans1.ltrans.o
+LOAD C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans2.ltrans.o
+LOAD C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans3.ltrans.o
+LOAD C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans4.ltrans.o
+LOAD C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans5.ltrans.o
+LOAD C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans6.ltrans.o
+LOAD C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans7.ltrans.o
 LOAD C:\Users\nick\SimplicityStudio\v4_workspace\dkblock\soc-btmesh-supervisor\protocol\bluetooth\lib\EFR32XG13X\GCC\libcoex.a
 LOAD C:\Users\nick\SimplicityStudio\v4_workspace\dkblock\soc-btmesh-supervisor\protocol\bluetooth\lib\EFR32XG13X\GCC\libbluetooth_mesh.a
 LOAD C:\Users\nick\SimplicityStudio\v4_workspace\dkblock\soc-btmesh-supervisor\protocol\bluetooth\lib\EFR32XG13X\GCC\binapploader.o
@@ -822,22 +822,22 @@ LOAD c:/siliconlabs/simplicitystudio/v4/developer/toolchains/gnu_arm/7.2_2017q4/
 .text_application
                 0x00009000    0x32600
  *(.vectors)
- .vectors       0x00009000       0xfc C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans6.ltrans.o
+ .vectors       0x00009000       0xfc C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans6.ltrans.o
                 0x00009000                __Vectors
                 0x000090fc                __Vectors_End = .
                 0x000000fc                __Vectors_Size = (__Vectors_End - __Vectors)
                 0x000090fc                __end__ = .
  *(.application_properties)
  .application_properties
-                0x000090fc       0x38 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans0.ltrans.o
+                0x000090fc       0x38 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans0.ltrans.o
                 0x000090fc                bg_application_properties
  *(.gecko_configuration)
  *(.xo_configuration)
  *(.gatt_header)
- .gatt_header   0x00009134       0x34 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans6.ltrans.o
+ .gatt_header   0x00009134       0x34 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans6.ltrans.o
                 0x00009134                bg_gattdb_data
  *(.gatt_data)
- .gatt_data     0x00009168      0x2e4 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans6.ltrans.o
+ .gatt_data     0x00009168      0x2e4 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans6.ltrans.o
                 0x00009168                bg_gattdb_data_attributes_map
                 0x000092dc                bg_gattdb_data_attribute_field_29
                 0x000092e4                bg_gattdb_data_attribute_field_28
@@ -876,7 +876,7 @@ LOAD c:/siliconlabs/simplicitystudio/v4/developer/toolchains/gnu_arm/7.2_2017q4/
  .text          0x0000948c       0x74 c:/siliconlabs/simplicitystudio/v4/developer/toolchains/gnu_arm/7.2_2017q4/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m/fpv4-sp/softfp/crt0.o
                 0x0000948c                _mainCRTStartup
                 0x0000948c                _start
- .text          0x00009500     0x48f4 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans0.ltrans.o
+ .text          0x00009500     0x48f4 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans0.ltrans.o
                 0x0000955a                gecko_init_alloc
                 0x00009bb4                WDOG0_IRQHandler
                 0x00009bb4                USART2_RX_IRQHandler
@@ -1004,13 +1004,13 @@ LOAD c:/siliconlabs/simplicitystudio/v4/developer/toolchains/gnu_arm/7.2_2017q4/
                 0x0000dade                gatt_handle_find_information_response
                 0x0000dc76                handle_scan_response_callback
  .text.unlikely
-                0x0000ddf4      0x238 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans0.ltrans.o
+                0x0000ddf4      0x238 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans0.ltrans.o
                 0x0000ddf4                gatt_db_check_permissions
                 0x0000df18                gatt_db_set_client_features
                 0x0000df34                gatt_db_set_hash
- .text.startup  0x0000e02c     0x1eb0 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans0.ltrans.o
+ .text.startup  0x0000e02c     0x1eb0 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans0.ltrans.o
                 0x0000e02c                main
- .text          0x0000fedc     0x638c C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans1.ltrans.o
+ .text          0x0000fedc     0x638c C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans1.ltrans.o
                 0x0000fedc                s9fa6a7992236cbdf1a70bc9ae60809cef1194c21359fbfb70b63bbee005503e0.lto_priv.578
                 0x0000fee0                sc4ef83f5d69424648b8fa4a1bdd1c9ce671ced14c51084de64b2bc8a55d5b15b.lto_priv.687
                 0x0000ff14                RAIL_YieldRadio
@@ -1070,10 +1070,10 @@ LOAD c:/siliconlabs/simplicitystudio/v4/developer/toolchains/gnu_arm/7.2_2017q4/
                 0x00015fe0                s99dc0a91028c3252171ccdad6df6ee5fec281d6b8bbb11b7dd1036f3d7f9f0f8.lto_priv.660
                 0x00016180                s3b2cc90b49b6199e1a04079238c3f7e7aff038ebd8da080d58b6f538d6006ab2
  .text.unlikely
-                0x00016268      0x310 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans1.ltrans.o
+                0x00016268      0x310 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans1.ltrans.o
                 0x00016428                sa7568c0a9bf84dc3f99515d6781bd54284bdf24af436920994e546744575d7a6
                 0x00016472                sd23412c38cde26f73a79d65d966e27728c3eb2ddfe9e2164b2cc3c4b8e8bd790.lto_priv.593
- .text          0x00016578     0x58b8 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans2.ltrans.o
+ .text          0x00016578     0x58b8 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans2.ltrans.o
                 0x00016578                sacdef16000f30e553e58dba8e2dc4a1e4f88ba54f3ab06b275755c8c421b1556.lto_priv.581
                 0x000166a4                s9f99f68c3e12dda8482c07605eb32a2ab8525a42b6e776e489f0642862382303
                 0x000166a8                s2f6e9f6656a2573b533508cab6e520c7aee0229e6981c648b2ef56fca2a81798
@@ -1159,7 +1159,7 @@ LOAD c:/siliconlabs/simplicitystudio/v4/developer/toolchains/gnu_arm/7.2_2017q4/
                 0x000198ac                se727a5b96f79199f8092828f4b90ace10b069b437574bc1155eca0d6677df179
                 0x0001a948                sli_bt_cmd_mesh_node_init
  .text.unlikely
-                0x0001be30      0x280 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans2.ltrans.o
+                0x0001be30      0x280 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans2.ltrans.o
                 0x0001be30                s5327e2fb0fd7b9d7d7ad64ee7f22208c0f652609683ac9ec9d336fe1dd2a682a.part.3.lto_priv.599
                 0x0001be94                s84eb7f4576c615df598783bc616615d80ebeb7e2e775867d085dfb5563e3d6a5.lto_priv.598
                 0x0001bec8                sc91e69ee7e8ae1b7e4b3cd655adfbbabe52afb5edf837b380371334723b8056a
@@ -1167,7 +1167,7 @@ LOAD c:/siliconlabs/simplicitystudio/v4/developer/toolchains/gnu_arm/7.2_2017q4/
                 0x0001bfb4                s4ef191d638c6974e98bd7283a55a808217e204fae183eda6fb37a2973e418781
                 0x0001c010                s4725947578de123c99b96270f9d7c17de2bae2fab46c72d4e607f2116c810f4c
                 0x0001c044                s9599387039e867a3cda191276edf47d1cafa6d91321718212a305c9ddba34ce2
- .text          0x0001c0b0     0x5224 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans3.ltrans.o
+ .text          0x0001c0b0     0x5224 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans3.ltrans.o
                 0x0001c150                ll_radioTimerExpired.lto_priv.732
                 0x0001c174                ll_llcpCallbackLocalTerminate.lto_priv.744
                 0x0001c1a4                bg_pre_sleep
@@ -1263,10 +1263,10 @@ LOAD c:/siliconlabs/simplicitystudio/v4/developer/toolchains/gnu_arm/7.2_2017q4/
                 0x00020d38                ll_radioReadRxPacket
                 0x00020fbc                ll_scanTaskPrimaryHandler
  .text.unlikely
-                0x000212d4      0x294 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans3.ltrans.o
+                0x000212d4      0x294 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans3.ltrans.o
                 0x00021430                ll_llcpUpdatePhyAtInstant.lto_priv.765
                 0x00021480                ll_llcpMasterUpdatePhy.lto_priv.764
- .text          0x00021568     0x5f40 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans4.ltrans.o
+ .text          0x00021568     0x5f40 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans4.ltrans.o
                 0x000215a0                eventDefault.lto_priv.787
                 0x000215a2                radioConfigChangedDefault.lto_priv.494
                 0x000215a4                BG_PRORTC_IRQHandler
@@ -1307,7 +1307,7 @@ LOAD c:/siliconlabs/simplicitystudio/v4/developer/toolchains/gnu_arm/7.2_2017q4/
                 0x000255da                RAILCore_ConfigChannels
                 0x00025620                GENERIC_PHY_EventCallback
                 0x00025824                gecko_priority_handle
- .text          0x000274a8     0x5a10 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans5.ltrans.o
+ .text          0x000274a8     0x5a10 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans5.ltrans.o
                 0x00027564                sbea631b5cfa658c217cb06e986c1c6402bac1e946affbb416c60255c5d8a90c0.lto_priv.699
                 0x00027614                s461b274d26526a54f084ccd4ee5d975282d4852ce1e0ba9c9b032ffb6a5a6e85
                 0x0002766c                ccm_aes_setkey_wrap.lto_priv.453
@@ -1474,12 +1474,12 @@ LOAD c:/siliconlabs/simplicitystudio/v4/developer/toolchains/gnu_arm/7.2_2017q4/
                 0x0002b884                mesh_trans_send_sdu
                 0x0002bfa4                sfc8937cde3e8c1905b2c4eb27bb0ae38fe873dd5628ec420618d0c6d314c8a42
  .text.unlikely
-                0x0002ceb8      0x468 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans5.ltrans.o
+                0x0002ceb8      0x468 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans5.ltrans.o
                 0x0002ceb8                mbedtls_mpi_safe_cond_assign
                 0x0002cf20                mbedtls_mpi_inv_mod
                 0x0002d2ba                s60621c9ccf32dbd71008140380f8fc263522fd76b0372779401cc60afcb8eb3f
                 0x0002d2f4                s8a2d3a860fbeaa2e6a70ac61a4ede00dfc7ae0cf0f9cf23f4da3bd11ab9bb45f
- .text          0x0002d320     0x592c C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans6.ltrans.o
+ .text          0x0002d320     0x592c C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans6.ltrans.o
                 0x0002d320                s1a269f99211f1729b4e6eb85f295e64a806fef788b3b0a83a8797e93c31191c2
                 0x0002d420                SYNTH_IRQHandler
                 0x0002d430                GENERIC_PHY_RxOverflowHook.lto_priv.788
@@ -1593,12 +1593,12 @@ LOAD c:/siliconlabs/simplicitystudio/v4/developer/toolchains/gnu_arm/7.2_2017q4/
                 0x00032ae0                mbedtls_ecp_group_free
                 0x00032b3e                mbedtls_cipher_cmac_finish
  .text.unlikely
-                0x00032c4c      0x534 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans6.ltrans.o
+                0x00032c4c      0x534 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans6.ltrans.o
                 0x00032c4c                fill_buffer_byte.lto_priv.768
                 0x00032c74                ecp_safe_invert_jac.lto_priv.462
                 0x00032cbc                ecp_normalize_jac.lto_priv.463
                 0x00032d8a                ecp_normalize_jac_many.lto_priv.465
- .text          0x00033180     0x3b44 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans7.ltrans.o
+ .text          0x00033180     0x3b44 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans7.ltrans.o
                 0x000331c0                s037881e38e2bb0973a218858fd4ea64306ca27c29f469090eb13a88da2183240.lto_priv.694
                 0x00033224                s35d15782769c37bf3cd81392bcfd8a808f585d9e5ca9179d49dd951b5ae79735.lto_priv.693
                 0x00033254                sdae345ad2b39dbcd64bc635b1dedd38e715ee846dd772b8831969da4428c0a00
@@ -1723,7 +1723,7 @@ LOAD c:/siliconlabs/simplicitystudio/v4/developer/toolchains/gnu_arm/7.2_2017q4/
                 0x00036924                sa5e1d5cce53dfcba5d67b07c25d084f7aa2541d0ec266046b3d6b3e074cacb44.constprop.73
                 0x00036ace                sf55763779a5338f05764b4e6c8f3fbed920346cec2340ebf5de42b9d1b085f47.constprop.97
  .text.unlikely
-                0x00036cc4       0xea C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans7.ltrans.o
+                0x00036cc4       0xea C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans7.ltrans.o
                 0x00036d2e                l2cap_send_command_reject.constprop.190
                 0x00036d76                sd6813d6dc3abd39940af7c4e316d34eea17ebb7cda0b56d026005e3a6edec3da.lto_priv.886
  *fill*         0x00036dae        0x2 
@@ -1902,42 +1902,42 @@ LOAD c:/siliconlabs/simplicitystudio/v4/developer/toolchains/gnu_arm/7.2_2017q4/
  *(SORT_BY_NAME(.dtors.*))
  *(.dtors)
  *(.rodata*)
- .rodata        0x000385c8      0x79a C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans0.ltrans.o
+ .rodata        0x000385c8      0x79a C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans0.ltrans.o
  .rodata.str1.1
-                0x00038d62       0x5c C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans0.ltrans.o
+                0x00038d62       0x5c C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans0.ltrans.o
                                  0x5e (size before relaxing)
  *fill*         0x00038dbe        0x2 
- .rodata        0x00038dc0      0x100 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans1.ltrans.o
+ .rodata        0x00038dc0      0x100 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans1.ltrans.o
                 0x00038e5c                nil_key.lto_priv.649
                 0x00038eb0                app_state
                 0x00038eb4                __mesh_dcd_len
                 0x00038eb8                net_state
                 0x00038ebc                beacon_state
  .rodata.str1.1
-                0x00038ec0       0x41 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans1.ltrans.o
+                0x00038ec0       0x41 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans1.ltrans.o
  *fill*         0x00038f01        0x7 
- .rodata        0x00038f08      0x1a4 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans2.ltrans.o
+ .rodata        0x00038f08      0x1a4 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans2.ltrans.o
  .rodata.str1.1
-                0x000390ac       0x2d C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans2.ltrans.o
+                0x000390ac       0x2d C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans2.ltrans.o
                                  0x39 (size before relaxing)
  *fill*         0x000390d9       0x27 
- .rodata        0x00039100     0x1e48 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans3.ltrans.o
+ .rodata        0x00039100     0x1e48 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans3.ltrans.o
  .rodata.curves24HpDcdc
-                0x0003af48        0x8 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans3.ltrans.o
+                0x0003af48        0x8 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans3.ltrans.o
  .rodata.curves24HpVbat
-                0x0003af50        0x8 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans3.ltrans.o
+                0x0003af50        0x8 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans3.ltrans.o
  .rodata.curves24LpDcdc
-                0x0003af58        0xe C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans3.ltrans.o
+                0x0003af58        0xe C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans3.ltrans.o
  .rodata.curves24LpVbat
-                0x0003af66        0xe C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans3.ltrans.o
+                0x0003af66        0xe C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans3.ltrans.o
  .rodata.curvesSgDcdc
-                0x0003af74        0x8 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans3.ltrans.o
+                0x0003af74        0x8 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans3.ltrans.o
  .rodata.curvesSgVbat
-                0x0003af7c        0x8 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans3.ltrans.o
- .rodata        0x0003af84       0xae C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans4.ltrans.o
+                0x0003af7c        0x8 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans3.ltrans.o
+ .rodata        0x0003af84       0xae C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans4.ltrans.o
                 0x0003b02e                CSWTCH.4.lto_priv.801
  *fill*         0x0003b032        0x2 
- .rodata        0x0003b034      0x13c C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans5.ltrans.o
+ .rodata        0x0003b034      0x13c C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans5.ltrans.o
                 0x0003b034                genprov_sm.lto_priv.654
                 0x0003b15c                model_state
                 0x0003b160                mesh_node_get_device_key_fn.lto_priv.616
@@ -1945,15 +1945,15 @@ LOAD c:/siliconlabs/simplicitystudio/v4/developer/toolchains/gnu_arm/7.2_2017q4/
                 0x0003b168                mesh_node_device_key_count_fn.lto_priv.613
                 0x0003b16c                genprov_state
  .rodata.str1.1
-                0x0003b170       0x1c C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans5.ltrans.o
- .rodata        0x0003b18c       0x80 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans6.ltrans.o
+                0x0003b170       0x1c C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans5.ltrans.o
+ .rodata        0x0003b18c       0x80 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans6.ltrans.o
                 0x0003b1b0                ll_radioScaToPpm
                 0x0003b1d4                ll_timing.lto_priv.782
                 0x0003b1ec                nvm3_defaultHandle
                 0x0003b1f0                __mesh_memory_config
  .rodata.str1.1
-                0x0003b20c        0x6 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans6.ltrans.o
- .rodata        0x0003b20c      0x2d8 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans7.ltrans.o
+                0x0003b20c        0x6 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans6.ltrans.o
+ .rodata        0x0003b20c      0x2d8 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans7.ltrans.o
                 0x0003b370                __mesh_dcd
                 0x0003b386                bit.lto_priv.492
                 0x0003b390                crypto_devices.lto_priv.520
@@ -1969,7 +1969,7 @@ LOAD c:/siliconlabs/simplicitystudio/v4/developer/toolchains/gnu_arm/7.2_2017q4/
                 0x0003b4dc                mesh_stats
                 0x0003b4e0                trans_state
  .rodata.str1.1
-                0x0003b4e4       0x80 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans7.ltrans.o
+                0x0003b4e4       0x80 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans7.ltrans.o
                                  0xbf (size before relaxing)
  .rodata._global_impure_ptr
                 0x0003b564        0x4 c:/siliconlabs/simplicitystudio/v4/developer/toolchains/gnu_arm/7.2_2017q4/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m/fpv4-sp/softfp\libc_nano.a(lib_a-impure.o)
@@ -2029,7 +2029,7 @@ LOAD c:/siliconlabs/simplicitystudio/v4/developer/toolchains/gnu_arm/7.2_2017q4/
 
 .stack_dummy    0x20000000     0x1000
  *(.stack*)
- .stack         0x20000000     0x1000 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans0.ltrans.o
+ .stack         0x20000000     0x1000 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans0.ltrans.o
                 0x20001000                __StackTop = (ORIGIN (RAM) + SIZEOF (.stack_dummy))
                 0x20000000                __StackLimit = ORIGIN (RAM)
                 0x20001000                PROVIDE (__stack, __StackTop)
@@ -2039,31 +2039,31 @@ LOAD c:/siliconlabs/simplicitystudio/v4/developer/toolchains/gnu_arm/7.2_2017q4/
                 0x20001000                __data_start__ = .
  *(vtable)
  *(.data*)
- .data          0x20001000       0x24 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans0.ltrans.o
- .data          0x20001024       0x1c C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans1.ltrans.o
+ .data          0x20001000       0x24 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans0.ltrans.o
+ .data          0x20001024       0x1c C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans1.ltrans.o
                 0x20001024                dev_prov_bearer.lto_priv.659
                 0x20001028                cancel_fn.lto_priv.670
                 0x2000102c                net_send_fn.lto_priv.671
                 0x20001030                recv_fn.lto_priv.669
                 0x20001034                dev_prov_caps.lto_priv.676
- .data          0x20001040       0x40 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans2.ltrans.o
+ .data          0x20001040       0x40 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans2.ltrans.o
                 0x20001048                dcdcRetimeClkTarget
                 0x2000104c                SystemHFXOClock.lto_priv.729
                 0x20001050                SystemLFXOClock.lto_priv.852
- .data          0x20001080       0x10 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans3.ltrans.o
- .data          0x20001090        0x8 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans4.ltrans.o
+ .data          0x20001080       0x10 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans3.ltrans.o
+ .data          0x20001090        0x8 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans4.ltrans.o
                 0x20001090                eventCb.lto_priv.786
                 0x20001094                radioConfigChangedCb.lto_priv.785
- .data          0x20001098        0x2 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans5.ltrans.o
+ .data          0x20001098        0x2 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans5.ltrans.o
                 0x20001098                gatt_max_mtu_config
  *fill*         0x2000109a        0x2 
- .data          0x2000109c       0x24 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans6.ltrans.o
+ .data          0x2000109c       0x24 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans6.ltrans.o
                 0x2000109c                errorCodeEncountered.lto_priv.678
                 0x200010a0                gCurrentModulation.lto_priv.684
                 0x200010a1                current_db
                 0x200010a2                bg_gattdb_data_attribute_field_29_data
                 0x200010aa                bg_gattdb_data_attribute_field_6_data
- .data          0x200010c0       0x27 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans7.ltrans.o
+ .data          0x200010c0       0x27 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans7.ltrans.o
                 0x200010c0                saved_memory_config.lto_priv.556
                 0x200010e0                paInit.lto_priv.777
                 0x200010e6                currentPowerLevel.lto_priv.501
@@ -2075,7 +2075,7 @@ LOAD c:/siliconlabs/simplicitystudio/v4/developer/toolchains/gnu_arm/7.2_2017q4/
                 0x200010ec       0x60 c:/siliconlabs/simplicitystudio/v4/developer/toolchains/gnu_arm/7.2_2017q4/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m/fpv4-sp/softfp\libc_nano.a(lib_a-impure.o)
                 0x2000114c                . = ALIGN (0x4)
  *(.ram)
- .ram           0x2000114c       0x70 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans0.ltrans.o
+ .ram           0x2000114c       0x70 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans0.ltrans.o
                 0x2000114c                MSC_ErasePage
                 0x200011bc                . = ALIGN (0x4)
                 0x200011bc                PROVIDE (__preinit_array_start, .)
@@ -2103,9 +2103,9 @@ LOAD c:/siliconlabs/simplicitystudio/v4/developer/toolchains/gnu_arm/7.2_2017q4/
  *(.bss*)
  .bss           0x20001200       0x1c c:/siliconlabs/simplicitystudio/v4/developer/toolchains/gnu_arm/7.2_2017q4/bin/../lib/gcc/arm-none-eabi/7.2.1/thumb/v7e-m/fpv4-sp/softfp/crtbegin.o
  *fill*         0x2000121c       0xe4 
- .bss           0x20001300     0x372c C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans0.ltrans.o
+ .bss           0x20001300     0x372c C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans0.ltrans.o
  *fill*         0x20004a2c        0x4 
- .bss           0x20004a30       0xd4 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans1.ltrans.o
+ .bss           0x20004a30       0xd4 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans1.ltrans.o
                 0x20004a30                prov.lto_priv.658
                 0x20004a34                mesh_platform_gatt_clr_all_service_advs_fn
                 0x20004a38                mesh_platform_gatt_set_service_adv_fn
@@ -2124,7 +2124,7 @@ LOAD c:/siliconlabs/simplicitystudio/v4/developer/toolchains/gnu_arm/7.2_2017q4/
                 0x20004afc                heartbeat_subscribe_complete_cb.lto_priv.652
                 0x20004b00                heartbeat_subscribe_complete_cb_param.lto_priv.653
  *fill*         0x20004b04        0x4 
- .bss           0x20004b08       0x6c C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans2.ltrans.o
+ .bss           0x20004b08       0x6c C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans2.ltrans.o
                 0x20004b18                mesh_adv_cb.lto_priv.854
                 0x20004b40                prov_ddb_list_fn.lto_priv.857
                 0x20004b44                timer_overflow
@@ -2134,12 +2134,12 @@ LOAD c:/siliconlabs/simplicitystudio/v4/developer/toolchains/gnu_arm/7.2_2017q4/
                 0x20004b5c                currRfFrequency
                 0x20004b60                currIfFrequency
                 0x20004b73                mesh_stack_initialized.lto_priv.853
- .bss           0x20004b74      0x600 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans3.ltrans.o
+ .bss           0x20004b74      0x600 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans3.ltrans.o
                 0x20004b80                gecko_evt_msgs
                 0x20004b88                smp_ltk_request_handle_func.lto_priv.869
                 0x20004b8c                smp_packet_handle_func.lto_priv.865
                 0x20004b90                gatt_client_handler.lto_priv.833
- .bss           0x20005174      0x1e9 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans4.ltrans.o
+ .bss           0x20005174      0x1e9 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans4.ltrans.o
                 0x20005178                smp_state_handle_func.lto_priv.867
                 0x2000517c                sm.lto_priv.862
                 0x20005184                smp
@@ -2164,7 +2164,7 @@ LOAD c:/siliconlabs/simplicitystudio/v4/developer/toolchains/gnu_arm/7.2_2017q4/
                 0x20005344                ll_task_callback
                 0x20005358                cachedPacketHandle.lto_priv.798
  *fill*         0x2000535d        0x3 
- .bss           0x20005360      0x17c C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans5.ltrans.o
+ .bss           0x20005360      0x17c C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans5.ltrans.o
                 0x20005360                aes_rand.lto_priv.871
                 0x20005380                gecko_apihandler_rsp
                 0x200053b0                bonding_priorities.lto_priv.734
@@ -2180,7 +2180,7 @@ LOAD c:/siliconlabs/simplicitystudio/v4/developer/toolchains/gnu_arm/7.2_2017q4/
                 0x200054c8                friend_state.lto_priv.614
                 0x200054d8                clear_timers.lto_priv.651
  *fill*         0x200054dc        0x4 
- .bss           0x200054e0      0x32c C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans6.ltrans.o
+ .bss           0x200054e0      0x32c C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans6.ltrans.o
                 0x200054e0                ll_priorityTable
                 0x200054e4                btlePublicDevAddr
                 0x200054ec                ll_adv_state
@@ -2220,7 +2220,7 @@ LOAD c:/siliconlabs/simplicitystudio/v4/developer/toolchains/gnu_arm/7.2_2017q4/
                 0x20005804                bg_gattdb_data_attribute_field_2_data
                 0x20005808                RAIL_ActiveHandle
  *fill*         0x2000580c        0x4 
- .bss           0x20005810      0x6f8 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans7.ltrans.o
+ .bss           0x20005810      0x6f8 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans7.ltrans.o
                 0x20005810                node_state
                 0x20005a8c                glibContext.lto_priv.881
                 0x20005ab8                graphLineNum.lto_priv.882
@@ -2274,7 +2274,7 @@ LOAD c:/siliconlabs/simplicitystudio/v4/developer/toolchains/gnu_arm/7.2_2017q4/
                 0x20005f18                end = __end__
                 0x20005f18                _end = __end__
  *(.heap*)
- .heap          0x20005f18     0x1200 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans0.ltrans.o
+ .heap          0x20005f18     0x1200 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans0.ltrans.o
                 0x20007118                __HeapLimit = .
 
 .nvm_dummy      0x0003b608        0x0
@@ -2291,21 +2291,21 @@ OUTPUT(soc-btmesh-supervisor.axf elf32-littlearm)
  .ARM.attributes
                 0x00000054       0x20 c:/siliconlabs/simplicitystudio/v4/developer/toolchains/gnu_arm/7.2_2017q4/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m/fpv4-sp/softfp/crt0.o
  .ARM.attributes
-                0x00000074       0x35 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans0.ltrans.o
+                0x00000074       0x35 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans0.ltrans.o
  .ARM.attributes
-                0x000000a9       0x35 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans1.ltrans.o
+                0x000000a9       0x35 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans1.ltrans.o
  .ARM.attributes
-                0x000000de       0x35 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans2.ltrans.o
+                0x000000de       0x35 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans2.ltrans.o
  .ARM.attributes
-                0x00000113       0x35 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans3.ltrans.o
+                0x00000113       0x35 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans3.ltrans.o
  .ARM.attributes
-                0x00000148       0x35 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans4.ltrans.o
+                0x00000148       0x35 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans4.ltrans.o
  .ARM.attributes
-                0x0000017d       0x35 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans5.ltrans.o
+                0x0000017d       0x35 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans5.ltrans.o
  .ARM.attributes
-                0x000001b2       0x35 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans6.ltrans.o
+                0x000001b2       0x35 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans6.ltrans.o
  .ARM.attributes
-                0x000001e7       0x35 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans7.ltrans.o
+                0x000001e7       0x35 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans7.ltrans.o
  .ARM.attributes
                 0x0000021c       0x1c C:\Users\nick\SimplicityStudio\v4_workspace\dkblock\soc-btmesh-supervisor\protocol\bluetooth\lib\EFR32XG13X\GCC\binapploader.o
  .ARM.attributes
@@ -2390,111 +2390,111 @@ OUTPUT(soc-btmesh-supervisor.axf elf32-littlearm)
                 0x0000096d       0x22 c:/siliconlabs/simplicitystudio/v4/developer/toolchains/gnu_arm/7.2_2017q4/bin/../lib/gcc/arm-none-eabi/7.2.1/thumb/v7e-m/fpv4-sp/softfp/crtn.o
 
 .comment        0x00000000       0x7e
- .comment       0x00000000       0x7e C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans0.ltrans.o
+ .comment       0x00000000       0x7e C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans0.ltrans.o
                                  0x7f (size before relaxing)
- .comment       0x0000007e       0x7f C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans1.ltrans.o
- .comment       0x0000007e       0x7f C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans2.ltrans.o
- .comment       0x0000007e       0x7f C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans3.ltrans.o
- .comment       0x0000007e       0x7f C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans4.ltrans.o
- .comment       0x0000007e       0x7f C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans5.ltrans.o
- .comment       0x0000007e       0x7f C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans6.ltrans.o
- .comment       0x0000007e       0x7f C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans7.ltrans.o
+ .comment       0x0000007e       0x7f C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans1.ltrans.o
+ .comment       0x0000007e       0x7f C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans2.ltrans.o
+ .comment       0x0000007e       0x7f C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans3.ltrans.o
+ .comment       0x0000007e       0x7f C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans4.ltrans.o
+ .comment       0x0000007e       0x7f C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans5.ltrans.o
+ .comment       0x0000007e       0x7f C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans6.ltrans.o
+ .comment       0x0000007e       0x7f C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans7.ltrans.o
 
 .debug_info     0x00000000   0x124fbe
- .debug_info    0x00000000    0x3d162 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans0.ltrans.o
- .debug_info    0x0003d162    0x2213e C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans1.ltrans.o
- .debug_info    0x0005f2a0    0x25503 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans2.ltrans.o
- .debug_info    0x000847a3    0x1e60f C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans3.ltrans.o
- .debug_info    0x000a2db2    0x1b268 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans4.ltrans.o
- .debug_info    0x000be01a    0x22389 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans5.ltrans.o
- .debug_info    0x000e03a3    0x2214f C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans6.ltrans.o
- .debug_info    0x001024f2    0x22acc C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans7.ltrans.o
+ .debug_info    0x00000000    0x3d162 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans0.ltrans.o
+ .debug_info    0x0003d162    0x2213e C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans1.ltrans.o
+ .debug_info    0x0005f2a0    0x25503 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans2.ltrans.o
+ .debug_info    0x000847a3    0x1e60f C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans3.ltrans.o
+ .debug_info    0x000a2db2    0x1b268 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans4.ltrans.o
+ .debug_info    0x000be01a    0x22389 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans5.ltrans.o
+ .debug_info    0x000e03a3    0x2214f C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans6.ltrans.o
+ .debug_info    0x001024f2    0x22acc C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans7.ltrans.o
 
 .debug_abbrev   0x00000000     0x60f2
- .debug_abbrev  0x00000000      0xead C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans0.ltrans.o
- .debug_abbrev  0x00000ead      0xb1e C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans1.ltrans.o
- .debug_abbrev  0x000019cb      0xc47 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans2.ltrans.o
- .debug_abbrev  0x00002612      0xbbd C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans3.ltrans.o
- .debug_abbrev  0x000031cf      0xb07 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans4.ltrans.o
- .debug_abbrev  0x00003cd6      0xbff C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans5.ltrans.o
- .debug_abbrev  0x000048d5      0xc65 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans6.ltrans.o
- .debug_abbrev  0x0000553a      0xbb8 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans7.ltrans.o
+ .debug_abbrev  0x00000000      0xead C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans0.ltrans.o
+ .debug_abbrev  0x00000ead      0xb1e C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans1.ltrans.o
+ .debug_abbrev  0x000019cb      0xc47 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans2.ltrans.o
+ .debug_abbrev  0x00002612      0xbbd C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans3.ltrans.o
+ .debug_abbrev  0x000031cf      0xb07 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans4.ltrans.o
+ .debug_abbrev  0x00003cd6      0xbff C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans5.ltrans.o
+ .debug_abbrev  0x000048d5      0xc65 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans6.ltrans.o
+ .debug_abbrev  0x0000553a      0xbb8 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans7.ltrans.o
 
 .debug_loc      0x00000000    0x7038d
- .debug_loc     0x00000000     0xfe39 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans0.ltrans.o
- .debug_loc     0x0000fe39     0xe27a C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans1.ltrans.o
- .debug_loc     0x0001e0b3     0xcda2 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans2.ltrans.o
- .debug_loc     0x0002ae55     0xe2bd C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans3.ltrans.o
- .debug_loc     0x00039112     0xea33 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans4.ltrans.o
- .debug_loc     0x00047b45     0xfdb3 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans5.ltrans.o
- .debug_loc     0x000578f8     0xdaa1 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans6.ltrans.o
- .debug_loc     0x00065399     0xaff4 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans7.ltrans.o
+ .debug_loc     0x00000000     0xfe39 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans0.ltrans.o
+ .debug_loc     0x0000fe39     0xe27a C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans1.ltrans.o
+ .debug_loc     0x0001e0b3     0xcda2 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans2.ltrans.o
+ .debug_loc     0x0002ae55     0xe2bd C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans3.ltrans.o
+ .debug_loc     0x00039112     0xea33 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans4.ltrans.o
+ .debug_loc     0x00047b45     0xfdb3 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans5.ltrans.o
+ .debug_loc     0x000578f8     0xdaa1 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans6.ltrans.o
+ .debug_loc     0x00065399     0xaff4 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans7.ltrans.o
 
 .debug_aranges  0x00000000      0x220
  .debug_aranges
-                0x00000000       0x48 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans0.ltrans.o
+                0x00000000       0x48 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans0.ltrans.o
  .debug_aranges
-                0x00000048       0x68 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans1.ltrans.o
+                0x00000048       0x68 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans1.ltrans.o
  .debug_aranges
-                0x000000b0       0x58 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans2.ltrans.o
+                0x000000b0       0x58 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans2.ltrans.o
  .debug_aranges
-                0x00000108       0x40 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans3.ltrans.o
+                0x00000108       0x40 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans3.ltrans.o
  .debug_aranges
-                0x00000148       0x20 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans4.ltrans.o
+                0x00000148       0x20 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans4.ltrans.o
  .debug_aranges
-                0x00000168       0x40 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans5.ltrans.o
+                0x00000168       0x40 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans5.ltrans.o
  .debug_aranges
-                0x000001a8       0x40 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans6.ltrans.o
+                0x000001a8       0x40 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans6.ltrans.o
  .debug_aranges
-                0x000001e8       0x38 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans7.ltrans.o
+                0x000001e8       0x38 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans7.ltrans.o
 
 .debug_ranges   0x00000000     0xe628
- .debug_ranges  0x00000000     0x2b98 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans0.ltrans.o
- .debug_ranges  0x00002b98     0x1ad8 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans1.ltrans.o
- .debug_ranges  0x00004670     0x24f0 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans2.ltrans.o
- .debug_ranges  0x00006b60     0x2210 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans3.ltrans.o
- .debug_ranges  0x00008d70     0x2078 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans4.ltrans.o
- .debug_ranges  0x0000ade8     0x1558 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans5.ltrans.o
- .debug_ranges  0x0000c340     0x13e0 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans6.ltrans.o
- .debug_ranges  0x0000d720      0xf08 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans7.ltrans.o
+ .debug_ranges  0x00000000     0x2b98 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans0.ltrans.o
+ .debug_ranges  0x00002b98     0x1ad8 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans1.ltrans.o
+ .debug_ranges  0x00004670     0x24f0 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans2.ltrans.o
+ .debug_ranges  0x00006b60     0x2210 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans3.ltrans.o
+ .debug_ranges  0x00008d70     0x2078 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans4.ltrans.o
+ .debug_ranges  0x0000ade8     0x1558 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans5.ltrans.o
+ .debug_ranges  0x0000c340     0x13e0 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans6.ltrans.o
+ .debug_ranges  0x0000d720      0xf08 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans7.ltrans.o
 
 .debug_line     0x00000000    0x1e62d
- .debug_line    0x00000000     0x593f C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans0.ltrans.o
- .debug_line    0x0000593f     0x3054 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans1.ltrans.o
- .debug_line    0x00008993     0x3bff C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans2.ltrans.o
- .debug_line    0x0000c592     0x3fe7 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans3.ltrans.o
- .debug_line    0x00010579     0x39d3 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans4.ltrans.o
- .debug_line    0x00013f4c     0x34d0 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans5.ltrans.o
- .debug_line    0x0001741c     0x3b25 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans6.ltrans.o
- .debug_line    0x0001af41     0x36ec C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans7.ltrans.o
+ .debug_line    0x00000000     0x593f C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans0.ltrans.o
+ .debug_line    0x0000593f     0x3054 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans1.ltrans.o
+ .debug_line    0x00008993     0x3bff C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans2.ltrans.o
+ .debug_line    0x0000c592     0x3fe7 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans3.ltrans.o
+ .debug_line    0x00010579     0x39d3 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans4.ltrans.o
+ .debug_line    0x00013f4c     0x34d0 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans5.ltrans.o
+ .debug_line    0x0001741c     0x3b25 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans6.ltrans.o
+ .debug_line    0x0001af41     0x36ec C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans7.ltrans.o
 
 .debug_str      0x00000000    0x460db
- .debug_str     0x00000000    0x1f017 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans0.ltrans.o
+ .debug_str     0x00000000    0x1f017 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans0.ltrans.o
                               0x20b7c (size before relaxing)
- .debug_str     0x0001f017     0x8826 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans1.ltrans.o
+ .debug_str     0x0001f017     0x8826 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans1.ltrans.o
                               0x18fb3 (size before relaxing)
- .debug_str     0x0002783d     0x7ebf C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans2.ltrans.o
+ .debug_str     0x0002783d     0x7ebf C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans2.ltrans.o
                               0x1bd2c (size before relaxing)
- .debug_str     0x0002f6fc     0x5842 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans3.ltrans.o
+ .debug_str     0x0002f6fc     0x5842 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans3.ltrans.o
                                0xfba2 (size before relaxing)
- .debug_str     0x00034f3e     0x31de C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans4.ltrans.o
+ .debug_str     0x00034f3e     0x31de C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans4.ltrans.o
                                0xd4d2 (size before relaxing)
- .debug_str     0x0003811c     0x6752 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans5.ltrans.o
+ .debug_str     0x0003811c     0x6752 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans5.ltrans.o
                               0x1a99e (size before relaxing)
- .debug_str     0x0003e86e     0x3736 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans6.ltrans.o
+ .debug_str     0x0003e86e     0x3736 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans6.ltrans.o
                               0x16fdd (size before relaxing)
- .debug_str     0x00041fa4     0x4137 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans7.ltrans.o
+ .debug_str     0x00041fa4     0x4137 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans7.ltrans.o
                               0x1c8cc (size before relaxing)
 
 .debug_frame    0x00000000     0x934c
- .debug_frame   0x00000000     0x118c C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans0.ltrans.o
- .debug_frame   0x0000118c      0xfa4 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans1.ltrans.o
- .debug_frame   0x00002130      0xe44 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans2.ltrans.o
- .debug_frame   0x00002f74     0x118c C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans3.ltrans.o
- .debug_frame   0x00004100      0xdec C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans4.ltrans.o
- .debug_frame   0x00004eec     0x1650 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans5.ltrans.o
- .debug_frame   0x0000653c     0x1308 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans6.ltrans.o
- .debug_frame   0x00007844     0x1120 C:\Users\nick\AppData\Local\Temp\cclW87YU.ltrans7.ltrans.o
+ .debug_frame   0x00000000     0x118c C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans0.ltrans.o
+ .debug_frame   0x0000118c      0xfa4 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans1.ltrans.o
+ .debug_frame   0x00002130      0xe44 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans2.ltrans.o
+ .debug_frame   0x00002f74     0x118c C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans3.ltrans.o
+ .debug_frame   0x00004100      0xdec C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans4.ltrans.o
+ .debug_frame   0x00004eec     0x1650 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans5.ltrans.o
+ .debug_frame   0x0000653c     0x1308 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans6.ltrans.o
+ .debug_frame   0x00007844     0x1120 C:\Users\nick\AppData\Local\Temp\cchSrk1A.ltrans7.ltrans.o
  .debug_frame   0x00008964       0x30 c:/siliconlabs/simplicitystudio/v4/developer/toolchains/gnu_arm/7.2_2017q4/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m/fpv4-sp/softfp\libm.a(lib_a-s_ceil.o)
  .debug_frame   0x00008994       0xac c:/siliconlabs/simplicitystudio/v4/developer/toolchains/gnu_arm/7.2_2017q4/bin/../lib/gcc/arm-none-eabi/7.2.1/thumb/v7e-m/fpv4-sp/softfp\libgcc.a(_arm_addsubdf3.o)
  .debug_frame   0x00008a40       0xc4 c:/siliconlabs/simplicitystudio/v4/developer/toolchains/gnu_arm/7.2_2017q4/bin/../lib/gcc/arm-none-eabi/7.2.1/thumb/v7e-m/fpv4-sp/softfp\libgcc.a(_arm_cmpdf2.o)
