@@ -104,7 +104,39 @@ static void handle_gecko_event(uint32_t evt_id, struct gecko_cmd_packet *evt);
 void mesh_native_bgapi_init(void);
 bool mesh_bgapi_listener(struct gecko_cmd_packet *evt);
 
-/*************************************** FUNCTIONS ***************************************/
+/*************************************** BT FUNCTIONS ***************************************/
+
+/**
+ * Switch node initialization. This is called at each boot if provisioning is already done.
+ * Otherwise this function is called after provisioning is completed.
+ */
+void switch_node_init(void)
+{
+  mesh_lib_init(malloc, free, 8);
+
+  lpn_init();
+}
+
+void set_device_name(bd_addr *pAddr)
+{
+  char name[20];
+  uint16 res;
+
+  // create unique device name using the last two bytes of the Bluetooth address
+  sprintf(name, "switch node %x:%x", pAddr->addr[1], pAddr->addr[0]);
+
+  printf("Device name: '%s'\r\n", name);
+
+  res = gecko_cmd_gatt_server_write_attribute_value(gattdb_device_name, 0, strlen(name), (uint8 *)name)->result;
+  if (res) {
+    printf("gecko_cmd_gatt_server_write_attribute_value() failed, code %x\r\n", res);
+  }
+
+  // show device name on the LCD
+  DI_Print(name, DI_ROW_NAME);
+}
+
+/*************************************** BUTTON FUNCTIONS ***************************************/
 
 /**
  * This is a callback function that is invoked each time a GPIO interrupt in one of the pushbutton
@@ -146,6 +178,15 @@ void enable_button_interrupts(void)
   GPIOINT_CallbackRegister(BSP_BUTTON1_PIN, gpioint);
 }
 
+static void button_init()
+{
+  // configure pushbutton PB0 and PB1 as inputs, with pull-up enabled
+  GPIO_PinModeSet(BSP_BUTTON0_PORT, BSP_BUTTON0_PIN, gpioModeInputPull, 1);
+  GPIO_PinModeSet(BSP_BUTTON1_PORT, BSP_BUTTON1_PIN, gpioModeInputPull, 1);
+}
+
+/*************************************** SEND FUNCTIONS ***************************************/
+
 void send_block_status_update()
 {
   uint16 resp;
@@ -174,16 +215,7 @@ void send_block_status_update()
   }
 }
 
-static void button_init()
-{
-  // configure pushbutton PB0 and PB1 as inputs, with pull-up enabled
-  GPIO_PinModeSet(BSP_BUTTON0_PORT, BSP_BUTTON0_PIN, gpioModeInputPull, 1);
-  GPIO_PinModeSet(BSP_BUTTON1_PORT, BSP_BUTTON1_PIN, gpioModeInputPull, 1);
-}
-
-/*
- *  MAIN MAIN MAIN MAIN MAIN MAIN MAIN MAIN
- */
+/*************************************** MAIN ***************************************/
 
 int main()
 {
@@ -203,21 +235,34 @@ int main()
   gecko_bgapi_class_system_init();
   gecko_bgapi_class_le_gap_init();
   gecko_bgapi_class_le_connection_init();
-  gecko_bgapi_class_gatt_init();
+  //gecko_bgapi_class_gatt_init();
   gecko_bgapi_class_gatt_server_init();
   gecko_bgapi_class_endpoint_init();
   gecko_bgapi_class_hardware_init();
   gecko_bgapi_class_flash_init();
   gecko_bgapi_class_test_init();
-  gecko_bgapi_class_sm_init();
-  mesh_native_bgapi_init();
+  //gecko_bgapi_class_sm_init();
+  //mesh_native_bgapi_init();
+  gecko_bgapi_class_mesh_node_init();
+  //gecko_bgapi_class_mesh_prov_init();
+  gecko_bgapi_class_mesh_proxy_init();
+  gecko_bgapi_class_mesh_proxy_server_init();
+  //gecko_bgapi_class_mesh_proxy_client_init();
+  gecko_bgapi_class_mesh_generic_client_init();
+  //gecko_bgapi_class_mesh_generic_server_init();
+  //gecko_bgapi_class_mesh_vendor_model_init();
+  //gecko_bgapi_class_mesh_health_client_init();
+  //gecko_bgapi_class_mesh_health_server_init();
+  //gecko_bgapi_class_mesh_test_init();
+  //gecko_bgapi_class_mesh_lpn_init();
+  //gecko_bgapi_class_mesh_friend_init();
 
-  gecko_initCoexHAL();
-  RETARGET_SerialInit();
+  gecko_initCoexHAL();			// wifi coexistence
+  RETARGET_SerialInit();  		//retarget printf()
 
-  button_init();
+  button_init();				//setup buttons
   enable_button_interrupts();
-  DI_Init();
+  DI_Init();					//setup display
 
 
   while (1) {
