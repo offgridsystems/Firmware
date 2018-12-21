@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!--Custom BLE GATT-->
-<gatt generic_attribute_service="true" header="gatt_db.h" name="Custom BLE GATT" out="gatt_db.c" prefix="gattdb_">
+<!--Custom BLE GATT--><gatt generic_attribute_service="true" header="gatt_db.h" name="Custom BLE GATT" out="gatt_db.c" prefix="gattdb_">
   <capabilities_declare>
     <capability enable="false">mesh_provisioning_service</capability>
     <capability enable="false">mesh_proxy_service</capability>
@@ -13,7 +12,7 @@
     <!--Device Name-->
     <characteristic id="device_name" name="Device Name" sourceId="org.bluetooth.characteristic.gap.device_name" uuid="2A00">
       <informativeText/>
-      <value length="7" type="utf-8" variable_length="true">BM Mesh</value>
+      <value length="20" type="utf-8" variable_length="true">BlueGecko Mesh Demo </value>
       <properties const="false" const_requirement="optional" read="true" read_requirement="mandatory"/>
     </characteristic>
     
@@ -32,7 +31,7 @@
     <!--Manufacturer Name String-->
     <characteristic name="Manufacturer Name String" sourceId="org.bluetooth.characteristic.manufacturer_name_string" uuid="2A29">
       <informativeText>Abstract:  The value of this characteristic is a UTF-8 string representing the name of the manufacturer of the device.  </informativeText>
-      <value length="11" type="utf-8" variable_length="true">Offgrid Sys</value>
+      <value length="12" type="utf-8" variable_length="false">Silicon Labs</value>
       <properties const="true" const_requirement="optional" read="true" read_requirement="mandatory"/>
     </characteristic>
   </service>

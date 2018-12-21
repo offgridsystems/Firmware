@@ -13,14 +13,14 @@
         "NumS": "4",
         "NumV": "0",
         "SIG Models": [
-          "1000",
-          "Generic OnOff Server",
           "3",
           "Health Client",
-          "2",
-          "Health Server",
+          "1000",
+          "Generic OnOff Server",
           "0",
-          "Configuration Server"]
+          "Configuration Server",
+          "2",
+          "Health Server"]
         ,
         "Vendor Models": [
           ]
@@ -46,6 +46,7 @@
     "GATT_TXQ_SIZE": "4",
     "MAX_PROVISIONED_DEVICES": "0",
     "MAX_PROVISIONED_DEVICE_NETKEYS": "0",
+    "MAX_PROVISIONED_DEVICE_APPKEYS": "",
     "MAX_FOUNDATION_CLIENT_CMDS": "0",
     "MAX_FRIENDSHIPS": "1",
     "FRIEND_MAX_SUBS_LIST": "5",

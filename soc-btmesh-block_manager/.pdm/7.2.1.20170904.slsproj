@@ -262,44 +262,4 @@
   <file name="init_mcu.h" uri="studio:/project/init_mcu.h"/>
   <file name="init_board.h" uri="studio:/project/init_board.h"/>
   <file name="init_mcu.c" uri="studio:/project/init_mcu.c"/>
-  <includePath uri="studio:/project/"/>
-  <includePath uri="studio:/project/platform/Device/SiliconLabs/EFR32BG13P/Include"/>
-  <includePath uri="studio:/project/platform/CMSIS/Include"/>
-  <includePath uri="studio:/project/hardware/kit/common/bsp"/>
-  <includePath uri="studio:/project/platform/emlib/inc"/>
-  <includePath uri="studio:/project/protocol/bluetooth/bt_mesh/inc/common"/>
-  <includePath uri="studio:/project/hardware/kit/common/halconfig"/>
-  <includePath uri="studio:/project/platform/emlib/src"/>
-  <includePath uri="studio:/project/protocol/bluetooth/bt_mesh/src"/>
-  <includePath uri="studio:/project/hardware/kit/common/drivers"/>
-  <includePath uri="studio:/project/protocol/bluetooth/bt_mesh/inc"/>
-  <includePath uri="studio:/project/platform/radio/rail_lib/common"/>
-  <includePath uri="studio:/project/protocol/bluetooth/bt_mesh/inc/soc"/>
-  <includePath uri="studio:/project/platform/bootloader/api"/>
-  <includePath uri="studio:/project/platform/emdrv/uartdrv/inc"/>
-  <includePath uri="studio:/project/hardware/kit/EFR32BG13_BRD4104A/config"/>
-  <includePath uri="studio:/project/platform/radio/rail_lib/chip/efr32"/>
-  <includePath uri="studio:/project/platform/Device/SiliconLabs/EFR32BG13P/Source/GCC"/>
-  <includePath uri="studio:/project/platform/emdrv/gpiointerrupt/inc"/>
-  <includePath uri="studio:/project/platform/Device/SiliconLabs/EFR32BG13P/Source"/>
-  <includePath uri="studio:/project/platform/emdrv/sleep/inc"/>
-  <includePath uri="studio:/project/platform/emdrv/common/inc"/>
-  <includePath uri="studio:/project/platform/halconfig/inc/hal-config"/>
-  <includePath uri="studio:/project/platform/emdrv/sleep/src"/>
-  <macroDefinition name="__HEAP_SIZE" value="0x1200"/>
-  <macroDefinition name="MESH_LIB_NATIVE" value=""/>
-  <macroDefinition name="__STACK_SIZE" value="0x1000"/>
-  <macroDefinition name="HAL_CONFIG" value="1"/>
-  <toolOption partCompatibility=".*" toolId="iar.arm.toolchain.linker.v5.4.0" optionId="iar.arm.toolchain.linker.option.icfFile.v5.4.0" value="${workspace_loc:/${ProjName}/efr32bg13p632f512gm48.icf}"/>
-  <toolOption toolchainCompatibility="gcc" toolId="com.silabs.ide.si32.gcc.cdt.managedbuild.toolchain.exe" optionId="com.silabs.ide.si32.gcc.cdt.managedbuild.tool.gnu.c.linker.script" value="${workspace_loc:/${ProjName}/efr32bg13p632f512gm48.ld}"/>
-  <toolOption toolId="com.silabs.ide.si32.gcc.cdt.managedbuild.tool.gnu.c.linker.base" optionId="gnu.c.link.option.userobjs">
-    <toolListOption toolchainCompatibility="com.silabs.ss.tool.ide.arm.toolchain.gnu.cdt:7.2.1.20170904 " value="${workspace_loc:/${ProjName}/protocol/bluetooth/lib/EFR32XG13X/GCC/libcoex.a}"/>
-    <toolListOption toolchainCompatibility="com.silabs.ss.tool.ide.arm.toolchain.gnu.cdt:7.2.1.20170904 " value="${workspace_loc:/${ProjName}/protocol/bluetooth/lib/EFR32XG13X/GCC/binapploader.o}"/>
-    <toolListOption toolchainCompatibility="com.silabs.ss.tool.ide.arm.toolchain.gnu.cdt:7.2.1.20170904 " value="${workspace_loc:/${ProjName}/protocol/bluetooth/lib/EFR32XG13X/GCC/libbluetooth_mesh.a}"/>
-  </toolOption>
-  <toolOption toolId="com.silabs.ide.si32.gcc.cdt.managedbuild.tool.gnu.cpp.linker" optionId="gnu.cpp.link.option.userobjs">
-    <toolListOption toolchainCompatibility="com.silabs.ss.tool.ide.arm.toolchain.gnu.cdt:7.2.1.20170904 " value="${workspace_loc:/${ProjName}/protocol/bluetooth/lib/EFR32XG13X/GCC/libcoex.a}"/>
-    <toolListOption toolchainCompatibility="com.silabs.ss.tool.ide.arm.toolchain.gnu.cdt:7.2.1.20170904 " value="${workspace_loc:/${ProjName}/protocol/bluetooth/lib/EFR32XG13X/GCC/binapploader.o}"/>
-    <toolListOption toolchainCompatibility="com.silabs.ss.tool.ide.arm.toolchain.gnu.cdt:7.2.1.20170904 " value="${workspace_loc:/${ProjName}/protocol/bluetooth/lib/EFR32XG13X/GCC/libbluetooth_mesh.a}"/>
-  </toolOption>
 </project>

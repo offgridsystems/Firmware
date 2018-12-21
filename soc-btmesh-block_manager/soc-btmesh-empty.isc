@@ -1,5 +1,5 @@
 #ISD afv6
-# Simplicity Studio version: 5.0.0.201811140904-1361
+# Simplicity Studio version: 5.1.1.201812141635-1403
 
 # Application configuration
 stackId: com.silabs.sdk.stack.btmesh
@@ -36,7 +36,7 @@ appPlugin: slot-manager=false
     <informativeText>Abstract:  The generic_access service contains generic information about the device. All available Characteristics are readonly.  </informativeText>
     <characteristic id="device_name" name="Device Name" sourceId="org.bluetooth.characteristic.gap.device_name" uuid="2A00">
       <informativeText/>
-      <value length="20" type="utf-8" variable_length="true">BlueGecko Mesh Demo </value>
+      <value length="7" type="utf-8" variable_length="true">BM Mesh</value>
       <properties const="false" const_requirement="optional" read="true" read_requirement="mandatory"/>
     </characteristic>
     <characteristic name="Appearance" sourceId="org.bluetooth.characteristic.gap.appearance" uuid="2A01">
@@ -49,7 +49,7 @@ appPlugin: slot-manager=false
     <informativeText>Abstract:  The Device Information Service exposes manufacturer and/or vendor information about a device.  Summary:  This service exposes manufacturer information about a device. The Device Information Service is instantiated as a Primary Service. Only one instance of the Device Information Service is exposed on a device.  </informativeText>
     <characteristic name="Manufacturer Name String" sourceId="org.bluetooth.characteristic.manufacturer_name_string" uuid="2A29">
       <informativeText>Abstract:  The value of this characteristic is a UTF-8 string representing the name of the manufacturer of the device.  </informativeText>
-      <value length="12" type="utf-8" variable_length="false">Silicon Labs</value>
+      <value length="11" type="utf-8" variable_length="true">Offgrid Sys</value>
       <properties const="true" const_requirement="optional" read="true" read_requirement="mandatory"/>
     </characteristic>
   </service>
@@ -111,14 +111,14 @@ appPlugin: slot-manager=false
         "NumS": "4",
         "NumV": "0",
         "SIG Models": [
-          "1000",
-          "Generic OnOff Server",
           "3",
           "Health Client",
-          "2",
-          "Health Server",
+          "1000",
+          "Generic OnOff Server",
           "0",
-          "Configuration Server"]
+          "Configuration Server",
+          "2",
+          "Health Server"]
         ,
         "Vendor Models": [
           ]
@@ -143,6 +143,7 @@ appPlugin: slot-manager=false
     "GATT_TXQ_SIZE": "4",
     "MAX_PROVISIONED_DEVICES": "0",
     "MAX_PROVISIONED_DEVICE_NETKEYS": "0",
+    "MAX_PROVISIONED_DEVICE_APPKEYS": "",
     "MAX_FOUNDATION_CLIENT_CMDS": "0",
     "MAX_FRIENDSHIPS": "1",
     "FRIEND_MAX_SUBS_LIST": "5",

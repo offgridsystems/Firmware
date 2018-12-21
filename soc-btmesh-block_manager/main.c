@@ -110,14 +110,14 @@ bool mesh_bgapi_listener(struct gecko_cmd_packet *evt);
 /*************************************** BT FUNCTIONS ***************************************/
 
 /**
- * Switch node initialization. This is called at each boot if provisioning is already done.
+ * node initialization. This is called at each boot if provisioning is already done.
  * Otherwise this function is called after provisioning is completed.
  */
-void switch_node_init(void)
+void block_manager_init(void)
 {
   mesh_lib_init(malloc, free, 8);
 
-  lpn_init();
+  //lpn_init(); //friend mode call, todo
 }
 
 void set_device_name(bd_addr *pAddr)
@@ -126,7 +126,7 @@ void set_device_name(bd_addr *pAddr)
   uint16 res;
 
   // create unique device name using the last two bytes of the Bluetooth address
-  sprintf(name, "switch node %x:%x", pAddr->addr[1], pAddr->addr[0]);
+  sprintf(name, "Block Manager %x:%x", pAddr->addr[1], pAddr->addr[0]);
 
   printf("Device name: '%s'\r\n", name);
 
@@ -310,7 +310,7 @@ static void handle_gecko_event(uint32_t evt_id, struct gecko_cmd_packet *evt)
     	    _elem_index = 0;   					// index of primary element is zero
 
     	    enable_button_interrupts();
-    	    switch_node_init();
+    	    block_manager_init();
 
     	    DI_Print("provisioned", DI_ROW_STATUS);
     	} else {
@@ -332,7 +332,7 @@ static void handle_gecko_event(uint32_t evt_id, struct gecko_cmd_packet *evt)
 
     case gecko_evt_mesh_node_provisioned_id:
         _elem_index = 0;   // index of primary element is zero.
-        switch_node_init();
+        block_manager_init();
         printf("node provisioned, got address=%x\r\n", evt->data.evt_mesh_node_provisioned.address);
         // stop LED blinking when provisioning complete
         // gecko_cmd_hardware_set_soft_timer(0, TIMER_ID_PROVISIONING, 0);
@@ -382,7 +382,7 @@ static void handle_gecko_event(uint32_t evt_id, struct gecko_cmd_packet *evt)
     		if (num_connections > 0) {
     			if (--num_connections == 0) {
     				DI_Print("", DI_ROW_CONNECTION);
-    				lpn_init();
+    				//lpn_init();
     			}
     		}
     	break;
@@ -404,6 +404,7 @@ static void handle_gecko_event(uint32_t evt_id, struct gecko_cmd_packet *evt)
 
       /************** SYS EVENTS **************/
     case gecko_evt_system_boot_id:  // device started, radio ready
+    	;
         struct gecko_msg_system_get_bt_address_rsp_t *pAddr = gecko_cmd_system_get_bt_address();
         set_device_name(&pAddr->address);
         // Initialize Mesh stack in Node operation mode, wait for initialized event
@@ -420,7 +421,7 @@ static void handle_gecko_event(uint32_t evt_id, struct gecko_cmd_packet *evt)
       }
       break;
     default:
-    	printf("unhandled evt: %8.8x class %2.2x method %2.2x\r\n", evt_id, (evt_id >> 16) & 0xFF, (evt_id >> 24) & 0xFF);
+    	//printf("unhandled evt: %8.8x class %2.2x method %2.2x\r\n", evt_id, (evt_id >> 16) & 0xFF, (evt_id >> 24) & 0xFF);
       break;
   }
 }
