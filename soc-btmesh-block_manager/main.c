@@ -95,8 +95,11 @@ const gecko_configuration_t config = {
 /*************************************** GLOBAL VAR ***************************************/
 
 static uint16 _elem_index = 0xffff; // for indexing elements of the node
+static uint16 _my_address = 0;    	// Address of the Primary Element of the Node
 uint16_t sample_data = 2305;		// test data
 static uint8 trid = 0;        		// transaction identifier
+static uint8 num_connections = 0;   // number of active Bluetooth connections
+static uint8 conn_handle = 0xFF;    // handle of the last opened LE connection
 
 /*************************************** PROTOTYPES ******************************************/
 
@@ -261,7 +264,7 @@ int main()
   RETARGET_SerialInit();  		//retarget printf()
 
   button_init();				//setup buttons
-  enable_button_interrupts();
+
   DI_Init();					//setup display
 
 
@@ -276,46 +279,148 @@ int main()
 
 static void handle_gecko_event(uint32_t evt_id, struct gecko_cmd_packet *evt)
 {
-  switch (evt_id) {
-    case gecko_evt_dfu_boot_id:
-      //gecko_cmd_le_gap_set_advertising_timing(0, 1000*adv_interval_ms/625, 1000*adv_interval_ms/625, 0, 0);
-      gecko_cmd_le_gap_set_mode(2, 2);
-      break;
-    case gecko_evt_system_boot_id:
-      // Initialize Mesh stack in Node operation mode, wait for initialized event
-      gecko_cmd_mesh_node_init();
-      break;
-    case gecko_evt_mesh_node_initialized_id:
-      // The Node is now initialized, start unprovisioned Beaconing using PB-Adv Bearer
-      gecko_cmd_mesh_node_start_unprov_beaconing(0x1);
-      break;
+	uint16 result;
+	char buf[30];
+
+	struct gecko_msg_mesh_node_provisioning_failed_evt_t  *prov_fail_evt;
+
+	if (NULL == evt) {
+		return;
+	}
+
+	switch (evt_id) {
+  	/************** BT EVENTS **************/
+
+    case gecko_evt_dfu_boot_id:  				//device firmware upgrade signal
+    	//gecko_cmd_le_gap_set_advertising_timing(0, 1000*adv_interval_ms/625, 1000*adv_interval_ms/625, 0, 0);
+    	gecko_cmd_le_gap_set_mode(2, 2);
+    	break;
+
+    case gecko_evt_mesh_node_initialized_id:  	// bt stack is ready
+    	printf("node initialized\r\n");
+
+    	gecko_cmd_mesh_generic_client_init();
+
+    	struct gecko_msg_mesh_node_initialized_evt_t *pData = (struct gecko_msg_mesh_node_initialized_evt_t *)&(evt->data);
+
+    	if (pData->provisioned) {
+    		printf("node is provisioned. address:%x, ivi:%ld\r\n", pData->address, pData->ivi);
+
+    	    _my_address = pData->address;
+    	    _elem_index = 0;   					// index of primary element is zero
+
+    	    enable_button_interrupts();
+    	    switch_node_init();
+
+    	    DI_Print("provisioned", DI_ROW_STATUS);
+    	} else {
+    		printf("node is unprovisioned\r\n");
+    	    DI_Print("unprovisioned", DI_ROW_STATUS);
+    	    printf("starting unprovisioned beaconing...\r\n");
+    	    // The Node is now initialized, start unprovisioned Beaconing using PB-Adv Bearer
+    	    gecko_cmd_mesh_node_start_unprov_beaconing(0x1);
+    	    //gecko_cmd_mesh_node_start_unprov_beaconing(0x2);
+    	}
+    	break;
+
+    case gecko_evt_mesh_node_provisioning_started_id:
+    	printf("Started provisioning\r\n");
+        DI_Print("provisioning...", DI_ROW_STATUS);
+        // start timer for blinking LEDs to indicate which node is being provisioned
+        // gecko_cmd_hardware_set_soft_timer(32768 / 4, TIMER_ID_PROVISIONING, 0);
+        break;
+
+    case gecko_evt_mesh_node_provisioned_id:
+        _elem_index = 0;   // index of primary element is zero.
+        switch_node_init();
+        printf("node provisioned, got address=%x\r\n", evt->data.evt_mesh_node_provisioned.address);
+        // stop LED blinking when provisioning complete
+        // gecko_cmd_hardware_set_soft_timer(0, TIMER_ID_PROVISIONING, 0);
+        // LED_set_state(LED_STATE_OFF);
+        DI_Print("provisioned", DI_ROW_STATUS);
+        enable_button_interrupts();
+        break;
+
+    case gecko_evt_mesh_node_provisioning_failed_id:
+        prov_fail_evt = (struct gecko_msg_mesh_node_provisioning_failed_evt_t  *)&(evt->data);
+        printf("provisioning failed, code %x\r\n", prov_fail_evt->result);
+        DI_Print("prov failed", DI_ROW_STATUS);
+        // start a one-shot timer that will trigger soft reset after small delay
+        // gecko_cmd_hardware_set_soft_timer(2 * 32768, TIMER_ID_RESTART, 1);
+        break;
+
+    // This event is received when a Configuration Client has deployed a new network or application key to the node.
+    case gecko_evt_mesh_node_key_added_id:
+        printf("got new %s key with index %x\r\n",
+        		evt->data.evt_mesh_node_key_added.type == 0 ? "network" : "application",
+                evt->data.evt_mesh_node_key_added.index);
+        break;
+
+    // Informative. This event notifies that a remote Configuration Client has changed the configuration of a local model.
+    case gecko_evt_mesh_node_model_config_changed_id:
+        printf("model config changed\r\n");
+        break;
+
+    case gecko_evt_le_connection_opened_id:
+        printf("evt:gecko_evt_le_connection_opened_id\r\n");
+        num_connections++;
+        conn_handle = evt->data.evt_le_connection_opened.connection;
+        DI_Print("connected", DI_ROW_CONNECTION);
+        // turn off lpn feature after GATT connection is opened
+        gecko_cmd_mesh_lpn_deinit();
+        DI_Print("LPN off", DI_ROW_LPN);
+        break;
+
     case gecko_evt_le_connection_closed_id:
-      /* Check if need to boot to dfu mode */
-      if (boot_to_dfu) {
-        /* Enter to DFU OTA mode */
-        gecko_cmd_system_reset(2);
-      }
-      break;
+    	/* Check if need to boot to dfu mode */
+    	if (boot_to_dfu) {
+    		/* Enter to DFU OTA mode */
+    		gecko_cmd_system_reset(2);
+    	}
+    	printf("evt:conn closed, reason 0x%x\r\n", evt->data.evt_le_connection_closed.reason);
+    	conn_handle = 0xFF;
+    		if (num_connections > 0) {
+    			if (--num_connections == 0) {
+    				DI_Print("", DI_ROW_CONNECTION);
+    				lpn_init();
+    			}
+    		}
+    	break;
+
     case gecko_evt_gatt_server_user_write_request_id:
-      if (evt->data.evt_gatt_server_user_write_request.characteristic == gattdb_ota_control) {
+    	if (evt->data.evt_gatt_server_user_write_request.characteristic == gattdb_ota_control) {
         /* Set flag to enter to OTA mode */
         boot_to_dfu = 1;
         /* Send response to Write Request */
         gecko_cmd_gatt_server_send_user_write_response(
-          evt->data.evt_gatt_server_user_write_request.connection,
-          gattdb_ota_control,
-          bg_err_success);
+       		evt->data.evt_gatt_server_user_write_request.connection,
+			gattdb_ota_control,
+			bg_err_success);
 
         /* Close connection to enter to DFU OTA mode */
         gecko_cmd_le_connection_close(evt->data.evt_gatt_server_user_write_request.connection);
-      }
-      break;
-    case gecko_evt_system_external_signal_id:
+    	}
+    	break;
+
+      /************** SYS EVENTS **************/
+    case gecko_evt_system_boot_id:  // device started, radio ready
+        struct gecko_msg_system_get_bt_address_rsp_t *pAddr = gecko_cmd_system_get_bt_address();
+        set_device_name(&pAddr->address);
+        // Initialize Mesh stack in Node operation mode, wait for initialized event
+        result = gecko_cmd_mesh_node_init()->result;
+        if (result) {
+        	sprintf(buf, "init failed (0x%x)", result);
+            DI_Print(buf, DI_ROW_STATUS);
+        }
+        break;
+
+    case gecko_evt_system_external_signal_id: // aka button press
       if (evt->data.evt_system_external_signal.extsignals & 0x01) {
     	send_block_status_update();
       }
       break;
     default:
+    	printf("unhandled evt: %8.8x class %2.2x method %2.2x\r\n", evt_id, (evt_id >> 16) & 0xFF, (evt_id >> 24) & 0xFF);
       break;
   }
 }
