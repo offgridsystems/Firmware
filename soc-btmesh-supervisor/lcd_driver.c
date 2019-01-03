@@ -22,7 +22,7 @@ void LCD_init(void)
 {
   memset(&LCD_data, 0, sizeof(LCD_data));
 
-  graphInit("SILICON LABORATORIES\nBluetooth Mesh Demo\n\n");
+  graphInit("OFFGRID SYSTEMS\n\n\n");
 
   LCD_write("initializing", LCD_ROW_STATUS);
 }

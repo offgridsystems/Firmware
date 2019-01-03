@@ -1,21 +1,9 @@
 /***********************************************************************************************//**
  * \file   main.c
- * \brief  Supervisor Main code
+ * \brief  Supervisor Main Code
  *
  * 11/27/18 Make it do something
  *
- *
- *
- *
- *
- * This example demonstrates the bare minimum needed for a Blue Gecko BT Mesh C application.
- * The application starts unprovisioned Beaconing after boot
- ***************************************************************************************************
- * <b> (C) Copyright 2017 Silicon Labs, http://www.silabs.com</b>
- ***************************************************************************************************
- * This file is licensed under the Silabs License Agreement. See the file
- * "Silabs_License_Agreement.txt" for details. Before using this software for
- * any purpose, you must agree to the terms of that agreement.
  **************************************************************************************************/
 
 /* C Standard Library headers */
@@ -43,6 +31,8 @@
 #include "em_emu.h"
 #include "em_cmu.h"
 #include <em_gpio.h>
+#include <em_rtcc.h>
+#include <gpiointerrupt.h>
 
 /* Device initialization header */
 #include "hal-config.h"
@@ -56,24 +46,13 @@
 #include "bspconfig.h"
 #endif
 
-/***********************************************************************************************//**
- * @addtogroup Application
- * @{
- **************************************************************************************************/
-
-/***********************************************************************************************//**
- * @addtogroup app
- * @{
- **************************************************************************************************/
+/*************************************** BT SETUP ***************************************/
 
 // Maximum number of simultaneous Bluetooth connections
 #define MAX_CONNECTIONS 2
 
 // heap for Bluetooth stack
 uint8_t bluetooth_stack_heap[DEFAULT_BLUETOOTH_HEAP(MAX_CONNECTIONS) + BTMESH_HEAP_SIZE + 1760];
-
-// Flag for indicating DFU Reset must be performed
-uint8_t boot_to_dfu = 0;
 
 // Bluetooth advertisement set configuration
 //
@@ -87,9 +66,16 @@ uint8_t boot_to_dfu = 0;
 //
 #define MAX_ADVERTISERS (4 + MESH_CFG_MAX_NETKEYS)
 
+// set link layer priorities to  default
+static gecko_bluetooth_ll_priorities linklayer_priorities = GECKO_BLUETOOTH_PRIORITIES_DEFAULT;
+
 // bluetooth stack configuration
 extern const struct bg_gattdb_def bg_gattdb_data;
 
+// Flag for indicating DFU Reset must be performed
+uint8_t boot_to_dfu = 0;
+
+// Bluetooth stack configuration
 const gecko_configuration_t config =
 {
   .bluetooth.max_connections = MAX_CONNECTIONS,
@@ -100,21 +86,68 @@ const gecko_configuration_t config =
   .gattdb = &bg_gattdb_data,
   .btmesh_heap_size = BTMESH_HEAP_SIZE,
 #if (HAL_PA_ENABLE) && defined(FEATURE_PA_HIGH_POWER)
-  .pa.config_enable = 1, // Enable high power PA
-  .pa.input = GECKO_RADIO_PA_INPUT_VBAT, // Configure PA input to VBAT
-#endif // (HAL_PA_ENABLE) && defined(FEATURE_PA_HIGH_POWER)
+  .pa.config_enable = 1, 					// Enable high power PA
+  .pa.input = GECKO_RADIO_PA_INPUT_VBAT, 	// Configure PA input to VBAT
+#endif 										// (HAL_PA_ENABLE) && defined(FEATURE_PA_HIGH_POWER)
   .max_timers = 16,
 };
 
+/*************************************** GLOBAL VAR ***************************************/
+
+
+
+/*************************************** PROTOTYPES ******************************************/
+
 static void handle_gecko_event(uint32_t evt_id, struct gecko_cmd_packet *evt);
-
 void mesh_native_bgapi_init(void);
-
 bool mesh_bgapi_listener(struct gecko_cmd_packet *evt);
 
-/*
- * block status request - request for block to update the block managers data about specific block
+
+/*************************************** BT INIT ***************************************/
+
+/**
+ * node initialization. This is called at each boot if provisioning is already done.
+ * Otherwise this function is called after provisioning is completed.
  */
+void block_manager_init(void)
+{
+  mesh_lib_init(malloc, free, 8);
+
+  //lpn_init(); //friend mode call, todo
+}
+
+void set_device_name(bd_addr *pAddr)
+{
+  char name[20];
+  uint16 res;
+
+  // create unique device name using the last two bytes of the Bluetooth address
+  sprintf(name, "Block Manager %x:%x", pAddr->addr[1], pAddr->addr[0]);
+
+  printf("Device name: '%s'\r\n", name);
+
+  res = gecko_cmd_gatt_server_write_attribute_value(gattdb_device_name, 0, strlen(name), (uint8 *)name)->result;
+  if (res) {
+    printf("gecko_cmd_gatt_server_write_attribute_value() failed, code %x\r\n", res);
+  }
+
+  // show device name on the LCD
+  DI_Print(name, DI_ROW_NAME);
+}
+
+// Initialization of the models supported by this node. This function registers callbacks for
+// each of the supported models.
+static void init_models(void){
+  mesh_lib_generic_server_register_handler(MESH_DK_BLOCK_STATUS_SERVER_MODEL_ID,
+                                           0,
+                                           block_status_request,
+                                           block_status_change);
+}
+
+/*************************************** BT FUNCTIONS ***************************************/
+
+
+// block status request - request for block to update the block managers data about specific block
 static void block_status_request(uint16_t model_id,
                               	 uint16_t element_index,
 								 uint16_t client_addr,
@@ -123,37 +156,22 @@ static void block_status_request(uint16_t model_id,
 								 const struct mesh_generic_request *request,
 								 uint32_t transition_ms,
 								 uint16_t delay_ms,
-								 uint8_t request_flags)
-{
+								 uint8_t request_flags){
 	char buf[30];
 	sprintf(buf, "%x", client_addr);
 	DI_Print(buf, 1);
 	sprintf(buf, "ob_ntc1: %x", request->block_temp.temp_ob_ntc1);
 	DI_Print(buf, 2);
-
-
 }
 
 static void block_status_change(uint16_t model_id,
                                 uint16_t element_index,
 								const struct mesh_generic_state *current,
 								const struct mesh_generic_state *target,
-								uint32_t remaining_ms)
-{
-
+								uint32_t remaining_ms){
 }
 
-/**
- * Initialization of the models supported by this node. This function registers callbacks for
- * each of the supported models.
- */
-static void init_models(void)
-{
-  mesh_lib_generic_server_register_handler(MESH_DK_BLOCK_STATUS_SERVER_MODEL_ID,
-                                           0,
-                                           block_status_request,
-                                           block_status_change);
-}
+/*************************************** MAIN ***************************************/
 
 
 int main()
@@ -165,25 +183,42 @@ int main()
   // Initialize application
   initApp();
 
+  // Minimize advertisement latency by allowing the advertiser to always
+  // interrupt the scanner.
+  linklayer_priorities.scan_max = linklayer_priorities.adv_min + 1;
+
   gecko_stack_init(&config);
   gecko_bgapi_class_dfu_init();
   gecko_bgapi_class_system_init();
   gecko_bgapi_class_le_gap_init();
   gecko_bgapi_class_le_connection_init();
-  gecko_bgapi_class_gatt_init();
+  //gecko_bgapi_class_gatt_init();
   gecko_bgapi_class_gatt_server_init();
   gecko_bgapi_class_endpoint_init();
   gecko_bgapi_class_hardware_init();
   gecko_bgapi_class_flash_init();
   gecko_bgapi_class_test_init();
-  gecko_bgapi_class_sm_init();
-  mesh_native_bgapi_init();
+  //gecko_bgapi_class_sm_init();
+  //mesh_native_bgapi_init();
+  gecko_bgapi_class_mesh_node_init();
+  //gecko_bgapi_class_mesh_prov_init();
+  gecko_bgapi_class_mesh_proxy_init();
+  gecko_bgapi_class_mesh_proxy_server_init();
+  //gecko_bgapi_class_mesh_proxy_client_init();
+  gecko_bgapi_class_mesh_generic_client_init();
+  //gecko_bgapi_class_mesh_generic_server_init();
+  //gecko_bgapi_class_mesh_vendor_model_init();
+  //gecko_bgapi_class_mesh_health_client_init();
+  //gecko_bgapi_class_mesh_health_server_init();
+  //gecko_bgapi_class_mesh_test_init();
+  //gecko_bgapi_class_mesh_lpn_init();
+  //gecko_bgapi_class_mesh_friend_init();
 
-  gecko_initCoexHAL();
-  RETARGET_SerialInit();
+  gecko_initCoexHAL();			//wifi coexistence
+  RETARGET_SerialInit();		//retarget printf()
+  DI_Init();					//setup display
 
-  DI_Init();
-
+  //MAIN LOOPs
   while (1) {
     struct gecko_cmd_packet *evt = gecko_wait_event();
     bool pass = mesh_bgapi_listener(evt);
@@ -195,11 +230,23 @@ int main()
 
 static void handle_gecko_event(uint32_t evt_id, struct gecko_cmd_packet *evt)
 {
-  switch (evt_id) {
+	uint16 result;
+	char buf[30];
+
+	struct gecko_msg_mesh_node_provisioning_failed_evt_t  *prov_fail_evt;
+
+	if (NULL == evt) {
+		return;
+	}
+
+	switch (evt_id) {
+  	/************** BT EVENTS **************/
+
     case gecko_evt_dfu_boot_id:
       //gecko_cmd_le_gap_set_advertising_timing(0, 1000*adv_interval_ms/625, 1000*adv_interval_ms/625, 0, 0);
       gecko_cmd_le_gap_set_mode(2, 2);
       break;
+
     case gecko_evt_system_boot_id:
       // Initialize Mesh stack in Node operation mode, wait for initialized event
       gecko_cmd_mesh_node_init();
