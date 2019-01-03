@@ -107,7 +107,7 @@ static void handle_gecko_event(uint32_t evt_id, struct gecko_cmd_packet *evt);
 void mesh_native_bgapi_init(void);
 bool mesh_bgapi_listener(struct gecko_cmd_packet *evt);
 
-/*************************************** BT FUNCTIONS ***************************************/
+/*************************************** BT INIT ***************************************/
 
 /**
  * node initialization. This is called at each boot if provisioning is already done.
@@ -137,6 +137,36 @@ void set_device_name(bd_addr *pAddr)
 
   // show device name on the LCD
   DI_Print(name, DI_ROW_NAME);
+}
+
+/*************************************** BT FUNCTIONS ***************************************/
+
+void send_block_status_update()
+{
+  uint16 resp;
+  struct mesh_generic_request req;
+
+  req.kind = mesh_DK_request_block_temperature;
+  req.block_temp.temp_ob_ntc1 = sample_data;
+  trid++;
+
+  resp = gecko_cmd_mesh_generic_client_publish(
+	MESH_DK_BLOCK_STATUS_CLIENT_MODEL_ID,
+	_elem_index,								// element index
+    trid,										// transition identifier
+    0,   										// transition time in ms
+    0,											// delay
+    0,      									// flags
+	mesh_DK_request_block_temperature,			// type
+    2,     										// param len in bytes
+	(uint8*)&req.block_temp.temp_ob_ntc1     	// parameters data
+    )->result;
+
+  if (resp) {
+    printf("failed,code %x\r\n", resp);
+  } else {
+    printf("request sent");
+  }
 }
 
 /*************************************** BUTTON FUNCTIONS ***************************************/
@@ -188,36 +218,6 @@ static void button_init()
   GPIO_PinModeSet(BSP_BUTTON1_PORT, BSP_BUTTON1_PIN, gpioModeInputPull, 1);
 }
 
-/*************************************** SEND FUNCTIONS ***************************************/
-
-void send_block_status_update()
-{
-  uint16 resp;
-  struct mesh_generic_request req;
-
-  req.kind = mesh_DK_request_block_temperature;
-  req.block_temp.temp_ob_ntc1 = sample_data;
-  trid++;
-
-  resp = gecko_cmd_mesh_generic_client_publish(
-	MESH_DK_BLOCK_STATUS_CLIENT_MODEL_ID,
-	_elem_index,								// element index
-    trid,										// transition identifier
-    0,   										// transition time in ms
-    0,											// delay
-    0,      									// flags
-	mesh_DK_request_block_temperature,			// type
-    2,     										// param len in bytes
-	(uint8*)&req.block_temp.temp_ob_ntc1     	// parameters data
-    )->result;
-
-  if (resp) {
-    printf("failed,code %x\r\n", resp);
-  } else {
-    printf("request sent");
-  }
-}
-
 /*************************************** MAIN ***************************************/
 
 int main()
@@ -260,14 +260,12 @@ int main()
   //gecko_bgapi_class_mesh_lpn_init();
   //gecko_bgapi_class_mesh_friend_init();
 
-  gecko_initCoexHAL();			// wifi coexistence
+  gecko_initCoexHAL();			//wifi coexistence
   RETARGET_SerialInit();  		//retarget printf()
-
   button_init();				//setup buttons
-
   DI_Init();					//setup display
 
-
+  //MAIN LOOP
   while (1) {
     struct gecko_cmd_packet *evt = gecko_wait_event();
     bool pass = mesh_bgapi_listener(evt);
