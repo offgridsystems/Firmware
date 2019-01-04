@@ -377,30 +377,31 @@ static void handle_gecko_event(uint32_t evt_id, struct gecko_cmd_packet *evt)
     	}
     	printf("evt:conn closed, reason 0x%x\r\n", evt->data.evt_le_connection_closed.reason);
     	conn_handle = 0xFF;
-    		if (num_connections > 0) {
-    			if (--num_connections == 0) {
-    				DI_Print("", DI_ROW_CONNECTION);
-    				//lpn_init();
-    			}
+    	if (num_connections > 0) {
+    		if (--num_connections == 0) {
+    			DI_Print("", DI_ROW_CONNECTION);
+    			//lpn_init();
     		}
+    	}
     	break;
 
     case gecko_evt_gatt_server_user_write_request_id:
     	if (evt->data.evt_gatt_server_user_write_request.characteristic == gattdb_ota_control) {
-        /* Set flag to enter to OTA mode */
-        boot_to_dfu = 1;
-        /* Send response to Write Request */
-        gecko_cmd_gatt_server_send_user_write_response(
-       		evt->data.evt_gatt_server_user_write_request.connection,
-			gattdb_ota_control,
-			bg_err_success);
+    		/* Set flag to enter to OTA mode */
+    		boot_to_dfu = 1;
+    		/* Send response to Write Request */
+    		gecko_cmd_gatt_server_send_user_write_response(
+    				evt->data.evt_gatt_server_user_write_request.connection,
+					gattdb_ota_control,
+					bg_err_success);
 
-        /* Close connection to enter to DFU OTA mode */
-        gecko_cmd_le_connection_close(evt->data.evt_gatt_server_user_write_request.connection);
+    		/* Close connection to enter to DFU OTA mode */
+    		gecko_cmd_le_connection_close(evt->data.evt_gatt_server_user_write_request.connection);
     	}
     	break;
 
-      /************** SYS EVENTS **************/
+    /************** SYS EVENTS **************/
+
     case gecko_evt_system_boot_id:  // device started, radio ready
     	;
         struct gecko_msg_system_get_bt_address_rsp_t *pAddr = gecko_cmd_system_get_bt_address();
@@ -414,12 +415,13 @@ static void handle_gecko_event(uint32_t evt_id, struct gecko_cmd_packet *evt)
         break;
 
     case gecko_evt_system_external_signal_id: // aka button press
-      if (evt->data.evt_system_external_signal.extsignals & 0x01) {
-    	send_block_status_update();
-      }
-      break;
+    	if (evt->data.evt_system_external_signal.extsignals & 0x01) {
+    		send_block_status_update();
+    	}
+    	break;
+
     default:
     	//printf("unhandled evt: %8.8x class %2.2x method %2.2x\r\n", evt_id, (evt_id >> 16) & 0xFF, (evt_id >> 24) & 0xFF);
-      break;
+    	break;
   }
 }
