@@ -2,3 +2,9 @@
 *.hex
 *.sublime-project
 *.sublime-workspace
+*.axf
+*.bin
+*.map
+*.s37
+*.d
+*.o
