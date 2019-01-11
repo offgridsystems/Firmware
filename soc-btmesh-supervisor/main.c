@@ -151,7 +151,7 @@ void set_device_name(bd_addr *pAddr)
   uint16 res;
 
   // create unique device name using the last two bytes of the Bluetooth address
-  sprintf(name, "Block Manager %x:%x", pAddr->addr[1], pAddr->addr[0]);
+  sprintf(name, "Pack Supervisor %x:%x", pAddr->addr[1], pAddr->addr[0]);
 
   printf("Device name: '%s'\r\n", name);
 
@@ -189,6 +189,8 @@ int main()
   // interrupt the scanner.
   linklayer_priorities.scan_max = linklayer_priorities.adv_min + 1;
 
+  gecko_cmd_mesh_prov_init();		//Initializes the Mesh stack in Provisioner role
+
   gecko_stack_init(&config);
   gecko_bgapi_class_dfu_init();
   gecko_bgapi_class_system_init();
@@ -222,11 +224,11 @@ int main()
 
   //MAIN LOOPs
   while (1) {
-    struct gecko_cmd_packet *evt = gecko_wait_event();
-    bool pass = mesh_bgapi_listener(evt);
-    if (pass) {
-      handle_gecko_event(BGLIB_MSG_ID(evt->header), evt);
-    }
+      struct gecko_cmd_packet *evt = gecko_wait_event();
+      bool pass = mesh_bgapi_listener(evt);
+      if (pass) {
+          handle_gecko_event(BGLIB_MSG_ID(evt->header), evt);
+      }
   }
 }
 
@@ -242,12 +244,28 @@ static void handle_gecko_event(uint32_t evt_id, struct gecko_cmd_packet *evt)
 	}
 
 	switch (evt_id) {
+
+	/************** BT PROVISIONER EVENTS **************/
+
+	case gecko_evt_mesh_prov_initialized_id: 		// Provisioner initialized and operational
+		printf("provisioner initialized\r\n");
+		printf("scanning for nodes\r\n");
+		gecko_cmd_mesh_prov_scan_unprov_beacons(); 	//Find them nodes
+		break;
+
+	case gecko_evt_mesh_prov_unprov_beacon_id:		//Unprovisioned beacon seen
+		printf("::Node Found::\r\n");
+		struct gecko_msg_mesh_prov_unprov_beacon_evt_t *beaconData = (struct gecko_msg_mesh_prov_unprov_beacon_evt_t *)&(evt->data);
+		printf("address:%x, type:%d\r\n", beaconData->address, beaconData->address_type);
+		printf("uuid:%x\r\n", beaconData->uuid);
+		break;
+
   	/************** BT EVENTS **************/
 
     case gecko_evt_dfu_boot_id:				//device firmware upgrade signal
-      //gecko_cmd_le_gap_set_advertising_timing(0, 1000*adv_interval_ms/625, 1000*adv_interval_ms/625, 0, 0);
-      gecko_cmd_le_gap_set_mode(2, 2);
-      break;
+        //gecko_cmd_le_gap_set_advertising_timing(0, 1000*adv_interval_ms/625, 1000*adv_interval_ms/625, 0, 0);
+        gecko_cmd_le_gap_set_mode(2, 2);
+      	break;
 
     case gecko_evt_mesh_node_initialized_id:  	// bt stack is ready
     	printf("node initialized\r\n");
