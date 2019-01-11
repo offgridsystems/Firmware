@@ -101,6 +101,19 @@ static uint8 trid = 0;        		// transaction identifier
 static uint8 num_connections = 0;   // number of active Bluetooth connections
 static uint8 conn_handle = 0xFF;    // handle of the last opened LE connection
 
+enum {
+	init,
+	scanning,
+	connecting,
+	provisioning,
+	provisioned,
+	waiting_dcd,
+	waiting_appkey_ack,
+	waiting_bind_ack,
+	waiting_pub_ack,
+	waiting_sub_ack
+} state;
+
 /*************************************** PROTOTYPES ******************************************/
 
 static void handle_gecko_event(uint32_t evt_id, struct gecko_cmd_packet *evt);
@@ -189,27 +202,25 @@ int main()
   // interrupt the scanner.
   linklayer_priorities.scan_max = linklayer_priorities.adv_min + 1;
 
-  gecko_cmd_mesh_prov_init();		//Initializes the Mesh stack in Provisioner role
-
   gecko_stack_init(&config);
   gecko_bgapi_class_dfu_init();
   gecko_bgapi_class_system_init();
   gecko_bgapi_class_le_gap_init();
   gecko_bgapi_class_le_connection_init();
-  //gecko_bgapi_class_gatt_init();
+  gecko_bgapi_class_gatt_init();
   gecko_bgapi_class_gatt_server_init();
   gecko_bgapi_class_endpoint_init();
   gecko_bgapi_class_hardware_init();
   gecko_bgapi_class_flash_init();
   gecko_bgapi_class_test_init();
-  //gecko_bgapi_class_sm_init();
-  //mesh_native_bgapi_init();
-  gecko_bgapi_class_mesh_node_init();
+  gecko_bgapi_class_sm_init();
+  mesh_native_bgapi_init();
+  //gecko_bgapi_class_mesh_node_init();
   //gecko_bgapi_class_mesh_prov_init();
-  gecko_bgapi_class_mesh_proxy_init();
-  gecko_bgapi_class_mesh_proxy_server_init();
+  //gecko_bgapi_class_mesh_proxy_init();
+  //gecko_bgapi_class_mesh_proxy_server_init();
   //gecko_bgapi_class_mesh_proxy_client_init();
-  gecko_bgapi_class_mesh_generic_client_init();
+  //gecko_bgapi_class_mesh_generic_client_init();
   //gecko_bgapi_class_mesh_generic_server_init();
   //gecko_bgapi_class_mesh_vendor_model_init();
   //gecko_bgapi_class_mesh_health_client_init();
@@ -244,6 +255,23 @@ static void handle_gecko_event(uint32_t evt_id, struct gecko_cmd_packet *evt)
 	}
 
 	switch (evt_id) {
+
+	/************** BOOT EVENT **************/
+
+	case gecko_evt_system_boot_id:  // device started, radio ready
+		;
+		struct gecko_msg_system_get_bt_address_rsp_t *pAddr = gecko_cmd_system_get_bt_address();
+		set_device_name(&pAddr->address);
+		printf("Initializing as provisioner\r\n");
+		state = init;
+		// init as provisioner
+		struct gecko_msg_mesh_prov_init_rsp_t *prov_init_rsp = gecko_cmd_mesh_prov_init();
+		if (prov_init_rsp->result == 0) {
+			printf("Successfully initialized\r\n");
+		} else {
+			printf("Error initializing node as provisioner. Error %x\r\n", prov_init_rsp->result);
+		}
+    break;
 
 	/************** BT PROVISIONER EVENTS **************/
 
@@ -358,20 +386,6 @@ static void handle_gecko_event(uint32_t evt_id, struct gecko_cmd_packet *evt)
 
         	/* Close connection to enter to DFU OTA mode */
         	gecko_cmd_le_connection_close(evt->data.evt_gatt_server_user_write_request.connection);
-        }
-        break;
-
-    	/************** SYS EVENTS **************/
-
-    case gecko_evt_system_boot_id:  // device started, radio ready
-    	;
-        struct gecko_msg_system_get_bt_address_rsp_t *pAddr = gecko_cmd_system_get_bt_address();
-        set_device_name(&pAddr->address);
-        // Initialize Mesh stack in Node operation mode, wait for initialized event
-        result = gecko_cmd_mesh_node_init()->result;
-        if (result) {
-        	sprintf(buf, "init failed (0x%x)", result);
-            DI_Print(buf, DI_ROW_STATUS);
         }
         break;
 
