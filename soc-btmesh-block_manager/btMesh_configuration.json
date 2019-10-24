@@ -1,0 +1,56 @@
+{
+  "COMMENT": "",
+  "Composition Data": {
+    "CID": "0x02ff",
+    "PID": "0xf0b0",
+    "VID": "0x1234",
+    "CRPL": "0x0020",
+    "Features": "0x0003",
+    "Elements": [
+      {
+        "Name": "Primary Element",
+        "Loc": "0x0000",
+        "NumS": "4",
+        "NumV": "0",
+        "SIG Models": [
+          "3",
+          "Health Client",
+          "1000",
+          "Generic OnOff Server",
+          "0",
+          "Configuration Server",
+          "2",
+          "Health Server"]
+        ,
+        "Vendor Models": [
+          ]
+      }]
+    
+  },
+  "Memory configuration": {
+    "MAX_ELEMENTS": "1",
+    "MAX_MODELS": "4",
+    "MAX_APP_BINDS": "4",
+    "MAX_SUBSCRIPTIONS": "4",
+    "MAX_NETKEYS": "4",
+    "MAX_APPKEYS": "4",
+    "MAX_DEVKEYS": "1",
+    "NET_CACHE_SIZE": "16",
+    "RPL_SIZE": "32",
+    "MAX_SEND_SEGS": "4",
+    "MAX_RECV_SEGS": "4",
+    "MAX_VAS": "4",
+    "MAX_PROV_SESSIONS": "2",
+    "MAX_PROV_BEARERS": "2",
+    "MAX_GATT_CONNECTIONS": "3",
+    "GATT_TXQ_SIZE": "4",
+    "MAX_PROVISIONED_DEVICES": "0",
+    "MAX_PROVISIONED_DEVICE_NETKEYS": "0",
+    "MAX_PROVISIONED_DEVICE_APPKEYS": "",
+    "MAX_FOUNDATION_CLIENT_CMDS": "0",
+    "MAX_FRIENDSHIPS": "1",
+    "FRIEND_MAX_SUBS_LIST": "5",
+    "FRIEND_MAX_TOTAL_CACHE": "5",
+    "FRIEND_MAX_SINGLE_CACHE": "5"
+  }
+}
