@@ -9,4 +9,6 @@ DKblock V2 is under development.
  ![image_2021-03-08_120902](https://user-images.githubusercontent.com/6006120/110375624-11ff4300-8007-11eb-8828-be4d8b57706e.png)
 
 
+DKblock boards and hardware are available on ebay: https://www.ebay.com/sch/i.html?_from=R40&_trksid=m570.l1313&_nkw=dkblock&_sacat=0
+
 All DKblock software and hardware is released as open source hardware (OSHW) as defined by the OSHWA: https://www.oshwa.org/definition/ and under the JSON license defined at https://www.json.org/license.html
